@@ -1,0 +1,2 @@
+REEMPLAZA ESTE ARCHIVO con tu imagen QR de Plin (PNG)
+Nombre del archivo: qr-plin.png

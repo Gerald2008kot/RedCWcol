@@ -1,0 +1,2 @@
+REEMPLAZA ESTE ARCHIVO con tu imagen QR de Yape (PNG)
+Nombre del archivo: qr-yape.png
