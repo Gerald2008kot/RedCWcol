@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Planes</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container page-content">
+  <h2 style="font-family:var(--font-display);margin-bottom:4px">Planes</h2>
+  <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:24px">Elige el plan que mejor se adapte a ti</p>
+  <div id="plans-container" class="plans-grid"></div>
+</main>
+
+<!-- Modal: Pago -->
+<div class="modal-overlay" id="payment-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Pagar Plan <span id="pay-plan-name"></span></span>
+      <button class="modal-close" onclick="closePaymentModal()">×</button>
+    </div>
+
+    <div style="text-align:center;margin-bottom:16px">
+      <span class="plan-price" id="pay-plan-price" style="font-size:1.6rem"></span>
+      <p style="font-size:0.82rem;color:var(--text-muted)">/ mes · vigencia 30 días</p>
+    </div>
+
+    <div class="pay-tabs">
+      <button class="pay-tab active" id="tab-yape" onclick="selectPayTab('yape')">Yape</button>
+      <button class="pay-tab" id="tab-plin" onclick="selectPayTab('plin')">Plin</button>
+    </div>
+
+    <div class="pay-panel active" id="panel-yape">
+      <img id="yape-qr" src="assets/qr-yape.png" alt="QR Yape">
+      <p class="pay-number" id="yape-number"></p>
+      <p class="pay-hint">Escanea el QR o transfiere al número indicado</p>
+    </div>
+    <div class="pay-panel" id="panel-plin">
+      <img id="plin-qr" src="assets/qr-plin.png" alt="QR Plin">
+      <p class="pay-number" id="plin-number"></p>
+      <p class="pay-hint">Escanea el QR o transfiere al número indicado</p>
+    </div>
+
+    <div style="background:var(--bg-hover);border-radius:var(--radius-sm);padding:12px;margin:16px 0;font-size:0.83rem;color:var(--text-secondary)">
+      📧 Después de pagar, envía tu comprobante por correo con tus datos de verificación. Lo activaremos en menos de 24h.
+    </div>
+
+    <button class="btn-primary" style="width:100%" id="send-receipt-btn">
+      📩 Enviar Comprobante por Correo
+    </button>
+    <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="closePaymentModal()">Cancelar</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/plans.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("planes");
+  renderPlansPage("plans-container");
+});
+</script>
+</body>
+</html>

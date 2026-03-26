@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Administración</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container-wide page-content">
+  <h2 style="font-family:var(--font-display);margin-bottom:20px">⚙️ Administración (Propietario)</h2>
+
+  <div class="section-tabs" style="margin-bottom:20px">
+    <button class="section-tab active" onclick="showOwnerTab('users',this)">👥 Usuarios</button>
+    <button class="section-tab" onclick="showOwnerTab('blacklist',this)">🚫 Lista Negra</button>
+    <button class="section-tab" onclick="showOwnerTab('create-user',this)">➕ Crear Usuario</button>
+    <button class="section-tab" onclick="showOwnerTab('plans-mgmt',this)">⭐ Planes</button>
+    <button class="section-tab" onclick="showOwnerTab('payments',this)">💳 Comprobantes</button>
+  </div>
+
+  <!-- Usuarios -->
+  <div id="tab-users">
+    <div class="search-bar" style="max-width:400px;margin-bottom:16px">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar usuario..." oninput="onOwnerSearch(this.value)">
+    </div>
+    <div style="overflow-x:auto">
+      <table class="admin-table">
+        <thead><tr><th>Usuario</th><th>Rol</th><th>Estado / Plan</th><th>Acciones</th></tr></thead>
+        <tbody id="owner-users-tbody"></tbody>
+      </table>
+    </div>
+    <div class="spinner" id="owner-users-spinner"></div>
+    <button class="btn-ghost" style="margin-top:16px" onclick="ownerLoadMoreUsers()">Cargar más</button>
+  </div>
+
+  <!-- Lista negra -->
+  <div id="tab-blacklist" style="display:none">
+    <table class="admin-table">
+      <thead><tr><th>Correo</th><th>Fecha</th><th>Acción</th></tr></thead>
+      <tbody id="owner-bl-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Crear usuario -->
+  <div id="tab-create-user" style="display:none;max-width:480px">
+    <div class="auth-form" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:24px">
+      <div class="form-group"><label>Correo</label><input type="email" id="cu-email" placeholder="correo@ejemplo.com"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="cu-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="form-group"><label>Nombre de usuario</label><input type="text" id="cu-username" placeholder="@usuario"></div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="cu-role">
+          <option value="usuario">Usuario</option>
+          <option value="encargado">Encargado</option>
+          <option value="administrador">Administrador</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Plan</label>
+        <select id="cu-plan">
+          <option value="free">Free</option>
+          <option value="n1">N1</option>
+          <option value="n2">N2</option>
+          <option value="n3">N3</option>
+        </select>
+      </div>
+      <p id="cu-msg" class="form-error" style="display:none"></p>
+      <button class="btn-primary" onclick="submitCreateUser()">Crear Usuario</button>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px">⚠️ Requiere la Edge Function <code>admin-create-user</code> en Supabase.</p>
+    </div>
+  </div>
+
+  <!-- Planes (gestión) -->
+  <div id="tab-plans-mgmt" style="display:none">
+    <table class="admin-table">
+      <thead><tr><th>Usuario</th><th>Plan Actual</th><th>Vence</th><th>Acciones</th></tr></thead>
+      <tbody id="owner-plans-tbody"></tbody>
+    </table>
+    <div class="spinner" id="owner-plans-spinner"></div>
+  </div>
+
+  <!-- Comprobantes de pago -->
+  <div id="tab-payments" style="display:none">
+    <div class="section-tabs" style="margin-bottom:16px">
+      <button class="section-tab active" onclick="filterPayments('pendiente',this)">Pendientes</button>
+      <button class="section-tab" onclick="filterPayments('aprobado',this)">Aprobados</button>
+      <button class="section-tab" onclick="filterPayments('rechazado',this)">Rechazados</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Usuario</th><th>Plan</th><th>Monto</th><th>Fecha</th><th>Acción</th></tr></thead>
+      <tbody id="payments-tbody"></tbody>
+    </table>
+    <div class="spinner" id="pay-spinner"></div>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/plans.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+let ownerUsersOffset = 0;
+
+window.showOwnerTab = (tab, btn) => {
+  ["users","blacklist","create-user","plans-mgmt","payments"].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? "" : "none";
+  });
+  document.querySelectorAll(".section-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  if (tab === "blacklist") loadOwnerBlacklist();
+  if (tab === "plans-mgmt") loadOwnerPlans();
+  if (tab === "payments") filterPayments("pendiente", document.querySelector(".section-tab.active"));
+};
+
+window.ownerLoadMoreUsers = async () => {
+  ownerUsersOffset += 20;
+  const users = await adminLoadUsers({ limit: 20, offset: ownerUsersOffset });
+  users.forEach(u => renderUserRow(u, "owner-users-tbody"));
+};
+
+let ownerSearchT;
+window.onOwnerSearch = (val) => {
+  clearTimeout(ownerSearchT);
+  ownerSearchT = setTimeout(async () => {
+    const users = await adminLoadUsers({ search: val });
+    document.getElementById("owner-users-tbody").innerHTML = "";
+    users.forEach(u => renderUserRow(u, "owner-users-tbody"));
+  }, 400);
+};
+
+async function loadOwnerBlacklist() {
+  const list = await loadBlacklist();
+  const tbody = document.getElementById("owner-bl-tbody");
+  tbody.innerHTML = "";
+  list.forEach(item => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${item.email}</td><td>${new Date(item.created_at).toLocaleDateString()}</td>
+      <td><button class="btn-success btn-sm" onclick="removeFromBlacklist('${item.id}').then(()=>loadOwnerBlacklist())">Restaurar</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadOwnerPlans() {
+  document.getElementById("owner-plans-spinner").style.display = "block";
+  const { data } = await supabase.from("profiles")
+    .select("id, username, display_name, avatar_url, plan, plan_expires_at")
+    .order("plan", { ascending: false });
+  document.getElementById("owner-plans-spinner").style.display = "none";
+  const tbody = document.getElementById("owner-plans-tbody");
+  tbody.innerHTML = "";
+  (data||[]).forEach(u => {
+    const tr = document.createElement("tr");
+    const exp = u.plan_expires_at ? new Date(u.plan_expires_at).toLocaleDateString() : "—";
+    tr.innerHTML = `
+      <td><span class="user-display">${u.display_name||u.username}</span> <span class="user-sub">@${u.username}</span></td>
+      <td><span class="badge badge-plan">${u.plan.toUpperCase()}</span></td>
+      <td>${exp}</td>
+      <td>
+        <select class="plan-select" onchange="assignPlan('${u.id}',this.value).then(()=>loadOwnerPlans())">
+          <option value="">Cambiar...</option>
+          <option value="free">Free</option>
+          <option value="n1">N1</option>
+          <option value="n2">N2</option>
+          <option value="n3">N3</option>
+        </select>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.filterPayments = async (status, btn) => {
+  document.querySelectorAll("#tab-payments .section-tab").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  document.getElementById("pay-spinner").style.display = "block";
+  const payments = await loadPlanPayments({ status });
+  document.getElementById("pay-spinner").style.display = "none";
+  const tbody = document.getElementById("payments-tbody");
+  tbody.innerHTML = "";
+  (payments||[]).forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.user?.display_name||p.user?.username||p.user_id}</td>
+      <td><span class="badge badge-plan">${p.plan.toUpperCase()}</span></td>
+      <td>S/ ${p.amount}</td>
+      <td>${new Date(p.created_at).toLocaleDateString()}</td>
+      <td>${p.status === "pendiente" ? `
+        <button class="btn-success btn-sm" onclick="approvePayment('${p.id}','${p.user_id}','${p.plan}').then(()=>filterPayments('pendiente'))">Aprobar</button>
+        <button class="btn-danger btn-sm" onclick="rejectPayment('${p.id}')">Rechazar</button>` : p.status}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+window.rejectPayment = async (paymentId) => {
+  await supabase.from("plan_payments").update({ status: "rechazado", reviewed_by: currentUser.id, reviewed_at: new Date().toISOString() }).eq("id", paymentId);
+  filterPayments("pendiente");
+};
+
+window.submitCreateUser = async () => {
+  const result = await ownerCreateUser({
+    email:    document.getElementById("cu-email").value,
+    password: document.getElementById("cu-pass").value,
+    username: document.getElementById("cu-username").value,
+    role:     document.getElementById("cu-role").value,
+    plan:     document.getElementById("cu-plan").value,
+  });
+  const msg = document.getElementById("cu-msg");
+  msg.style.display = "";
+  if (result.error) { msg.textContent = result.error; msg.style.color = "var(--danger)"; }
+  else { msg.textContent = "Usuario creado exitosamente."; msg.style.color = "var(--success)"; }
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("owner");
+  if (!isOwner()) { window.location.href = "index.html"; return; }
+  document.getElementById("owner-users-spinner").style.display = "block";
+  const users = await adminLoadUsers({ limit: 20 });
+  document.getElementById("owner-users-spinner").style.display = "none";
+  users.forEach(u => renderUserRow(u, "owner-users-tbody"));
+});
+</script>
+</body>
+</html>

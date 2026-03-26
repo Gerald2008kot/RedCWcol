@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Perfil</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="page-content">
+  <!-- Banner -->
+  <div class="profile-banner" id="banner-wrap">
+    <div class="profile-banner-color" id="banner-color" style="background:#1a1a2e"></div>
+    <img id="banner-img" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+    <label id="banner-upload-label" style="display:none;position:absolute;bottom:10px;right:10px">
+      <span class="btn-primary btn-sm">📷 Cambiar banner</span>
+      <input type="file" accept="image/*" style="display:none" onchange="onBannerSelect(this)">
+    </label>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:0 20px;margin-top:-50px;flex-wrap:wrap;gap:10px">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar" id="profile-avatar-el">U</div>
+      <label class="avatar-upload-btn" title="Cambiar foto">
+        ✏️
+        <input type="file" accept="image/*" style="display:none" onchange="onAvatarSelect(this)">
+      </label>
+    </div>
+    <button class="btn-primary btn-sm" onclick="openModal('edit-profile-modal')">✏️ Editar Perfil</button>
+  </div>
+
+  <div class="profile-info">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <h1 class="profile-display-name" id="profile-display-name">...</h1>
+      <div class="profile-badges" id="profile-badges"></div>
+    </div>
+    <p class="profile-username" id="profile-username">@...</p>
+    <p class="profile-desc" id="profile-desc"></p>
+
+    <!-- Color de banner (free) -->
+    <div id="banner-colors-wrap" style="margin-top:14px">
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:8px">Color del banner</p>
+      <div class="color-swatches" id="color-swatches"></div>
+    </div>
+  </div>
+
+  <!-- Tabs del perfil -->
+  <div class="section-tabs" style="padding:0 20px;margin-top:16px">
+    <button class="section-tab active" onclick="showTab('gallery',this)">🖼️ Galería</button>
+    <button class="section-tab" onclick="showTab('forums',this)">💬 Foros</button>
+    <button class="section-tab" onclick="showTab('groups',this)">📰 Grupos</button>
+  </div>
+
+  <div class="container" style="margin-top:16px">
+    <div id="tab-gallery" class="gallery-grid"></div>
+    <div id="tab-forums"  style="display:none" class="forums-grid"></div>
+    <div id="tab-groups"  style="display:none"></div>
+    <div class="spinner" id="tab-spinner"></div>
+  </div>
+</main>
+
+<!-- Modal: Editar perfil -->
+<div class="modal-overlay" id="edit-profile-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Editar Perfil</span>
+      <button class="modal-close" onclick="closeModal('edit-profile-modal')">×</button>
+    </div>
+    <div class="auth-form">
+      <div class="form-group">
+        <label>Nombre visible</label>
+        <input type="text" id="edit-display-name" placeholder="Tu nombre">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="edit-desc" placeholder="Cuéntanos sobre ti..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Nueva contraseña (dejar vacío para no cambiar)</label>
+        <input type="password" id="edit-pass" placeholder="••••••" minlength="6">
+      </div>
+      <div class="form-group" id="name-color-group" style="display:none">
+        <label>Color del nombre</label>
+        <input type="color" id="edit-name-color" value="#5b73ff" style="height:40px;padding:4px 8px;width:80px">
+      </div>
+      <div class="form-group">
+        <label>Idioma</label>
+        <select id="edit-lang">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="saveProfile()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+const BANNER_COLORS = ["#1a1a2e","#0f3460","#16213e","#1b1b2f","#2d132c","#1a2a1a","#2a1a1a","#1a2a2a","#2c2c54","#303952"];
+
+window.showTab = (tab, btn) => {
+  ["gallery","forums","groups"].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === tab ? "" : "none";
+  });
+  document.querySelectorAll(".section-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+};
+
+window.onAvatarSelect = async (input) => {
+  if (!input.files[0]) return;
+  showToast("Subiendo foto...", "info");
+  const url = await uploadImage(input.files[0]);
+  await supabase.from("profiles").update({ avatar_url: url }).eq("id", currentUser.id);
+  document.getElementById("profile-avatar-el").innerHTML = `<img src="${url}" style="width:96px;height:96px;border-radius:50%;object-fit:cover">`;
+  showToast("Foto actualizada", "success");
+};
+
+window.onBannerSelect = async (input) => {
+  if (!input.files[0]) return;
+  showToast("Subiendo banner...", "info");
+  const url = await uploadImage(input.files[0]);
+  await supabase.from("profiles").update({ banner_url: url }).eq("id", currentUser.id);
+  document.getElementById("banner-img").src = url;
+  document.getElementById("banner-img").style.display = "block";
+  showToast("Banner actualizado", "success");
+};
+
+window.saveProfile = async () => {
+  const updates = {};
+  const name  = document.getElementById("edit-display-name").value.trim();
+  const desc  = document.getElementById("edit-desc").value.trim();
+  const pass  = document.getElementById("edit-pass").value;
+  const lang  = document.getElementById("edit-lang").value;
+  const color = document.getElementById("edit-name-color").value;
+
+  if (name)  updates.display_name = name;
+  if (desc)  updates.description  = desc;
+  if (lang)  updates.lang         = lang;
+  if (hasNameColor()) updates.name_color = color;
+
+  if (Object.keys(updates).length) {
+    await supabase.from("profiles").update(updates).eq("id", currentUser.id);
+  }
+  if (pass && pass.length >= 6) {
+    await supabase.auth.updateUser({ password: pass });
+  }
+  showToast("Perfil actualizado", "success");
+  closeModal("edit-profile-modal");
+  location.reload();
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("perfil");
+
+  const p = currentProfile;
+  if (!p) return;
+
+  // Avatar
+  const avEl = document.getElementById("profile-avatar-el");
+  if (p.avatar_url) avEl.innerHTML = `<img src="${p.avatar_url}" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:4px solid var(--bg-primary)">`;
+  else avEl.textContent = (p.display_name||p.username||"U")[0].toUpperCase();
+
+  // Banner
+  if (p.banner_url) {
+    document.getElementById("banner-img").src = p.banner_url;
+    document.getElementById("banner-img").style.display = "block";
+  } else {
+    document.getElementById("banner-color").style.background = p.banner_color || "#1a1a2e";
+  }
+  if (hasBannerUpload()) document.getElementById("banner-upload-label").style.display = "block";
+
+  // Info
+  document.getElementById("profile-display-name").textContent = p.display_name || p.username;
+  if (p.name_color) document.getElementById("profile-display-name").style.color = p.name_color;
+  document.getElementById("profile-username").textContent = `@${p.username}`;
+  document.getElementById("profile-desc").textContent = p.description || "";
+
+  // Badges
+  const badges = document.getElementById("profile-badges");
+  if (p.plan !== "free") badges.innerHTML += `<span class="badge badge-plan">${p.plan.toUpperCase()}</span>`;
+  const roleMap = { encargado: "Encargado", administrador: "Admin", propietario: "Propietario" };
+  if (roleMap[p.role]) badges.innerHTML += `<span class="badge badge-role-${p.role}">${roleMap[p.role]}</span>`;
+
+  // Colores de banner
+  const swatches = document.getElementById("color-swatches");
+  BANNER_COLORS.forEach(c => {
+    const sw = document.createElement("div");
+    sw.className = "color-swatch" + (c === (p.banner_color||"#1a1a2e") ? " selected" : "");
+    sw.style.background = c;
+    sw.onclick = async () => {
+      document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
+      sw.classList.add("selected");
+      document.getElementById("banner-color").style.background = c;
+      document.getElementById("banner-img").style.display = "none";
+      await supabase.from("profiles").update({ banner_color: c, banner_url: null }).eq("id", currentUser.id);
+    };
+    swatches.appendChild(sw);
+  });
+
+  // Edit modal defaults
+  document.getElementById("edit-display-name").value = p.display_name || "";
+  document.getElementById("edit-desc").value = p.description || "";
+  document.getElementById("edit-lang").value = p.lang || "es";
+  if (hasNameColor()) {
+    document.getElementById("name-color-group").style.display = "";
+    document.getElementById("edit-name-color").value = p.name_color || "#5b73ff";
+  }
+
+  // Galería
+  document.getElementById("tab-spinner").style.display = "block";
+  const { data: gallery } = await supabase.from("gallery").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+  document.getElementById("tab-spinner").style.display = "none";
+  (gallery||[]).forEach(g => {
+    const item = document.createElement("div");
+    item.className = "gallery-item";
+    item.innerHTML = `<img src="${g.url}" loading="lazy" alt="">`;
+    item.onclick = () => window.open(g.url, "_blank");
+    document.getElementById("tab-gallery").appendChild(item);
+  });
+
+  // Foros
+  const myForums = await loadMyForums();
+  myForums.forEach(f => renderForumCard(f, "tab-forums", true));
+});
+</script>
+</body>
+</html>

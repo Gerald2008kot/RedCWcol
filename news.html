@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Noticias</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container page-content">
+  <div id="news-feed">
+    <!-- Botón crear grupo (solo encargados/admin/propietario) -->
+    <div id="create-group-btn-wrap" style="display:none;margin-bottom:16px">
+      <button class="btn-primary" onclick="openModal('create-group-modal')">+ Crear Grupo</button>
+    </div>
+
+    <!-- Grupos de noticias -->
+    <div id="news-groups-container" class="news-groups-list"></div>
+
+    <div class="spinner" id="news-spinner"></div>
+  </div>
+</main>
+
+<!-- Modal: Crear Grupo -->
+<div class="modal-overlay" id="create-group-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Crear Grupo de Noticias</span>
+      <button class="modal-close" onclick="closeModal('create-group-modal')">×</button>
+    </div>
+    <div class="auth-form">
+      <div class="form-group">
+        <label>Nombre del grupo</label>
+        <input type="text" id="gname" placeholder="Ej: Club de Ciencias">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="gdesc" placeholder="Descripción breve..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Imagen de portada</label>
+        <input type="file" accept="image/*" id="gcover">
+      </div>
+      <button class="btn-primary" onclick="submitCreateGroup()">Crear Grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Post en grupo -->
+<div class="modal-overlay" id="group-post-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="group-post-modal-title">Nueva Publicación</span>
+      <button class="modal-close" onclick="closeModal('group-post-modal')">×</button>
+    </div>
+    <div class="auth-form">
+      <textarea id="gpost-content" placeholder="Escribe la noticia..." rows="4"></textarea>
+      <label class="compose-media-btn" style="display:inline-flex;margin-top:8px">
+        📷 Adjuntar foto
+        <input type="file" accept="image/*" style="display:none" onchange="onGroupImageSelect(this)">
+      </label>
+      <img id="gpost-img-preview" style="display:none;max-height:140px;border-radius:8px;margin-top:8px">
+      <button class="btn-primary" onclick="submitGroupPost()" style="margin-top:12px">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+window.activeGroupId = null;
+window.gpostMedia = null;
+
+window.onGroupImageSelect = (input) => {
+  if (!input.files[0]) return;
+  window.gpostMedia = input.files[0];
+  const prev = document.getElementById("gpost-img-preview");
+  prev.src = URL.createObjectURL(input.files[0]);
+  prev.style.display = "block";
+};
+
+window.submitCreateGroup = async () => {
+  const name  = document.getElementById("gname").value.trim();
+  const desc  = document.getElementById("gdesc").value.trim();
+  const cover = document.getElementById("gcover").files[0];
+  if (!name) { showToast("Nombre requerido", "error"); return; }
+  const { error } = await createNewsGroup({ name, description: desc, coverFile: cover });
+  if (error) showToast(error, "error");
+  else { showToast("Grupo creado", "success"); closeModal("create-group-modal"); location.reload(); }
+};
+
+window.submitGroupPost = async () => {
+  const content = document.getElementById("gpost-content").value.trim();
+  if (!content && !window.gpostMedia) { showToast("Escribe algo", "error"); return; }
+  const { error } = await createPost({
+    content, mediaFile: window.gpostMedia, mediaType: window.gpostMedia ? "imagen" : "texto",
+    section: "noticias", newsGroupId: window.activeGroupId
+  });
+  if (!error) { showToast("Publicado", "success"); closeModal("group-post-modal"); renderGroupFeed(window.activeGroupId); }
+  else showToast("Error al publicar", "error");
+};
+
+function openGroupPost(groupId, groupName) {
+  window.activeGroupId = groupId;
+  window.gpostMedia = null;
+  document.getElementById("group-post-modal-title").textContent = `Publicar en: ${groupName}`;
+  document.getElementById("gpost-content").value = "";
+  document.getElementById("gpost-img-preview").style.display = "none";
+  openModal("group-post-modal");
+}
+
+async function renderGroupFeed(groupId) {
+  const posts = await loadFeed("noticias", { newsGroupId: groupId });
+  const feed = document.getElementById(`group-posts-${groupId}`);
+  if (!feed) return;
+  feed.innerHTML = "";
+  for (const post of posts) await renderPost(post, `group-posts-${groupId}`);
+}
+
+async function renderNewsGroups(groups) {
+  const container = document.getElementById("news-groups-container");
+  container.innerHTML = "";
+  for (const group of groups) {
+    const isOwner_ = group.owner_id === currentUser?.id || isAdmin();
+    const coverHtml = group.cover_url
+      ? `<img src="${group.cover_url}" style="width:100%;height:180px;object-fit:cover;">`
+      : `<div style="height:180px;background:linear-gradient(135deg,var(--accent-light),var(--bg-hover));display:flex;align-items:center;justify-content:center;font-size:3rem;">📰</div>`;
+
+    const card = document.createElement("div");
+    card.className = "news-group-card";
+    card.innerHTML = `
+      <div class="news-group-cover" style="position:relative">
+        ${coverHtml}
+        <div class="news-group-overlay">
+          <span class="news-group-name">${group.name}</span>
+        </div>
+        ${isOwner_ ? `<button class="btn-primary btn-sm" style="position:absolute;top:10px;right:10px;" onclick="openGroupPost('${group.id}','${group.name}')">+ Publicar</button>` : ""}
+      </div>
+      <div style="padding:14px">
+        ${group.description ? `<p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px">${group.description}</p>` : ""}
+        <div id="group-posts-${group.id}"></div>
+        <div class="spinner" id="gspinner-${group.id}"></div>
+      </div>
+    `;
+    container.appendChild(card);
+    // Cargar últimas 3 publicaciones
+    document.getElementById(`gspinner-${group.id}`).style.display = "block";
+    const posts = await loadFeed("noticias", { newsGroupId: group.id, limit: 3 });
+    document.getElementById(`gspinner-${group.id}`).style.display = "none";
+    for (const post of posts) await renderPost(post, `group-posts-${group.id}`);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("noticias");
+  if (canCreateNewsGroup()) document.getElementById("create-group-btn-wrap").style.display = "block";
+  const spinner = document.getElementById("news-spinner");
+  spinner.style.display = "block";
+  const groups = await loadNewsGroups();
+  spinner.style.display = "none";
+  await renderNewsGroups(groups);
+});
+</script>
+</body>
+</html>
