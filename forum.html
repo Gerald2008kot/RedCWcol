@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Foro</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container page-content">
+  <!-- Header del foro -->
+  <div class="card" style="margin-bottom:16px;overflow:hidden">
+    <div id="forum-banner" style="height:120px;background:linear-gradient(135deg,var(--accent-light),var(--bg-hover))">
+      <img id="forum-banner-img" style="width:100%;height:100%;object-fit:cover;display:none">
+    </div>
+    <div style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 id="forum-name" style="font-family:var(--font-display);font-size:1.3rem"></h2>
+          <p id="forum-desc" style="font-size:0.85rem;color:var(--text-muted);margin-top:4px"></p>
+          <p id="forum-stats" style="font-size:0.8rem;color:var(--text-muted);margin-top:6px"></p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-ghost btn-sm" onclick="history.back()">← Volver</button>
+          <div id="forum-owner-actions" style="display:none">
+            <button class="btn-primary btn-sm" onclick="openModal('invite-modal')">+ Invitar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compose dentro del foro -->
+  <div class="compose-box" id="forum-compose">
+    <div class="compose-header">
+      <div class="post-avatar-placeholder" id="forum-compose-avatar">U</div>
+      <textarea class="compose-textarea" id="forum-post-text" placeholder="Escribe en este foro..."></textarea>
+    </div>
+    <div id="forum-compose-preview" style="display:none">
+      <img id="forum-img-preview" style="display:none;max-height:180px;border-radius:8px">
+      <audio id="forum-audio-preview" controls style="display:none;width:100%"></audio>
+    </div>
+    <div class="compose-actions">
+      <div class="compose-media-btns">
+        <label class="compose-media-btn">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Foto
+          <input type="file" accept="image/*" style="display:none" onchange="onForumImgSelect(this)">
+        </label>
+        <label class="compose-media-btn">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Audio
+          <input type="file" accept="audio/*" style="display:none" onchange="onForumAudioSelect(this)">
+        </label>
+        <label class="compose-media-btn" id="forum-anon-toggle" style="display:none">
+          <input type="checkbox" id="forum-post-anon"> 🎭 Anónimo
+        </label>
+      </div>
+      <button class="btn-primary" onclick="submitForumPost()">Publicar</button>
+    </div>
+  </div>
+
+  <!-- Posts del foro -->
+  <div id="forum-posts-container"></div>
+  <div class="spinner" id="forum-spinner"></div>
+  <div id="scroll-sentinel" style="height:1px"></div>
+</main>
+
+<!-- Modal: Invitar -->
+<div class="modal-overlay" id="invite-modal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Invitar al Foro</span>
+      <button class="modal-close" onclick="closeModal('invite-modal')">×</button>
+    </div>
+    <div class="search-bar" style="margin-bottom:10px">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar usuario..." id="invite-search" oninput="onInviteSearch(this.value)">
+    </div>
+    <div id="invite-results"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+const params = new URLSearchParams(location.search);
+const forumId = params.get("id");
+window.forumMedia = null;
+window.forumMediaType = null;
+
+window.onForumImgSelect = (input) => {
+  if (!input.files[0]) return;
+  window.forumMedia = input.files[0];
+  window.forumMediaType = "imagen";
+  const prev = document.getElementById("forum-img-preview");
+  prev.src = URL.createObjectURL(input.files[0]);
+  prev.style.display = "block";
+  document.getElementById("forum-audio-preview").style.display = "none";
+  document.getElementById("forum-compose-preview").style.display = "block";
+};
+
+window.onForumAudioSelect = (input) => {
+  if (!input.files[0]) return;
+  window.forumMedia = input.files[0];
+  window.forumMediaType = "audio";
+  const audio = document.getElementById("forum-audio-preview");
+  audio.src = URL.createObjectURL(input.files[0]);
+  audio.style.display = "block";
+  document.getElementById("forum-img-preview").style.display = "none";
+  document.getElementById("forum-compose-preview").style.display = "block";
+};
+
+window.submitForumPost = async () => {
+  const content = document.getElementById("forum-post-text").value.trim();
+  if (!content && !window.forumMedia) { showToast("Escribe algo", "error"); return; }
+  const isAnon = document.getElementById("forum-post-anon")?.checked || false;
+  const { error } = await createPost({
+    content, mediaFile: window.forumMedia, mediaType: window.forumMediaType || "texto",
+    section: "foro", forumId, isAnonymous: isAnon
+  });
+  if (!error) {
+    document.getElementById("forum-post-text").value = "";
+    window.forumMedia = null;
+    document.getElementById("forum-compose-preview").style.display = "none";
+    showToast("Publicado", "success");
+  } else showToast("Error al publicar", "error");
+};
+
+let searchT;
+window.onInviteSearch = async (val) => {
+  clearTimeout(searchT);
+  if (!val) return;
+  searchT = setTimeout(async () => {
+    const users = await searchUsers(val);
+    document.getElementById("invite-results").innerHTML = users.map(u => `
+      <div class="conv-item" onclick="sendInvite('${u.id}','${u.display_name||u.username}')">
+        ${u.avatar_url ? `<img src="${u.avatar_url}" class="conv-avatar">` : `<div class="conv-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:700">${(u.display_name||"U")[0]}</div>`}
+        <div class="conv-info"><span class="conv-name">${u.display_name||u.username}</span><span class="conv-last">@${u.username}</span></div>
+      </div>`).join("");
+  }, 350);
+};
+
+window.sendInvite = async (userId, name) => {
+  const { error } = await inviteToForum(forumId, userId);
+  if (!error) { showToast(`Invitación enviada a ${name}`, "success"); closeModal("invite-modal"); }
+  else showToast("Error al invitar", "error");
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("comunidades");
+  if (!forumId) { window.location.href = "communities.html"; return; }
+
+  // Cargar datos del foro
+  const { data: forum } = await supabase.from("forums").select("*,owner:profiles(id,username,display_name)").eq("id", forumId).single();
+  if (!forum) { window.location.href = "communities.html"; return; }
+
+  // Si es oculto, verificar membresía
+  if (forum.is_hidden) {
+    const { data: member } = await supabase.from("forum_members").select("id").eq("forum_id", forumId).eq("user_id", currentUser.id).single();
+    if (!member && !isAdmin()) { showToast("No tienes acceso a este foro", "error"); window.location.href = "communities.html"; return; }
+  }
+
+  // Header
+  document.title = `RedCW — ${forum.name}`;
+  document.getElementById("forum-name").textContent = forum.name;
+  document.getElementById("forum-desc").textContent = forum.description || "";
+  document.getElementById("forum-stats").textContent = `👥 ${forum.members_count||0} miembros · ${forum.type === "anonimo" ? "🎭 Anónimo" : forum.type === "oculto" ? "🔒 Oculto" : "🌐 Normal"}`;
+  if (forum.cover_url) { document.getElementById("forum-banner-img").src = forum.cover_url; document.getElementById("forum-banner-img").style.display = "block"; }
+
+  // Acciones del dueño
+  if (forum.owner_id === currentUser.id || isAdmin()) document.getElementById("forum-owner-actions").style.display = "";
+  if (forum.type === "oculto" && forum.owner_id !== currentUser.id && !isAdmin()) document.getElementById("forum-owner-actions").style.display = "none";
+
+  // Compose avatar
+  if (currentProfile?.avatar_url) {
+    document.getElementById("forum-compose-avatar").outerHTML = `<img id="forum-compose-avatar" src="${currentProfile.avatar_url}" class="post-avatar">`;
+  } else {
+    document.getElementById("forum-compose-avatar").textContent = (currentProfile?.display_name||"U")[0];
+  }
+
+  if (canAnonymousComment()) document.getElementById("forum-anon-toggle").style.display = "inline-flex";
+
+  // Posts
+  const spinner = document.getElementById("forum-spinner");
+  spinner.style.display = "block";
+  const posts = await loadFeed("foro", { forumId, limit: 10 });
+  spinner.style.display = "none";
+  for (const post of posts) await renderPost(post, "forum-posts-container");
+
+  // Realtime
+  supabase.channel(`forum:${forumId}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts", filter: `forum_id=eq.${forumId}` }, async (payload) => {
+      const { data: full } = await supabase.from("posts").select("*,author:profiles(id,username,display_name,avatar_url,name_color)").eq("id", payload.new.id).single();
+      if (full) renderPost(full, "forum-posts-container");
+    }).subscribe();
+
+  // Infinite scroll
+  initInfiniteScroll("forum-posts-container", async (offset) => {
+    const more = await loadFeed("foro", { forumId, limit: 10, offset });
+    for (const post of more) await renderPost(post, "forum-posts-container");
+    return more;
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Chats</title>
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    body { padding-bottom: 0; }
+    .chat-page { height: calc(100vh - var(--header-h) - var(--snackbar-h)); display:flex; overflow:hidden; }
+  </style>
+</head>
+<body>
+<div id="app-shell"></div>
+
+<div class="chat-page">
+  <!-- Sidebar: lista de conversaciones -->
+  <aside class="chat-sidebar" id="chat-sidebar">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px">
+      <div class="search-bar" style="flex:1;margin:0">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Buscar usuarios..." id="user-search" oninput="onUserSearch(this.value)">
+      </div>
+      <button class="btn-primary btn-sm" onclick="openModal('new-chat-modal')">+</button>
+    </div>
+    <!-- Search results -->
+    <div id="user-search-results" style="display:none;border-bottom:1px solid var(--border)"></div>
+    <!-- Conversations list -->
+    <div id="conversations-list"></div>
+    <div class="spinner" id="conv-spinner"></div>
+  </aside>
+
+  <!-- Main: conversación activa -->
+  <div class="chat-main" id="chat-main">
+    <div id="chat-empty" style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--text-muted)">
+      <span style="font-size:3rem">💬</span>
+      <p>Selecciona una conversación</p>
+    </div>
+    <!-- Chat activo (se muestra cuando hay conversación) -->
+    <div id="active-chat" style="display:none;flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg-secondary)">
+        <button class="btn-ghost btn-sm" id="back-btn" onclick="closeChatMain()" style="display:none">← Volver</button>
+        <div id="chat-header-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:white"></div>
+        <span id="chat-header-name" style="font-weight:600"></span>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-bar">
+        <input type="text" id="msg-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="chat-send-btn" onclick="sendMsg()">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo chat -->
+<div class="modal-overlay" id="new-chat-modal">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Nuevo Chat</span>
+      <button class="modal-close" onclick="closeModal('new-chat-modal')">×</button>
+    </div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar usuario..." id="new-chat-search" oninput="onNewChatSearch(this.value)">
+    </div>
+    <div id="new-chat-results"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+window.openConversation = async (convId, userName, userAvatar) => {
+  activeConversationId = convId;
+  // Marcar activo en sidebar
+  document.querySelectorAll(".conv-item").forEach(i => i.classList.remove("active"));
+  document.querySelector(`[data-conv="${convId}"]`)?.classList.add("active");
+
+  // Header
+  const avatar = document.getElementById("chat-header-avatar");
+  const name   = document.getElementById("chat-header-name");
+  if (userAvatar) avatar.innerHTML = `<img src="${userAvatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`;
+  else avatar.textContent = (userName||"U")[0].toUpperCase();
+  name.textContent = userName;
+
+  // Mostrar chat
+  document.getElementById("chat-empty").style.display = "none";
+  document.getElementById("active-chat").style.display = "flex";
+  if (window.innerWidth <= 768) {
+    document.getElementById("chat-sidebar").style.display = "none";
+    document.getElementById("back-btn").style.display = "block";
+  }
+
+  // Cargar mensajes
+  const messages = await loadMessages(convId);
+  const container = document.getElementById("chat-messages");
+  container.innerHTML = "";
+  messages.forEach(m => renderMessage(m, "chat-messages"));
+
+  // Realtime
+  subscribeToConversation(convId, (msg) => renderMessage(msg, "chat-messages"));
+};
+
+window.closeChatMain = () => {
+  document.getElementById("chat-sidebar").style.display = "";
+  document.getElementById("active-chat").style.display = "none";
+  document.getElementById("chat-empty").style.display = "flex";
+};
+
+window.sendMsg = async () => {
+  const input = document.getElementById("msg-input");
+  const content = input.value.trim();
+  if (!content || !activeConversationId) return;
+  input.value = "";
+  await sendMessage(activeConversationId, content);
+};
+
+let searchT;
+window.onUserSearch = async (val) => {
+  clearTimeout(searchT);
+  const res = document.getElementById("user-search-results");
+  if (!val) { res.style.display = "none"; return; }
+  searchT = setTimeout(async () => {
+    const users = await searchUsers(val);
+    res.innerHTML = users.map(u => `
+      <div class="conv-item" onclick="startChatWith('${u.id}','${u.display_name||u.username}','${u.avatar_url||''}')">
+        ${u.avatar_url ? `<img src="${u.avatar_url}" class="conv-avatar">` : `<div class="conv-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:700">${(u.display_name||u.username||"U")[0]}</div>`}
+        <div class="conv-info"><span class="conv-name">${u.display_name||u.username}</span><span class="conv-last">@${u.username}</span></div>
+      </div>`).join("");
+    res.style.display = users.length ? "block" : "none";
+  }, 350);
+};
+
+window.onNewChatSearch = async (val) => {
+  if (!val) return;
+  const users = await searchUsers(val);
+  document.getElementById("new-chat-results").innerHTML = users.map(u => `
+    <div class="conv-item" onclick="startChatWith('${u.id}','${u.display_name||u.username}','${u.avatar_url||''}');closeModal('new-chat-modal')">
+      ${u.avatar_url ? `<img src="${u.avatar_url}" class="conv-avatar">` : `<div class="conv-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:700">${(u.display_name||"U")[0]}</div>`}
+      <div class="conv-info"><span class="conv-name">${u.display_name||u.username}</span><span class="conv-last">@${u.username}</span></div>
+    </div>`).join("");
+};
+
+window.startChatWith = async (userId, name, avatar) => {
+  const convId = await getOrCreateConversation(userId);
+  document.getElementById("user-search-results").style.display = "none";
+  document.getElementById("user-search").value = "";
+  await openConversation(convId, name, avatar);
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("chats");
+  document.getElementById("conv-spinner").style.display = "block";
+  const convs = await listConversations();
+  document.getElementById("conv-spinner").style.display = "none";
+  const list = document.getElementById("conversations-list");
+  convs.forEach(c => {
+    const u = c.user;
+    const div = document.createElement("div");
+    div.className = "conv-item";
+    div.dataset.conv = c.conversation_id;
+    const initials = (u?.display_name||u?.username||"U")[0].toUpperCase();
+    div.innerHTML = `
+      ${u?.avatar_url ? `<img src="${u.avatar_url}" class="conv-avatar">` : `<div class="conv-avatar" style="background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem">${initials}</div>`}
+      <div class="conv-info">
+        <span class="conv-name">${u?.display_name||u?.username}</span>
+        <span class="conv-last">${c.lastMessage?.content||"..."}</span>
+      </div>`;
+    div.onclick = () => openConversation(c.conversation_id, u?.display_name||u?.username, u?.avatar_url);
+    list.appendChild(div);
+  });
+});
+</script>
+</body>
+</html>

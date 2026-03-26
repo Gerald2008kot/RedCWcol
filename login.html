@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Iniciar Sesión</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5b73ff">
+  <style>
+    body { padding: 0; }
+    .auth-page { background: radial-gradient(ellipse at 60% 20%, rgba(91,115,255,0.12) 0%, transparent 60%), var(--bg-primary); }
+  </style>
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">RedCW</div>
+    <p class="auth-tagline">La red social de tu colegio</p>
+
+    <!-- Login Form -->
+    <div id="login-view">
+      <form class="auth-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">Correo electrónico</label>
+          <input type="email" id="login-email" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Contraseña</label>
+          <input type="password" id="login-pass" required placeholder="••••••">
+        </div>
+        <p id="login-error" class="form-error" style="display:none"></p>
+        <button type="submit" class="btn-primary" id="login-btn">Iniciar Sesión</button>
+      </form>
+      <div class="auth-switch">
+        <a href="#" onclick="showForgot()">¿Olvidaste tu contraseña?</a>
+      </div>
+      <div class="auth-switch">
+        ¿No tienes cuenta? <a href="#" onclick="showRegister()">Regístrate</a>
+      </div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-view" style="display:none">
+      <form class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label for="reg-name">Nombre visible</label>
+          <input type="text" id="reg-name" required placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label for="reg-username">Nombre de usuario</label>
+          <input type="text" id="reg-username" required placeholder="@usuario" pattern="[a-zA-Z0-9_]+" title="Solo letras, números y guión bajo">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Correo electrónico</label>
+          <input type="email" id="reg-email" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="reg-pass">Contraseña</label>
+          <input type="password" id="reg-pass" required placeholder="Mínimo 6 caracteres" minlength="6">
+        </div>
+        <p id="reg-error" class="form-error" style="display:none"></p>
+        <button type="submit" class="btn-primary" id="reg-btn">Crear Cuenta</button>
+      </form>
+      <div class="auth-switch">
+        ¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Inicia sesión</a>
+      </div>
+    </div>
+
+    <!-- Forgot Password -->
+    <div id="forgot-view" style="display:none">
+      <form class="auth-form" onsubmit="handleForgot(event)">
+        <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:8px;">
+          Te enviaremos un correo para restablecer tu contraseña.
+        </p>
+        <div class="form-group">
+          <label for="forgot-email">Correo electrónico</label>
+          <input type="email" id="forgot-email" required placeholder="tu@correo.com">
+        </div>
+        <p id="forgot-msg" class="form-error" style="display:none"></p>
+        <button type="submit" class="btn-primary">Enviar enlace</button>
+      </form>
+      <div class="auth-switch">
+        <a href="#" onclick="showLogin()">← Volver</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+const supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+// Redirigir si ya hay sesión
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = "index.html";
+});
+
+window.showLogin    = () => { document.getElementById("login-view").style.display=""; document.getElementById("register-view").style.display="none"; document.getElementById("forgot-view").style.display="none"; }
+window.showRegister = () => { document.getElementById("register-view").style.display=""; document.getElementById("login-view").style.display="none"; document.getElementById("forgot-view").style.display="none"; }
+window.showForgot   = () => { document.getElementById("forgot-view").style.display=""; document.getElementById("login-view").style.display="none"; document.getElementById("register-view").style.display="none"; }
+
+window.handleLogin = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("login-btn");
+  btn.textContent = "Cargando..."; btn.disabled = true;
+  const email    = document.getElementById("login-email").value;
+  const password = document.getElementById("login-pass").value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    document.getElementById("login-error").textContent = "Credenciales incorrectas.";
+    document.getElementById("login-error").style.display = "";
+    btn.textContent = "Iniciar Sesión"; btn.disabled = false;
+  } else {
+    window.location.href = "index.html";
+  }
+};
+
+window.handleRegister = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("reg-btn");
+  btn.textContent = "Creando..."; btn.disabled = true;
+  const displayName = document.getElementById("reg-name").value.trim();
+  const username    = document.getElementById("reg-username").value.trim().toLowerCase();
+  const email       = document.getElementById("reg-email").value;
+  const password    = document.getElementById("reg-pass").value;
+
+  // Check blacklist
+  const { data: bl } = await supabase.from("blacklist").select("id").eq("email", email).single();
+  if (bl) {
+    document.getElementById("reg-error").textContent = "Este correo no puede registrarse.";
+    document.getElementById("reg-error").style.display = "";
+    btn.textContent = "Crear Cuenta"; btn.disabled = false;
+    return;
+  }
+
+  const { error } = await supabase.auth.signUp({
+    email, password,
+    options: { data: { username, display_name: displayName } }
+  });
+  if (error) {
+    document.getElementById("reg-error").textContent = error.message;
+    document.getElementById("reg-error").style.display = "";
+    btn.textContent = "Crear Cuenta"; btn.disabled = false;
+  } else {
+    window.location.href = "index.html";
+  }
+};
+
+window.handleForgot = async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("forgot-email").value;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + "/reset-password.html"
+  });
+  const msg = document.getElementById("forgot-msg");
+  msg.style.display = "";
+  if (error) { msg.textContent = error.message; msg.style.color = "var(--danger)"; }
+  else { msg.textContent = "¡Enlace enviado! Revisa tu correo."; msg.style.color = "var(--success)"; }
+};
+</script>
+</body>
+</html>

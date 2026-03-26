@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Comunidades</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container page-content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div class="search-bar" style="flex:1;min-width:200px;margin-bottom:0">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="forum-search" placeholder="Buscar comunidades..." oninput="onSearch(this.value)">
+    </div>
+    <button class="btn-primary" id="create-forum-btn" onclick="openModal('create-forum-modal')">+ Crear Foro</button>
+  </div>
+
+  <div class="section-tabs">
+    <button class="section-tab active" onclick="filterForums('all', this)">Todos</button>
+    <button class="section-tab" onclick="filterForums('normal', this)">Normales</button>
+    <button class="section-tab" onclick="filterForums('anonimo', this)">Anónimos</button>
+  </div>
+
+  <div id="forums-container" class="forums-grid"></div>
+  <div class="spinner" id="forums-spinner"></div>
+  <div id="scroll-sentinel" style="height:1px"></div>
+</main>
+
+<!-- Modal: Unirse -->
+<div class="modal-overlay" id="join-modal">
+  <div class="modal-box" style="text-align:center;max-width:360px">
+    <h3 class="modal-title" style="margin-bottom:12px">¿Unirse al foro?</h3>
+    <p style="color:var(--text-secondary);margin-bottom:20px;font-size:0.9rem">
+      "<span id="join-modal-name"></span>"
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn-ghost" onclick="closeModal('join-modal')">Cancelar</button>
+      <button class="btn-primary" id="join-modal-confirm">Unirse</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Crear Foro -->
+<div class="modal-overlay" id="create-forum-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Crear Foro</span>
+      <button class="modal-close" onclick="closeModal('create-forum-modal')">×</button>
+    </div>
+    <div class="auth-form">
+      <div class="form-group">
+        <label>Nombre del foro</label>
+        <input type="text" id="fname" placeholder="Nombre...">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="fdesc" placeholder="¿De qué trata?"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tipo de foro</label>
+        <select id="ftype" onchange="onForumTypeChange()">
+          <option value="normal">🌐 Normal</option>
+          <option value="anonimo" id="anon-option">🎭 Anónimo</option>
+          <option value="oculto" id="hidden-option">🔒 Oculto (solo invitación)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Imagen de portada</label>
+        <input type="file" accept="image/*" id="fcover">
+      </div>
+      <p id="forum-error" class="form-error" style="display:none"></p>
+      <button class="btn-primary" onclick="submitCreateForum()">Crear Foro</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+let allForums = [];
+let memberForumIds = new Set();
+
+window.onForumTypeChange = () => {
+  const val = document.getElementById("ftype").value;
+  if (val === "oculto" && !canHiddenForum()) {
+    document.getElementById("ftype").value = "normal";
+    showToast("Necesitas Plan N3 o ser Admin para foros ocultos", "error");
+  }
+  if (val === "anonimo" && canCreateForums().anonymous === 0) {
+    document.getElementById("ftype").value = "normal";
+    showToast("Necesitas Plan N1 o superior para foros anónimos", "error");
+  }
+};
+
+window.submitCreateForum = async () => {
+  const name  = document.getElementById("fname").value.trim();
+  const desc  = document.getElementById("fdesc").value.trim();
+  const type  = document.getElementById("ftype").value;
+  const cover = document.getElementById("fcover").files[0];
+  if (!name) { showToast("Nombre requerido", "error"); return; }
+  const { data, error } = await createForum({ name, description: desc, type, coverFile: cover });
+  if (error) { document.getElementById("forum-error").textContent = error; document.getElementById("forum-error").style.display = ""; }
+  else { showToast("Foro creado", "success"); closeModal("create-forum-modal"); location.reload(); }
+};
+
+window.filterForums = (type, btn) => {
+  document.querySelectorAll(".section-tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  const container = document.getElementById("forums-container");
+  container.innerHTML = "";
+  const filtered = type === "all" ? allForums : allForums.filter(f => f.type === type);
+  filtered.forEach(f => renderForumCard(f, "forums-container", memberForumIds.has(f.id)));
+};
+
+let searchTimeout;
+window.onSearch = (val) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+    const forums = await loadPublicForums({ search: val });
+    const container = document.getElementById("forums-container");
+    container.innerHTML = "";
+    forums.forEach(f => renderForumCard(f, "forums-container", memberForumIds.has(f.id)));
+  }, 400);
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("comunidades");
+
+  // Ocultar opciones no disponibles en select
+  if (!canHiddenForum()) document.getElementById("hidden-option").style.display = "none";
+  if (canCreateForums().anonymous === 0) document.getElementById("anon-option").style.display = "none";
+
+  const spinner = document.getElementById("forums-spinner");
+  spinner.style.display = "block";
+  allForums = await loadPublicForums();
+
+  // Foros del usuario
+  const myForums = await loadMyForums();
+  memberForumIds = new Set(myForums.map(f => f.id));
+
+  spinner.style.display = "none";
+  allForums.forEach(f => renderForumCard(f, "forums-container", memberForumIds.has(f.id)));
+});
+</script>
+</body>
+</html>

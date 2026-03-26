@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Ayuda</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+<main class="container page-content">
+  <h2 style="font-family:var(--font-display);margin-bottom:20px">Ayuda</h2>
+
+  <div class="card" style="padding:24px;margin-bottom:16px">
+    <h3 style="margin-bottom:12px">📧 Contacto</h3>
+    <p style="color:var(--text-secondary);margin-bottom:12px">¿Tienes dudas o necesitas soporte? Escríbenos:</p>
+    <a id="help-email-link" href="#" class="btn-primary" style="display:inline-flex">Enviar correo de ayuda</a>
+  </div>
+
+  <div class="card" style="padding:24px;margin-bottom:16px">
+    <h3 style="margin-bottom:16px">❓ Preguntas frecuentes</h3>
+    <div class="faq-item" style="border-bottom:1px solid var(--border);padding:12px 0">
+      <p style="font-weight:600;margin-bottom:6px">¿Cómo activo mi plan?</p>
+      <p style="font-size:0.88rem;color:var(--text-secondary)">Realiza el pago por Yape o Plin y envía el comprobante por correo. Lo activamos en menos de 24h.</p>
+    </div>
+    <div class="faq-item" style="border-bottom:1px solid var(--border);padding:12px 0">
+      <p style="font-weight:600;margin-bottom:6px">¿Puedo unirme a foros ocultos?</p>
+      <p style="font-size:0.88rem;color:var(--text-secondary)">Solo si el dueño del foro te envía una invitación o te agrega directamente.</p>
+    </div>
+    <div class="faq-item" style="border-bottom:1px solid var(--border);padding:12px 0">
+      <p style="font-weight:600;margin-bottom:6px">¿Qué formatos de audio acepta RedCW?</p>
+      <p style="font-size:0.88rem;color:var(--text-secondary)">MP3, OGG, WAV y AAC. El archivo no debe superar los 10MB.</p>
+    </div>
+    <div class="faq-item" style="padding:12px 0">
+      <p style="font-weight:600;margin-bottom:6px">¿Cómo cambio de modo oscuro a claro?</p>
+      <p style="font-size:0.88rem;color:var(--text-secondary)">Ve al menú (tres puntos) y selecciona "Modo Claro" o "Modo Oscuro".</p>
+    </div>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("ayuda");
+  const email = REDCW_CONFIG.contact.helpEmail;
+  document.getElementById("help-email-link").href = `mailto:${email}?subject=Ayuda%20RedCW`;
+  document.getElementById("help-email-link").textContent = `Escribir a ${email}`;
+});
+</script>
+</body>
+</html>

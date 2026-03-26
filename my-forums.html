@@ -1,0 +1,42 @@
+<!-- my-forums.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Mis Foros</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div id="app-shell"></div>
+<main class="container page-content">
+  <h2 style="font-family:var(--font-display);margin-bottom:16px">Mis Foros</h2>
+  <div id="my-forums-container" class="forums-grid"></div>
+  <div class="spinner" id="mf-spinner"></div>
+  <p id="empty-msg" style="display:none;color:var(--text-muted);text-align:center;padding:40px 0">
+    Aún no te has unido a ningún foro. <a href="communities.html">Explorar comunidades →</a>
+  </p>
+</main>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/cloudinary.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/forums.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("mis-foros");
+  document.getElementById("mf-spinner").style.display = "block";
+  const forums = await loadMyForums();
+  document.getElementById("mf-spinner").style.display = "none";
+  if (forums.length === 0) { document.getElementById("empty-msg").style.display = "block"; return; }
+  forums.forEach(f => renderForumCard(f, "my-forums-container", true));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RedCW — Inicio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5b73ff">
+</head>
+<body>
+<div id="app-shell"></div>
+
+<main class="container page-content">
+  <!-- Compose Box -->
+  <div class="compose-box" id="compose-box">
+    <div class="compose-header">
+      <div class="post-avatar-placeholder" id="compose-avatar">U</div>
+      <textarea class="compose-textarea" id="compose-text" placeholder="¿Qué piensas?"></textarea>
+    </div>
+    <div id="compose-preview" class="compose-preview" style="display:none">
+      <img id="compose-img-preview" style="display:none">
+      <audio id="compose-audio-preview" controls style="display:none;width:100%"></audio>
+    </div>
+    <div class="compose-actions">
+      <div class="compose-media-btns">
+        <label class="compose-media-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Foto
+          <input type="file" accept="image/*" style="display:none" onchange="onImageSelect(this)">
+        </label>
+        <label class="compose-media-btn">
+          <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Audio
+          <input type="file" accept="audio/mp3,audio/mpeg,audio/ogg,audio/wav,audio/aac" style="display:none" onchange="onAudioSelect(this)">
+        </label>
+        <label class="compose-media-btn anon-toggle" id="anon-toggle" style="display:none">
+          <input type="checkbox" id="post-anon"> 🎭 Anónimo
+        </label>
+      </div>
+      <button class="btn-primary" onclick="submitPost()">Publicar</button>
+    </div>
+  </div>
+
+  <!-- Feed -->
+  <div id="feed-container"></div>
+  <div class="spinner" id="feed-spinner"></div>
+  <div id="scroll-sentinel" style="height:1px"></div>
+</main>
+
+<script src="config.js"></script>
+<script src="js/i18n.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+
+// Importar módulos como scripts (para simplicidad sin bundler)
+const scripts = ["js/auth.js","js/cloudinary.js","js/posts.js","js/forums.js","js/plans.js","js/admin.js","js/app.js"];
+// Se cargan via <script> tags abajo
+
+window.selectedMedia = null;
+window.selectedMediaType = null;
+
+window.onImageSelect = (input) => {
+  if (!input.files[0]) return;
+  window.selectedMedia = input.files[0];
+  window.selectedMediaType = "imagen";
+  const preview = document.getElementById("compose-img-preview");
+  preview.style.display = "block";
+  preview.src = URL.createObjectURL(input.files[0]);
+  document.getElementById("compose-audio-preview").style.display = "none";
+  document.getElementById("compose-preview").style.display = "block";
+};
+
+window.onAudioSelect = (input) => {
+  if (!input.files[0]) return;
+  const maxMB = REDCW_CONFIG.app.maxAudioMB;
+  if (input.files[0].size > maxMB * 1024 * 1024) { showToast(`Máximo ${maxMB}MB`, "error"); return; }
+  window.selectedMedia = input.files[0];
+  window.selectedMediaType = "audio";
+  const audio = document.getElementById("compose-audio-preview");
+  audio.src = URL.createObjectURL(input.files[0]);
+  audio.style.display = "block";
+  document.getElementById("compose-img-preview").style.display = "none";
+  document.getElementById("compose-preview").style.display = "block";
+};
+
+window.submitPost = async () => {
+  const content = document.getElementById("compose-text").value.trim();
+  if (!content && !window.selectedMedia) { showToast("Escribe algo o adjunta un archivo.", "error"); return; }
+  const isAnon = document.getElementById("post-anon")?.checked || false;
+  const { error } = await createPost({
+    content, mediaFile: window.selectedMedia, mediaType: window.selectedMediaType,
+    section: "inicio", isAnonymous: isAnon
+  });
+  if (!error) {
+    document.getElementById("compose-text").value = "";
+    window.selectedMedia = null;
+    document.getElementById("compose-preview").style.display = "none";
+    showToast("Publicado", "success");
+  } else {
+    showToast("Error al publicar", "error");
+  }
+};
+
+// Init
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadShell("inicio");
+  // Compose avatar
+  if (currentProfile) {
+    const av = document.getElementById("compose-avatar");
+    if (currentProfile.avatar_url) {
+      av.outerHTML = `<img id="compose-avatar" src="${currentProfile.avatar_url}" class="post-avatar">`;
+    } else {
+      av.textContent = (currentProfile.display_name || "U")[0].toUpperCase();
+    }
+  }
+  // Show anon toggle for eligible users
+  if (canAnonymousComment()) document.getElementById("anon-toggle").style.display = "inline-flex";
+
+  // Load feed
+  const spinner = document.getElementById("feed-spinner");
+  spinner.style.display = "block";
+  const posts = await loadFeed("inicio", { limit: 10 });
+  spinner.style.display = "none";
+  for (const post of posts) await renderPost(post, "feed-container");
+
+  // Realtime
+  subscribeToFeed("inicio", "feed-container");
+
+  // Infinite scroll
+  initInfiniteScroll("feed-container", async (offset) => {
+    const more = await loadFeed("inicio", { limit: 10, offset });
+    for (const post of more) await renderPost(post, "feed-container");
+    return more;
+  });
+});
+</script>
+<!-- Cargar módulos no-ES para compatibilidad -->
+<script src="config.js" defer></script>
+<script src="js/i18n.js" defer></script>
+<script src="js/cloudinary.js" defer></script>
+<script src="js/posts.js" defer></script>
+<script src="js/forums.js" defer></script>
+<script src="js/plans.js" defer></script>
+<script src="js/admin.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
