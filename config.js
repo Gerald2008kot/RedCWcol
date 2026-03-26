@@ -7,8 +7,8 @@ const REDCW_CONFIG = {
 
   // ── Supabase ─────────────────────────────────────────────
   supabase: {
-    url: "https://klitblfegdxdvitgolph.supabase.co",
-    anonKey: "sb_publishable_JO4qZK7sBVP4Rv7_Gi3cbQ_6x6Zl1oz",
+    url: "https://nvalxjqlxvuauyswzfgh.supabase.co",
+    anonKey: "sb_publishable_NxvB2F5NabC4V0ilA6EdIA_uHSZy-fp",
   },
 
   // ── Cloudinary ───────────────────────────────────────────
@@ -18,8 +18,8 @@ const REDCW_CONFIG = {
   cloudinary: {
     images: [
       {
-        cloudName: "db3w5kcfi",
-        uploadPreset: "ml_imagenes",
+        cloudName: "dxsz7i6gr",
+        uploadPreset: "ml_imagen",
         // apiKey: "",       // Opcional: solo si usas firma
         // apiSecret: "",    // NUNCA exponer en frontend
       },
@@ -27,15 +27,15 @@ const REDCW_CONFIG = {
     ],
     videos: [
       {
-        cloudName: "db3w5kcfi",
-        uploadPreset: "ml_imagenes",
+        cloudName: "dxsz7i6gr",
+        uploadPreset: "ml_imagen",
       },
       // { cloudName: "CUENTA2", uploadPreset: "PRESET2" },
     ],
     audio: [
       {
-        cloudName: "db3w5kcfi",
-        uploadPreset: "ml_imagenes",
+        cloudName: "dxsz7i6gr",
+        uploadPreset: "ml_imagen",
       },
       // { cloudName: "CUENTA2", uploadPreset: "PRESET2" },
     ],
