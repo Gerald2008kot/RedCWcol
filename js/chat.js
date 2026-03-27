@@ -6,14 +6,14 @@ let messageChannel = null;
 // ── Obtener o crear conversación entre dos usuarios ──────────
 async function getOrCreateConversation(otherUserId) {
   // Buscar conversación existente
-  const { data: myConvs } = await supabase
+  const { data: myConvs } = await window.supabase
     .from("conversation_participants")
     .select("conversation_id")
-    .eq("user_id", currentUser.id);
+    .eq("user_id", window.currentUser.id);
 
   if (myConvs && myConvs.length > 0) {
     const myIds = myConvs.map(c => c.conversation_id);
-    const { data: shared } = await supabase
+    const { data: shared } = await window.supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("user_id", otherUserId)
@@ -22,12 +22,12 @@ async function getOrCreateConversation(otherUserId) {
   }
 
   // Crear nueva conversación
-  const { data: conv } = await supabase
+  const { data: conv } = await window.supabase
     .from("conversations")
     .insert({}).select().single();
 
-  await supabase.from("conversation_participants").insert([
-    { conversation_id: conv.id, user_id: currentUser.id },
+  await window.supabase.from("conversation_participants").insert([
+    { conversation_id: conv.id, user_id: window.currentUser.id },
     { conversation_id: conv.id, user_id: otherUserId },
   ]);
 
@@ -36,7 +36,7 @@ async function getOrCreateConversation(otherUserId) {
 
 // ── Cargar mensajes ──────────────────────────────────────────
 async function loadMessages(conversationId) {
-  const { data, error } = await supabase
+  const { data, error } = await window.supabase
     .from("messages")
     .select(`*, sender:profiles(id, username, display_name, avatar_url, name_color)`)
     .eq("conversation_id", conversationId)
@@ -46,9 +46,9 @@ async function loadMessages(conversationId) {
 
 // ── Enviar mensaje ───────────────────────────────────────────
 async function sendMessage(conversationId, content, mediaUrl = null) {
-  const { data, error } = await supabase.from("messages").insert({
+  const { data, error } = await window.supabase.from("messages").insert({
     conversation_id: conversationId,
-    sender_id: currentUser.id,
+    sender_id: window.currentUser.id,
     content,
     media_url: mediaUrl,
   }).select().single();
@@ -57,9 +57,9 @@ async function sendMessage(conversationId, content, mediaUrl = null) {
 
 // ── Suscribirse a mensajes en tiempo real ────────────────────
 function subscribeToConversation(conversationId, onMessage) {
-  if (messageChannel) supabase.removeChannel(messageChannel);
+  if (messageChannel) window.supabase.removeChannel(messageChannel);
   
-  messageChannel = supabase
+  messageChannel = window.supabase
     .channel(`chat:${conversationId}`)
     .on("postgres_changes", {
       event: "INSERT",
@@ -68,7 +68,7 @@ function subscribeToConversation(conversationId, onMessage) {
       filter: `conversation_id=eq.${conversationId}`,
     }, async (payload) => {
       // Enriquecer con datos del sender
-      const { data: sender } = await supabase
+      const { data: sender } = await window.supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, name_color")
         .eq("id", payload.new.sender_id)
@@ -80,24 +80,24 @@ function subscribeToConversation(conversationId, onMessage) {
 
 // ── Listar conversaciones del usuario ────────────────────────
 async function listConversations() {
-  const { data: parts } = await supabase
+  const { data: parts } = await window.supabase
     .from("conversation_participants")
     .select("conversation_id")
-    .eq("user_id", currentUser.id);
+    .eq("user_id", window.currentUser.id);
 
   if (!parts || parts.length === 0) return [];
   const convIds = parts.map(p => p.conversation_id);
 
   // Obtener el otro participante de cada conversación
-  const { data: others } = await supabase
+  const { data: others } = await window.supabase
     .from("conversation_participants")
     .select(`conversation_id, user:profiles(id, username, display_name, avatar_url, name_color)`)
     .in("conversation_id", convIds)
-    .neq("user_id", currentUser.id);
+    .neq("user_id", window.currentUser.id);
 
   // Último mensaje de cada conversación
   const results = await Promise.all((others || []).map(async o => {
-    const { data: last } = await supabase
+    const { data: last } = await window.supabase
       .from("messages")
       .select("content, created_at, read")
       .eq("conversation_id", o.conversation_id)
@@ -115,7 +115,7 @@ function renderMessage(msg, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const isMine = msg.sender_id === currentUser.id;
+  const isMine = msg.sender_id === window.currentUser.id;
   const nameColor = msg.sender?.name_color || "var(--text-primary)";
   const avatar = msg.sender?.avatar_url
     ? `<img src="${msg.sender.avatar_url}" class="msg-avatar" alt="">`
@@ -145,11 +145,13 @@ function escapeHtml(str) {
 
 // ── Buscar usuarios para chat ────────────────────────────────
 async function searchUsers(query) {
-  const { data } = await supabase
+  const { data } = await window.supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url")
     .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
-    .neq("id", currentUser.id)
+    .neq("id", window.currentUser.id)
     .limit(10);
   return data || [];
 }
+
+Object.assign(window, { getOrCreateConversation, loadMessages, sendMessage, subscribeToConversation, listConversations, renderMessage, searchUsers });
