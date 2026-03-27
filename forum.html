@@ -83,7 +83,14 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script>
+  window.supabase = window.supabase.createClient(
+    REDCW_CONFIG.supabase.url,
+    REDCW_CONFIG.supabase.anonKey
+  );
+</script>
 <script src="js/i18n.js"></script>
 <script src="js/cloudinary.js"></script>
 <script src="js/posts.js"></script>
@@ -91,9 +98,7 @@
 <script src="js/chat.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/app.js"></script>
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
+<<script>
 
 const params = new URLSearchParams(location.search);
 const forumId = params.get("id");
@@ -168,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Si es oculto, verificar membresía
   if (forum.is_hidden) {
-    const { data: member } = await supabase.from("forum_members").select("id").eq("forum_id", forumId).eq("user_id", currentUser.id).single();
+    const { data: member } = await supabase.from("forum_members").select("id").eq("forum_id", forumId).eq("user_id", window.currentUser.id).single();
     if (!member && !isAdmin()) { showToast("No tienes acceso a este foro", "error"); window.location.href = "communities.html"; return; }
   }
 
@@ -180,14 +185,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (forum.cover_url) { document.getElementById("forum-banner-img").src = forum.cover_url; document.getElementById("forum-banner-img").style.display = "block"; }
 
   // Acciones del dueño
-  if (forum.owner_id === currentUser.id || isAdmin()) document.getElementById("forum-owner-actions").style.display = "";
-  if (forum.type === "oculto" && forum.owner_id !== currentUser.id && !isAdmin()) document.getElementById("forum-owner-actions").style.display = "none";
+  if (forum.owner_id === window.currentUser.id || isAdmin()) document.getElementById("forum-owner-actions").style.display = "";
+  if (forum.type === "oculto" && forum.owner_id !== window.currentUser.id && !isAdmin()) document.getElementById("forum-owner-actions").style.display = "none";
 
   // Compose avatar
-  if (currentProfile?.avatar_url) {
-    document.getElementById("forum-compose-avatar").outerHTML = `<img id="forum-compose-avatar" src="${currentProfile.avatar_url}" class="post-avatar">`;
+  if (window.currentProfile?.avatar_url) {
+    document.getElementById("forum-compose-avatar").outerHTML = `<img id="forum-compose-avatar" src="${window.currentProfile.avatar_url}" class="post-avatar">`;
   } else {
-    document.getElementById("forum-compose-avatar").textContent = (currentProfile?.display_name||"U")[0];
+    document.getElementById("forum-compose-avatar").textContent = (window.currentProfile?.display_name||"U")[0];
   }
 
   if (canAnonymousComment()) document.getElementById("forum-anon-toggle").style.display = "inline-flex";
