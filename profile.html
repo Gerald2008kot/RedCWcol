@@ -97,16 +97,20 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script>
+  window.supabase = window.supabase.createClient(
+    REDCW_CONFIG.supabase.url,
+    REDCW_CONFIG.supabase.anonKey
+  );
+</script>
 <script src="js/i18n.js"></script>
 <script src="js/cloudinary.js"></script>
 <script src="js/posts.js"></script>
 <script src="js/forums.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/app.js"></script>
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
 
 const BANNER_COLORS = ["#1a1a2e","#0f3460","#16213e","#1b1b2f","#2d132c","#1a2a1a","#2a1a1a","#1a2a2a","#2c2c54","#303952"];
 
@@ -122,7 +126,7 @@ window.onAvatarSelect = async (input) => {
   if (!input.files[0]) return;
   showToast("Subiendo foto...", "info");
   const url = await uploadImage(input.files[0]);
-  await supabase.from("profiles").update({ avatar_url: url }).eq("id", currentUser.id);
+  await supabase.from("profiles").update({ avatar_url: url }).eq("id", window.currentUser.id);
   document.getElementById("profile-avatar-el").innerHTML = `<img src="${url}" style="width:96px;height:96px;border-radius:50%;object-fit:cover">`;
   showToast("Foto actualizada", "success");
 };
@@ -131,7 +135,7 @@ window.onBannerSelect = async (input) => {
   if (!input.files[0]) return;
   showToast("Subiendo banner...", "info");
   const url = await uploadImage(input.files[0]);
-  await supabase.from("profiles").update({ banner_url: url }).eq("id", currentUser.id);
+  await supabase.from("profiles").update({ banner_url: url }).eq("id", window.currentUser.id);
   document.getElementById("banner-img").src = url;
   document.getElementById("banner-img").style.display = "block";
   showToast("Banner actualizado", "success");
@@ -151,7 +155,7 @@ window.saveProfile = async () => {
   if (hasNameColor()) updates.name_color = color;
 
   if (Object.keys(updates).length) {
-    await supabase.from("profiles").update(updates).eq("id", currentUser.id);
+    await supabase.from("profiles").update(updates).eq("id", window.currentUser.id);
   }
   if (pass && pass.length >= 6) {
     await supabase.auth.updateUser({ password: pass });
@@ -164,7 +168,7 @@ window.saveProfile = async () => {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadShell("perfil");
 
-  const p = currentProfile;
+  const p = window.currentProfile;
   if (!p) return;
 
   // Avatar
@@ -204,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       sw.classList.add("selected");
       document.getElementById("banner-color").style.background = c;
       document.getElementById("banner-img").style.display = "none";
-      await supabase.from("profiles").update({ banner_color: c, banner_url: null }).eq("id", currentUser.id);
+      await supabase.from("profiles").update({ banner_color: c, banner_url: null }).eq("id", window.currentUser.id);
     };
     swatches.appendChild(sw);
   });
@@ -220,7 +224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Galería
   document.getElementById("tab-spinner").style.display = "block";
-  const { data: gallery } = await supabase.from("gallery").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+  const { data: gallery } = await supabase.from("gallery").select("*").eq("user_id", window.currentUser.id).order("created_at", { ascending: false });
   document.getElementById("tab-spinner").style.display = "none";
   (gallery||[]).forEach(g => {
     const item = document.createElement("div");
