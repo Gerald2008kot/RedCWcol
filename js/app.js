@@ -1,121 +1,118 @@
-// RedCW — App Shell / UI Principal
+// RedCW — App Shell
 
-// ── Cargar shell dinámicamente ───────────────────────────────
+// ── Tema (ejecutar inmediatamente) ───────────────────────────
+(function() {
+  const stored = localStorage.getItem("redcw_dark");
+  const dark = stored !== null ? stored === "1" : window.matchMedia("(prefers-color-scheme:dark)").matches;
+  document.body.classList.add(dark ? "dark" : "light");
+})();
+
+// ── Cargar shell ──────────────────────────────────────────────
 async function loadShell(activePage) {
-  const res = await fetch("partials/shell.html");
-  const html = await res.text();
-  const shellEl = document.getElementById("app-shell");
-  if (shellEl) shellEl.innerHTML = html;
-
-  // Marcar página activa en snackbar
-  document.querySelectorAll(".snack-item").forEach(item => {
-    item.classList.toggle("active", item.dataset.page === activePage);
-  });
-
-  // Aplicar i18n
-  applyI18n();
-  initDropdown();
-  await initShellUser();
-}
-
-function applyI18n() {
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.dataset.i18n;
-    el.textContent = t(key);
-  });
-}
-
-// ── Inicializar usuario en shell ─────────────────────────────
-async function initShellUser() {
+  // Verificar sesión PRIMERO
   const session = await getSession();
   if (!session) {
     window.location.href = "login.html";
     return;
   }
-  currentUser = session.user;
-  if (!currentProfile) await loadProfile(session.user.id);
+  window.currentUser = session.user;
+  if (!window.currentProfile) await loadProfile(session.user.id);
 
-  // Chip
-  updateChip();
-  // Dark mode
+  // Inyectar HTML del shell
+  const res  = await fetch("partials/shell.html");
+  const html = await res.text();
+  const el   = document.getElementById("app-shell");
+  if (el) el.innerHTML = html;
+
+  // Marcar página activa
+  document.querySelectorAll(".snack-item[data-page]").forEach(item => {
+    item.classList.toggle("active", item.dataset.page === activePage);
+  });
+
+  _applyI18n();
+  _updateChip();
   syncDarkModeUI();
-  // Admin/Owner
-  showAdminOption();
-  // Unread messages
-  checkUnread();
+  _showAdminOption();
+  _checkUnread();
 }
 
-function updateChip() {
-  if (!currentProfile) return;
-  const avatar = document.getElementById("chip-avatar");
-  const name   = document.getElementById("chip-name");
-  if (currentProfile.avatar_url) {
-    avatar.outerHTML = `<img id="chip-avatar" src="${currentProfile.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+function _applyI18n() {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+}
+
+function _updateChip() {
+  const p = window.currentProfile;
+  if (!p) return;
+  const avatarEl = document.getElementById("chip-avatar");
+  const nameEl   = document.getElementById("chip-name");
+  if (!avatarEl) return;
+  if (p.avatar_url) {
+    avatarEl.outerHTML = `<img id="chip-avatar" src="${p.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
   } else {
-    avatar.textContent = (currentProfile.display_name || currentProfile.username || "U")[0].toUpperCase();
+    avatarEl.textContent = (p.display_name || p.username || "U")[0].toUpperCase();
   }
-  if (name) name.textContent = currentProfile.display_name || currentProfile.username;
+  if (nameEl) nameEl.textContent = p.display_name || p.username || "";
 }
 
-function showAdminOption() {
-  if (!currentProfile) return;
+function _showAdminOption() {
   const divider = document.getElementById("admin-divider");
   const btn     = document.getElementById("admin-panel-btn");
   const label   = document.getElementById("admin-panel-label");
   if (!btn) return;
-
   if (isOwner()) {
-    divider.style.display = "";
-    btn.style.display = "";
+    divider.style.display = ""; btn.style.display = "";
     label.textContent = t("ownerPanel");
     btn.onclick = () => window.location.href = "owner.html";
   } else if (isAdmin()) {
-    divider.style.display = "";
-    btn.style.display = "";
+    divider.style.display = ""; btn.style.display = "";
     label.textContent = t("adminPanel");
     btn.onclick = () => window.location.href = "admin.html";
   }
 }
 
-// ── Dropdown ─────────────────────────────────────────────────
-function initDropdown() {
-  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDropdown(); });
+async function _checkUnread() {
+  if (!window.currentUser) return;
+  try {
+    const { count } = await window.supabase
+      .from("messages")
+      .select("id", { count:"exact", head:true })
+      .eq("read", false)
+      .neq("sender_id", window.currentUser.id);
+    const badge = document.getElementById("unread-badge");
+    if (!badge) return;
+    if (count > 0) { badge.textContent = count > 9 ? "9+" : count; badge.style.display = ""; }
+    else badge.style.display = "none";
+  } catch(_) {}
 }
 
+// ── Dropdown ─────────────────────────────────────────────────
 function toggleDropdown() {
   const menu    = document.getElementById("dropdown-menu");
   const overlay = document.getElementById("dropdown-overlay");
   if (!menu) return;
-  const isOpen = menu.classList.contains("open");
-  if (isOpen) closeDropdown();
-  else {
-    menu.classList.add("open");
-    overlay.style.display = "block";
-  }
+  if (menu.classList.contains("open")) closeDropdown();
+  else { menu.classList.add("open"); if (overlay) overlay.style.display = "block"; }
 }
 
 function closeDropdown() {
   document.getElementById("dropdown-menu")?.classList.remove("open");
-  const overlay = document.getElementById("dropdown-overlay");
-  if (overlay) overlay.style.display = "none";
+  const ov = document.getElementById("dropdown-overlay");
+  if (ov) ov.style.display = "none";
 }
 
-// ── Dark Mode ─────────────────────────────────────────────────
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDropdown(); });
+
+// ── Dark mode ─────────────────────────────────────────────────
 function toggleDarkMode() {
   const isDark = document.body.classList.contains("dark");
-  if (isDark) {
-    document.body.classList.remove("dark");
-    document.body.classList.add("light");
-  } else {
-    document.body.classList.add("dark");
-    document.body.classList.remove("light");
-  }
+  document.body.classList.toggle("dark",  !isDark);
+  document.body.classList.toggle("light",  isDark);
   localStorage.setItem("redcw_dark", !isDark ? "1" : "0");
   syncDarkModeUI();
-
-  // Persistir en perfil
-  if (currentUser) {
-    supabase.from("profiles").update({ dark_mode: !isDark }).eq("id", currentUser.id);
+  if (window.currentUser) {
+    window.supabase.from("profiles").update({ dark_mode: !isDark }).eq("id", window.currentUser.id);
   }
   closeDropdown();
 }
@@ -130,66 +127,48 @@ function syncDarkModeUI() {
   if (label) label.textContent = isDark ? t("lightMode") : t("darkMode");
 }
 
-// ── Init dark mode from storage ───────────────────────────────
-(function initTheme() {
-  const stored = localStorage.getItem("redcw_dark");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const dark = stored !== null ? stored === "1" : prefersDark;
-  document.body.classList.add(dark ? "dark" : "light");
-})();
+// ── Multi-cuenta ──────────────────────────────────────────────
+function showAddAccount()    { closeDropdown(); showToast("Para añadir otra cuenta, usa una ventana privada.", "info"); }
+function showSwitchAccount() { closeDropdown(); showToast("Cierra sesión para cambiar de cuenta.", "info"); }
 
-// ── Unread messages badge ─────────────────────────────────────
-async function checkUnread() {
-  if (!currentUser) return;
-  const { count } = await supabase
-    .from("messages")
-    .select("id", { count: "exact", head: true })
-    .eq("read", false)
-    .neq("sender_id", currentUser.id);
-
-  const badge = document.getElementById("unread-badge");
-  if (!badge) return;
-  if (count > 0) { badge.textContent = count > 9 ? "9+" : count; badge.style.display = ""; }
-  else badge.style.display = "none";
-}
-
-// ── Multi-account stub ────────────────────────────────────────
-function showAddAccount() {
-  closeDropdown();
-  showToast("Para añadir otra cuenta, inicia sesión en una ventana privada.", "info");
-}
-function showSwitchAccount() {
-  closeDropdown();
-  showToast("Cierra sesión primero para cambiar de cuenta.", "info");
-}
-
-// ── Infinite scroll helper ────────────────────────────────────
-function initInfiniteScroll(containerId, loadFn) {
-  const sentinel = document.getElementById("scroll-sentinel");
-  if (!sentinel) return;
-  let loading = false;
-  let offset = 0;
-
-  const observer = new IntersectionObserver(async (entries) => {
-    if (entries[0].isIntersecting && !loading) {
-      loading = true;
-      offset += 10;
-      const more = await loadFn(offset);
-      loading = false;
-      if (!more || more.length === 0) observer.disconnect();
-    }
-  }, { rootMargin: "200px" });
-
-  observer.observe(sentinel);
-}
-
-// ── Modal helpers ─────────────────────────────────────────────
-function openModal(id) { document.getElementById(id)?.classList.add("active"); }
+// ── Modales ───────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id)?.classList.add("active"); }
 function closeModal(id) { document.getElementById(id)?.classList.remove("active"); }
 
-// Cerrar modal al hacer click fuera
 document.addEventListener("click", e => {
   document.querySelectorAll(".modal-overlay.active").forEach(m => {
     if (e.target === m) m.classList.remove("active");
   });
+});
+
+// ── Infinite scroll ───────────────────────────────────────────
+function initInfiniteScroll(containerId, loadFn) {
+  const sentinel = document.getElementById("scroll-sentinel");
+  if (!sentinel) return;
+  let loading = false, offset = 0;
+  new IntersectionObserver(async (entries) => {
+    if (!entries[0].isIntersecting || loading) return;
+    loading = true;
+    offset += 10;
+    const more = await loadFn(offset);
+    loading = false;
+    if (!more || more.length === 0) observer.disconnect();
+  }, { rootMargin: "200px" }).observe(sentinel);
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = "info") {
+  document.querySelectorAll(".toast").forEach(t => t.remove()); // limpiar anteriores
+  const el = document.createElement("div");
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// Exponer
+Object.assign(window, {
+  loadShell, toggleDropdown, closeDropdown, toggleDarkMode, syncDarkModeUI,
+  showAddAccount, showSwitchAccount, openModal, closeModal,
+  initInfiniteScroll, showToast
 });
