@@ -187,7 +187,7 @@ small { font-size: .78rem; color: var(--text-3); }
 }
 
 /* ── Pages ─────────────────────────────────────────────────── */
-.page { display: none; padding: 1rem; max-width: 680px; margin: 0 auto; }
+.page { display: none; padding: 1rem; max-width: 680px; margin: 0 auto; overflow-y: auto; }
 .page.active { display: block; animation: fadeUp .3s ease; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
@@ -204,6 +204,14 @@ small { font-size: .78rem; color: var(--text-3); }
   transition: border-color var(--transition);
 }
 .card:hover { border-color: rgba(108,99,255,.2); }
+
+/* Sticky compose bar */
+#inicio-compose-box {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 1rem;
+}
 
 /* Post card */
 .post-card { margin-bottom: .75rem; }
