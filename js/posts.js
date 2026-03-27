@@ -10,7 +10,7 @@ async function createPost({ content, mediaFile, mediaType, section, forumId, new
       else if (mediaType === "audio") mediaUrl = await uploadAudio(mediaFile);
       // Guardar en galería
       if (mediaUrl && mediaType === "imagen") {
-        await supabase.from("gallery").insert({ user_id: currentUser.id, url: mediaUrl });
+        await window.supabase.from("gallery").insert({ user_id: window.currentUser.id, url: mediaUrl });
       }
     } catch (e) {
       showToast(t("errUpload"), "error");
@@ -19,7 +19,7 @@ async function createPost({ content, mediaFile, mediaType, section, forumId, new
   }
 
   const postData = {
-    author_id: currentUser.id,
+    author_id: window.currentUser.id,
     content,
     media_url: mediaUrl,
     media_type: mediaType || "texto",
@@ -29,13 +29,13 @@ async function createPost({ content, mediaFile, mediaType, section, forumId, new
   if (forumId) postData.forum_id = forumId;
   if (newsGroupId) postData.news_group_id = newsGroupId;
 
-  const { data, error } = await supabase.from("posts").insert(postData).select().single();
+  const { data, error } = await window.supabase.from("posts").insert(postData).select().single();
   return { data, error };
 }
 
 // ── Cargar feed con lazy load ─────────────────────────────────
 async function loadFeed(section, { limit = 10, offset = 0, forumId, newsGroupId } = {}) {
-  let query = supabase
+  let query = window.supabase
     .from("posts")
     .select(`
       *,
@@ -115,20 +115,20 @@ async function renderPost(post, containerId) {
 }
 
 async function toggleLike(postId, card) {
-  if (!currentUser) return;
-  const { data: existing } = await supabase
-    .from("post_likes").select("id").eq("post_id", postId).eq("user_id", currentUser.id).single();
+  if (!window.currentUser) return;
+  const { data: existing } = await window.supabase
+    .from("post_likes").select("id").eq("post_id", postId).eq("user_id", window.currentUser.id).single();
 
   if (existing) {
-    await supabase.from("post_likes").delete().eq("id", existing.id);
+    await window.supabase.from("post_likes").delete().eq("id", existing.id);
     card.querySelector(".like-btn").classList.remove("liked");
   } else {
-    await supabase.from("post_likes").insert({ post_id: postId, user_id: currentUser.id });
+    await window.supabase.from("post_likes").insert({ post_id: postId, user_id: window.currentUser.id });
     card.querySelector(".like-btn").classList.add("liked");
   }
 
   // Refresh count
-  const { data: post } = await supabase.from("posts").select("likes_count").eq("id", postId).single();
+  const { data: post } = await window.supabase.from("posts").select("likes_count").eq("id", postId).single();
   if (post) card.querySelector(".like-count").textContent = post.likes_count;
 }
 
@@ -145,7 +145,7 @@ async function toggleComments(postId) {
 
 async function loadComments(postId, container) {
   container.innerHTML = '<p class="loading-text">Cargando...</p>';
-  const { data: comments } = await supabase
+  const { data: comments } = await window.supabase
     .from("comments")
     .select(`*, author:profiles(id, username, display_name, avatar_url, name_color)`)
     .eq("post_id", postId)
@@ -184,8 +184,8 @@ async function submitComment(postId) {
   const content = input?.value?.trim();
   if (!content) return;
   const isAnonymous = anonCb ? anonCb.checked : false;
-  const { error } = await supabase.from("comments").insert({
-    post_id: postId, author_id: currentUser.id, content, is_anonymous: isAnonymous
+  const { error } = await window.supabase.from("comments").insert({
+    post_id: postId, author_id: window.currentUser.id, content, is_anonymous: isAnonymous
   });
   if (!error) {
     input.value = "";
@@ -196,12 +196,12 @@ async function submitComment(postId) {
 
 // ── Subscripción en tiempo real al feed ──────────────────────
 function subscribeToFeed(section, containerId) {
-  supabase.channel(`feed:${section}`)
+  window.supabase.channel(`feed:${section}`)
     .on("postgres_changes", {
       event: "INSERT", schema: "public", table: "posts",
       filter: `section=eq.${section}`
     }, async (payload) => {
-      const { data: full } = await supabase
+      const { data: full } = await window.supabase
         .from("posts")
         .select(`*, author:profiles(id, username, display_name, avatar_url, name_color)`)
         .eq("id", payload.new.id)
@@ -228,10 +228,6 @@ function formatTimeAgo(dateStr) {
   return `${d}d`;
 }
 
-function showToast(msg, type = "info") {
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3500);
-}
+
+// Exponer en window
+Object.assign(window, { createPost, loadFeed, renderPost, toggleLike, toggleComments, submitComment, loadComments, subscribeToFeed, formatTimeAgo, escapeHtml });
