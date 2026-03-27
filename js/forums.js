@@ -2,12 +2,12 @@
 
 // ── Crear foro ───────────────────────────────────────────────
 async function createForum({ name, description, type, isHidden, coverFile }) {
-  if (!currentProfile) return { error: "No autenticado" };
+  if (!window.currentProfile) return { error: "No autenticado" };
 
   // Verificar límites
-  const limits = planForumLimits(currentProfile.plan, currentProfile.role);
-  const { data: myForums } = await supabase
-    .from("forums").select("id, type").eq("owner_id", currentUser.id);
+  const limits = planForumLimits(window.currentProfile.plan, window.currentProfile.role);
+  const { data: myForums } = await window.supabase
+    .from("forums").select("id, type").eq("owner_id", window.currentUser.id);
 
   const normalCount = (myForums || []).filter(f => f.type === "normal").length;
   const anonCount   = (myForums || []).filter(f => f.type === "anonimo").length;
@@ -19,36 +19,36 @@ async function createForum({ name, description, type, isHidden, coverFile }) {
   let coverUrl = null;
   if (coverFile) coverUrl = await uploadImage(coverFile);
 
-  const { data, error } = await supabase.from("forums").insert({
+  const { data, error } = await window.supabase.from("forums").insert({
     name, description, type, is_hidden: isHidden || false,
-    owner_id: currentUser.id, cover_url: coverUrl,
+    owner_id: window.currentUser.id, cover_url: coverUrl,
   }).select().single();
 
   if (!error) {
     // El creador es miembro automáticamente
-    await supabase.from("forum_members").insert({ forum_id: data.id, user_id: currentUser.id });
+    await window.supabase.from("forum_members").insert({ forum_id: data.id, user_id: window.currentUser.id });
   }
   return { data, error };
 }
 
 // ── Unirse a un foro ─────────────────────────────────────────
 async function joinForum(forumId) {
-  const { data: existing } = await supabase
-    .from("forum_members").select("id").eq("forum_id", forumId).eq("user_id", currentUser.id).single();
+  const { data: existing } = await window.supabase
+    .from("forum_members").select("id").eq("forum_id", forumId).eq("user_id", window.currentUser.id).single();
   if (existing) return { alreadyJoined: true };
 
-  const { error } = await supabase.from("forum_members").insert({
-    forum_id: forumId, user_id: currentUser.id
+  const { error } = await window.supabase.from("forum_members").insert({
+    forum_id: forumId, user_id: window.currentUser.id
   });
   if (!error) {
-    await supabase.from("forums").update({ members_count: supabase.rpc("increment") }).eq("id", forumId);
+    await window.supabase.from("forums").update({ members_count: window.supabase.rpc("increment") }).eq("id", forumId);
   }
   return { error };
 }
 
 // ── Cargar foros públicos (Comunidades) ──────────────────────
 async function loadPublicForums({ limit = 20, offset = 0, search = "" } = {}) {
-  let query = supabase
+  let query = window.supabase
     .from("forums")
     .select(`*, owner:profiles(id, username, display_name, avatar_url)`)
     .eq("is_hidden", false)
@@ -63,10 +63,10 @@ async function loadPublicForums({ limit = 20, offset = 0, search = "" } = {}) {
 
 // ── Mis foros (unidos) ───────────────────────────────────────
 async function loadMyForums() {
-  const { data } = await supabase
+  const { data } = await window.supabase
     .from("forum_members")
     .select(`forum:forums(*, owner:profiles(id, username, display_name, avatar_url))`)
-    .eq("user_id", currentUser.id)
+    .eq("user_id", window.currentUser.id)
     .order("joined_at", { ascending: false });
   return (data || []).map(d => d.forum).filter(Boolean);
 }
@@ -137,21 +137,21 @@ async function createNewsGroup({ name, description, coverFile }) {
 
   // Verificar límite
   const maxGroups = maxNewsGroups();
-  const { data: myGroups } = await supabase
-    .from("news_groups").select("id").eq("owner_id", currentUser.id);
+  const { data: myGroups } = await window.supabase
+    .from("news_groups").select("id").eq("owner_id", window.currentUser.id);
   if ((myGroups || []).length >= maxGroups) return { error: `Límite de grupos alcanzado (${maxGroups})` };
 
   let coverUrl = null;
   if (coverFile) coverUrl = await uploadImage(coverFile);
 
-  const { data, error } = await supabase.from("news_groups").insert({
-    name, description, owner_id: currentUser.id, cover_url: coverUrl,
+  const { data, error } = await window.supabase.from("news_groups").insert({
+    name, description, owner_id: window.currentUser.id, cover_url: coverUrl,
   }).select().single();
   return { data, error };
 }
 
 async function loadNewsGroups() {
-  const { data } = await supabase
+  const { data } = await window.supabase
     .from("news_groups")
     .select(`*, owner:profiles(id, username, display_name, avatar_url),
       last_post:posts(content, media_url, created_at)`)
@@ -161,21 +161,23 @@ async function loadNewsGroups() {
 
 // ── Invitaciones a foros ocultos ─────────────────────────────
 async function inviteToForum(forumId, targetUserId) {
-  const { data: forum } = await supabase.from("forums").select("owner_id").eq("id", forumId).single();
-  if (forum?.owner_id !== currentUser.id && !isAdmin()) return { error: t("errPermission") };
+  const { data: forum } = await window.supabase.from("forums").select("owner_id").eq("id", forumId).single();
+  if (forum?.owner_id !== window.currentUser.id && !isAdmin()) return { error: t("errPermission") };
 
-  const { data, error } = await supabase.from("forum_invites").insert({
-    forum_id: forumId, invited_by: currentUser.id, invited_user: targetUserId
+  const { data, error } = await window.supabase.from("forum_invites").insert({
+    forum_id: forumId, invited_by: window.currentUser.id, invited_user: targetUserId
   }).select().single();
   return { data, error };
 }
 
 async function acceptInvite(token) {
-  const { data: invite } = await supabase.from("forum_invites").select("*").eq("token", token).single();
+  const { data: invite } = await window.supabase.from("forum_invites").select("*").eq("token", token).single();
   if (!invite || invite.used) return { error: "Invitación no válida" };
-  if (invite.invited_user !== currentUser.id) return { error: t("errPermission") };
+  if (invite.invited_user !== window.currentUser.id) return { error: t("errPermission") };
 
   await joinForum(invite.forum_id);
-  await supabase.from("forum_invites").update({ used: true }).eq("id", invite.id);
+  await window.supabase.from("forum_invites").update({ used: true }).eq("id", invite.id);
   return { success: true };
 }
+
+Object.assign(window, { createForum, joinForum, loadPublicForums, loadMyForums, renderForumCard, showJoinModal, createNewsGroup, loadNewsGroups, inviteToForum, acceptInvite });
