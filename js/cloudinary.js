@@ -39,3 +39,5 @@ function previewFile(file, imgEl) {
   reader.onload = e => { imgEl.src = e.target.result; imgEl.style.display = "block"; };
   reader.readAsDataURL(file);
 }
+
+Object.assign(window, { uploadToCloudinary, uploadImage, uploadAudio, uploadVideo, previewFile });
