@@ -2,33 +2,90 @@
 //  RedCW — Page Loaders
 // ============================================================
 
+/* ── LAZY LOAD STATE ─────────────────────────────────────────── */
+const LazyState = {
+  inicio:   { page: 0, loading: false, done: false, observer: null },
+  noticias: { page: 0, loading: false, done: false, observer: null },
+  forum:    { page: 0, loading: false, done: false, observer: null, id: null },
+};
+const PAGE_SIZE = 15;
+
+function resetLazy(section) {
+  var s = LazyState[section];
+  if (!s) return;
+  s.page = 0; s.loading = false; s.done = false;
+  if (s.observer) { s.observer.disconnect(); s.observer = null; }
+}
+
+function attachLazySentinel(feedId, section, loadFn) {
+  var feed = document.getElementById(feedId);
+  if (!feed) return;
+  var existing = feed.querySelector(".lazy-sentinel");
+  if (existing) existing.remove();
+  var sentinel = document.createElement("div");
+  sentinel.className = "lazy-sentinel";
+  sentinel.style.cssText = "height:1px;width:100%";
+  feed.appendChild(sentinel);
+  if (LazyState[section].observer) LazyState[section].observer.disconnect();
+  LazyState[section].observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting && !LazyState[section].loading && !LazyState[section].done) {
+      loadFn();
+    }
+  }, { rootMargin: "200px" });
+  LazyState[section].observer.observe(sentinel);
+}
+
 /* ── INICIO ─────────────────────────────────────────────────── */
 async function loadInicioPage() {
+  resetLazy("inicio");
   const feed = document.getElementById("inicio-feed");
   if (!feed) return;
   feed.innerHTML = skeletonPosts(3);
+  await fetchInicioPage();
+  attachLazySentinel("inicio-feed", "inicio", fetchInicioPage);
+}
+
+async function fetchInicioPage() {
+  const s = LazyState.inicio;
+  if (s.loading || s.done) return;
+  s.loading = true;
+  const feed = document.getElementById("inicio-feed");
+  if (!feed) { s.loading = false; return; }
+
+  // Remove sentinel temporarily
+  var sentinel = feed.querySelector(".lazy-sentinel");
+  if (sentinel) sentinel.remove();
 
   try {
-    const posts = await dbSelect("posts", {
-      eq: { section: "inicio" },
-      order: "created_at",
-      limit: 30,
-      select: "*, profiles(username, avatar_url, plan, role)",
-    });
+    const sb = await initSupabase();
+    const { data: posts, error } = await sb.from("posts")
+      .select("*, profiles(username, avatar_url, plan, role)")
+      .eq("section", "inicio")
+      .order("created_at", { ascending: false })
+      .range(s.page * PAGE_SIZE, (s.page + 1) * PAGE_SIZE - 1);
+    if (error) throw error;
 
-    // Check likes for current user
-    const user = AppState.currentUser;
     let likedIds = new Set();
-    if (user) {
-      const likes = await dbSelect("likes", { eq: { user_id: user.id } });
-      likedIds = new Set(likes.map(l => l.post_id));
+    if (AppState.currentUser) {
+      const { data: lk } = await sb.from("likes").select("post_id").eq("user_id", AppState.currentUser.id);
+      if (lk) likedIds = new Set(lk.map(l => l.post_id));
     }
 
-    feed.innerHTML = posts.length
-      ? posts.map(p => renderPost({ ...p, user_liked: likedIds.has(p.id) }, { section: "inicio", showIdentity: AppState.canDo("canSeeAnonIdentity") })).join("")
-      : emptyState("Aún no hay publicaciones", "Sé el primero en compartir algo");
+    if (!posts || posts.length === 0) {
+      if (s.page === 0) feed.innerHTML = emptyState("Aún no hay publicaciones", "Sé el primero en compartir algo");
+      s.done = true;
+    } else {
+      var html = posts.map(p => renderPost({ ...p, user_liked: likedIds.has(p.id) }, { section: "inicio", showIdentity: AppState.canDo("canSeeAnonIdentity") })).join("");
+      if (s.page === 0) feed.innerHTML = html;
+      else feed.insertAdjacentHTML("beforeend", html);
+      if (posts.length < PAGE_SIZE) s.done = true;
+      s.page++;
+    }
   } catch (e) {
-    feed.innerHTML = `<div class="empty-state"><p>Error al cargar el feed</p></div>`;
+    if (s.page === 0) feed.innerHTML = '<div class="empty-state"><p>Error al cargar</p></div>';
+  } finally {
+    s.loading = false;
+    if (!s.done) attachLazySentinel("inicio-feed", "inicio", fetchInicioPage);
   }
 }
 
@@ -47,34 +104,34 @@ async function createInicioPost() {
     let images = [];
     let media_url = null;
 
-    // Imágenes
+    // Imágenes — rcwUpload en serie
     const fileInput = document.getElementById("inicio-images");
     if (fileInput && fileInput.files && fileInput.files.length) {
       showToast("Subiendo imágenes…");
-      try { images = await uploadMultipleImages(fileInput.files, 4); }
-      catch (e) { showToast("Error subiendo imágenes: " + (e.message || ""), "error"); }
+      var imgFiles = Array.from(fileInput.files).slice(0, 4);
+      for (var _i = 0; _i < imgFiles.length; _i++) {
+        var _url = await rcwUpload(imgFiles[_i], "image");
+        images.push(_url);
+      }
     }
 
-    // Video
+    // Video — rcwUpload directo
     const vidInput = document.getElementById("inicio-video");
     if (vidInput && vidInput.files && vidInput.files[0]) {
       showToast("Subiendo video…");
-      try { media_url = await uploadVideo(vidInput.files[0]); }
-      catch (e) { showToast("Error subiendo video: " + (e.message || ""), "error"); }
+      media_url = await rcwUpload(vidInput.files[0], "video");
     }
 
     const isAnon = document.getElementById("inicio-anon")?.checked && canPostAnon();
 
-    const sb = await initSupabase();
-    const { error } = await sb.from("posts").insert({
-      section: "inicio",
-      user_id: user.id,
+    await sbInsertPost({
+      section:   "inicio",
+      user_id:   user.id,
       content,
-      images: images.length > 0 ? images : null,
+      images:    images.length > 0 ? images : null,
       media_url: media_url || null,
-      is_anon: isAnon,
+      is_anon:   isAnon,
     });
-    if (error) throw error;
 
     textarea.value = "";
     if (fileInput) fileInput.value = "";
@@ -115,20 +172,26 @@ async function loadNoticiasPage() {
       const posts = await dbSelect("posts", {
         eq: { section: "noticias", news_group_id: g.id },
         order: "created_at",
-        limit: 1,
+        limit: 3,
         select: "*, profiles(username, avatar_url, plan)",
       });
-      if (!posts.length) continue;
-      html += `<div class="news-group">
-        <div class="news-group-header">
-          <div class="news-group-dot"></div>
-          <span class="news-group-name">${escHtml(g.name)}</span>
-          ${canPost ? `<button class="btn btn-sm btn-primary" onclick="openNewsPostModal('${g.id}')">+ Publicar</button>` : ""}
-        </div>
-        ${posts.map(p => renderPost(p, { section: "noticias", showIdentity: AppState.canDo("canSeeAnonIdentity") })).join("")}
-      </div>`;
+      var groupPhotoHtml = g.photo_url
+        ? '<img src="'+escHtml(g.photo_url)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">'
+        : '<div class="news-group-dot"></div>';
+      var isGroupAdmin = AppState.hasRole("administrador") || AppState.currentUser?.id === g.created_by;
+      html += '<div class="news-group">'
+        +'<div class="news-group-header">'
+          +groupPhotoHtml
+          +'<span class="news-group-name">'+escHtml(g.name)+'</span>'
+          +(canPost ? '<button class="btn btn-sm btn-primary" onclick="openNewsPostModal(\''+g.id+'\')">&plus; Publicar</button>' : '')
+          +(isGroupAdmin ? '<button class="btn btn-secondary btn-sm" style="padding:.25rem .5rem" onclick="openNewsGroupAdmin(\''+g.id+'\')">⚙️</button>' : '')
+        +'</div>'
+        +(posts.length
+          ? posts.map(p => renderPost(p, { section: "noticias", showIdentity: AppState.canDo("canSeeAnonIdentity") })).join("")
+          : '<div style="padding:.75rem 0;font-size:.82rem;color:var(--text-3)">Sin publicaciones aún en este grupo</div>')
+      +'</div>';
     }
-    feed.innerHTML = html || emptyState("Sin publicaciones recientes", "");
+    feed.innerHTML = html || emptyState("Sin grupos de noticias", "");
   } catch (e) { feed.innerHTML = `<div class="empty-state"><p>Error al cargar noticias</p></div>`; }
 }
 
@@ -168,23 +231,24 @@ async function submitNewsPost() {
     const fileInput = document.getElementById("news-post-images");
     if (fileInput && fileInput.files && fileInput.files.length) {
       showToast("Subiendo imágenes…");
-      images = await uploadMultipleImages(fileInput.files, 4);
+      var _imgs = Array.from(fileInput.files).slice(0, 4);
+      for (var _j = 0; _j < _imgs.length; _j++) {
+        images.push(await rcwUpload(_imgs[_j], "image"));
+      }
     }
     const vidInput = document.getElementById("news-post-video");
     if (vidInput && vidInput.files && vidInput.files[0]) {
       showToast("Subiendo video…");
-      media_url = await uploadVideo(vidInput.files[0]);
+      media_url = await rcwUpload(vidInput.files[0], "video");
     }
-    const sb = await initSupabase();
-    const { error } = await sb.from("posts").insert({
-      section: "noticias",
+    await sbInsertPost({
+      section:       "noticias",
       news_group_id: m.dataset.groupId,
-      user_id: AppState.currentUser.id,
+      user_id:       AppState.currentUser.id,
       content,
-      images: images.length > 0 ? images : null,
-      media_url: media_url || null,
+      images:        images.length > 0 ? images : null,
+      media_url:     media_url || null,
     });
-    if (error) throw error;
     m.classList.remove("open");
     document.getElementById("news-post-content").value = "";
     if (fileInput) fileInput.value = "";
@@ -225,23 +289,37 @@ function renderForumCard(f) {
 }
 
 async function openForum(forumId) {
+  const user = AppState.currentUser;
+  if (!user) { showToast("Debes iniciar sesión", "error"); return; }
+
   const sb = await initSupabase();
   const { data: forum, error: forumErr } = await sb.from("forums").select("*").eq("id", forumId).single();
   if (forumErr || !forum) { showToast("No se pudo cargar el foro", "error"); return; }
 
-  if (forum.is_private) {
-    const user = AppState.currentUser;
-    if (!user) { showToast("Debes iniciar sesión", "error"); return; }
-    // Usar .maybeSingle() para no arrojar error si no existe
-    const { data: member } = await sb.from("forum_members")
-      .select("id")
-      .eq("forum_id", forumId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    if (!member) { showToast("Este foro es privado. Necesitas invitación.", "error"); return; }
+  // Verificar membresía
+  const { data: member } = await sb.from("forum_members")
+    .select("id, role")
+    .eq("forum_id", forumId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (forum.is_private && !member) {
+    showToast("Este foro es privado. Necesitas invitación.", "error");
+    return;
   }
 
-  openForumDetail(forum);
+  // Auto-unirse a foros públicos al entrar por primera vez
+  if (!member) {
+    try {
+      await sbFetch("/rest/v1/forum_members", "POST", {
+        forum_id: forumId, user_id: user.id, role: "member"
+      });
+    } catch(e) {
+      console.warn("Auto-join error:", e.message);
+    }
+  }
+
+  openForumDetail(forum, member);
 }
 
 function createForumModal() {
@@ -330,7 +408,7 @@ async function loadForosPage() {
 // Flag para que loadForosPage sepa que hay un foro abierto
 let _currentForum = null;
 
-function openForumDetail(forum) {
+function openForumDetail(forum, membership) {
   _currentForum = forum;
   // Navegar sin llamar al loader automático
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -342,13 +420,18 @@ function openForumDetail(forum) {
 
   // Salir del grid para mostrar detalle correctamente
   const container = document.getElementById("foros-list");
+  var isForumAdmin = membership && membership.role === "admin";
+  var canManage    = isForumAdmin || AppState.hasRole("administrador");
+
   container.className = "";
   container.style.cssText = "display:block;width:100%;min-width:0";
   container.innerHTML =
     '<div style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
-    +'<button class="btn btn-secondary btn-sm" onclick="_currentForum=null;loadForosPage()">\u2190 Mis foros</button>'
+    +'<button class="btn btn-secondary btn-sm" onclick="_currentForum=null;loadForosPage()">← Mis foros</button>'
     +'<h2 style="font-size:1rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(forum.name)+'</h2>'
-    +(forum.is_anon ? '<span class="forum-card-anon">AN\u00d3NIMO</span>' : "")
+    +(forum.is_anon ? '<span class="forum-card-anon">ANÓNIMO</span>' : "")
+    +(canManage ? '<button class="btn btn-secondary btn-sm" onclick="openForumAdminModal(\''+(forum.id)+'\')">⚙️ Gestionar</button>' : '')
+    +'<button class="btn btn-secondary btn-sm" style="color:#ff4c4c;border-color:rgba(255,76,76,.3)" onclick="leaveForumConfirm(\''+(forum.id)+'\')">✕ Salir</button>'
     +'</div>'
     +'<div id="forum-detail-feed">'+skeletonPosts(2)+'</div>'
     +'<div class="create-post mt-md">'
@@ -388,8 +471,24 @@ function previewForumMedia(input, type) {
 }
 
 async function loadForumPosts(forumId) {
+  resetLazy("forum");
+  LazyState.forum.id = forumId;
   const feed = document.getElementById("forum-detail-feed");
-  if (!feed) return;
+  if (feed) feed.innerHTML = skeletonPosts(2);
+  await fetchForumPage(forumId);
+  attachLazySentinel("forum-detail-feed", "forum", function() { fetchForumPage(forumId); });
+}
+
+async function fetchForumPage(forumId) {
+  const s = LazyState.forum;
+  if (s.loading || s.done) return;
+  s.loading = true;
+  const feed = document.getElementById("forum-detail-feed");
+  if (!feed) { s.loading = false; return; }
+
+  var sentinel = feed.querySelector(".lazy-sentinel");
+  if (sentinel) sentinel.remove();
+
   try {
     const sb = await initSupabase();
     const { data: posts, error } = await sb.from("posts")
@@ -397,24 +496,33 @@ async function loadForumPosts(forumId) {
       .eq("section", "forum")
       .eq("forum_id", forumId)
       .order("created_at", { ascending: false })
-      .limit(40);
+      .range(s.page * PAGE_SIZE, (s.page + 1) * PAGE_SIZE - 1);
     if (error) throw error;
 
-    // Likes del usuario actual
     let likedIds = new Set();
     if (AppState.currentUser) {
       const { data: lk } = await sb.from("likes").select("post_id").eq("user_id", AppState.currentUser.id);
       if (lk) likedIds = new Set(lk.map(l => l.post_id));
     }
 
-    feed.innerHTML = posts && posts.length
-      ? posts.map(p => renderPost(
-          { ...p, user_liked: likedIds.has(p.id) },
-          { section: "forum", forumId: forumId, showIdentity: AppState.canDo("canSeeAnonIdentity") }
-        )).join("")
-      : emptyState("Sin publicaciones aún", "Sé el primero en publicar");
-  } catch (e) {
-    feed.innerHTML = '<p style="color:var(--text-3);padding:1rem;font-size:.85rem">Error: '+e.message+'</p>';
+    if (!posts || posts.length === 0) {
+      if (s.page === 0) feed.innerHTML = emptyState("Sin publicaciones aún", "Sé el primero en publicar");
+      s.done = true;
+    } else {
+      var html = posts.map(p => renderPost(
+        { ...p, user_liked: likedIds.has(p.id) },
+        { section: "forum", forumId: forumId, showIdentity: AppState.canDo("canSeeAnonIdentity") }
+      )).join("");
+      if (s.page === 0) feed.innerHTML = html;
+      else feed.insertAdjacentHTML("beforeend", html);
+      if (posts.length < PAGE_SIZE) s.done = true;
+      s.page++;
+    }
+  } catch(e) {
+    if (s.page === 0) feed.innerHTML = '<p style="color:var(--text-3);padding:1rem;font-size:.85rem">Error: '+e.message+'</p>';
+  } finally {
+    s.loading = false;
+    if (!s.done) attachLazySentinel("forum-detail-feed", "forum", function() { fetchForumPage(forumId); });
   }
 }
 
@@ -431,39 +539,43 @@ async function submitForumPost(forumId, isAnon) {
     let images = [];
     let media_url = null;
 
-    // Imágenes
+    // Imágenes — rcwUpload en serie
     const imgInput = document.getElementById("forum-images");
     if (imgInput && imgInput.files && imgInput.files.length) {
       showToast("Subiendo imágenes…");
-      images = await uploadMultipleImages(imgInput.files, 4);
+      var _fimgs = Array.from(imgInput.files).slice(0, 4);
+      for (var _k = 0; _k < _fimgs.length; _k++) {
+        images.push(await rcwUpload(_fimgs[_k], "image"));
+      }
     }
 
-    // Video
+    // Video — rcwUpload directo
     const vidInput = document.getElementById("forum-video");
     if (vidInput && vidInput.files && vidInput.files[0]) {
       showToast("Subiendo video…");
-      media_url = await uploadVideo(vidInput.files[0]);
+      media_url = await rcwUpload(vidInput.files[0], "video");
     }
 
-    const sb = await initSupabase();
-    const { error } = await sb.from("posts").insert({
-      section: "forum",
-      forum_id: forumId,
-      user_id: user.id,
+    await sbInsertPost({
+      section:   "forum",
+      forum_id:  forumId,
+      user_id:   user.id,
       content,
-      images: images.length > 0 ? images : null,
+      images:    images.length > 0 ? images : null,
       media_url: media_url || null,
-      is_anon: isAnon === "true" || isAnon === true,
+      is_anon:   isAnon === "true" || isAnon === true,
     });
-    if (error) throw error;
 
     document.getElementById("forum-compose").value = "";
     if (imgInput) imgInput.value = "";
     if (vidInput) vidInput.value = "";
     const preview = document.getElementById("forum-media-preview");
     if (preview) preview.innerHTML = "";
-    showToast("Publicado", "success");
-    loadForumPosts(forumId);
+    showToast("Publicado ✓", "success");
+    await loadForumPosts(forumId);
+    // Scroll al tope del feed para ver la nueva publicación
+    var feed = document.getElementById("forum-detail-feed");
+    if (feed) feed.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) {
     console.error("submitForumPost:", e);
     showToast("Error al publicar: " + (e.message || ""), "error");
@@ -557,33 +669,28 @@ async function saveProfile() {
     updates.bio = bio;
     updates.banner_color = bannerColor;
 
-    // Avatar desde el modal
+    // Avatar desde el modal — rcwUpload directo, igual que el test
     const avatarInput = document.getElementById("upload-avatar-modal");
     if (avatarInput && avatarInput.files && avatarInput.files[0]) {
-      showToast("Subiendo foto de perfil…");
-      updates.avatar_url = await uploadAvatar(avatarInput.files[0]);
-      console.log("[saveProfile] avatar_url guardado:", updates.avatar_url);
+      showToast("Subiendo foto…");
+      updates.avatar_url = await rcwUpload(avatarInput.files[0], "avatar");
+      if (!updates.avatar_url) throw new Error("Cloudinary no devolvió URL de avatar");
     }
 
-    // Banner imagen (solo N1+)
+    // Banner imagen (solo N1+ o admin) — rcwUpload directo
     const bannerInput = document.getElementById("upload-banner");
     if (bannerInput && bannerInput.files && bannerInput.files[0]) {
       if (!AppState.hasPlan("n1") && !AppState.hasRole("administrador")) {
-        showToast("Necesitas Plan N1 para subir imagen de banner", "error");
+        showToast("Necesitas Plan N1 para banner", "error");
       } else {
         showToast("Subiendo banner…");
-        updates.banner_url = await uploadBanner(bannerInput.files[0]);
-        console.log("[saveProfile] banner_url guardado:", updates.banner_url);
+        updates.banner_url = await rcwUpload(bannerInput.files[0], "banner");
+        if (!updates.banner_url) throw new Error("Cloudinary no devolvió URL de banner");
       }
     }
 
-    // Guardar en Supabase sin .select() para evitar bloqueo RLS
-    const sb = await initSupabase();
-    const { error: updateErr } = await sb
-      .from("profiles")
-      .update(updates)
-      .eq("id", user.id);
-    if (updateErr) throw updateErr;
+    // Guardar usando fetch directo (igual que el test que funciona)
+    await sbUpdateProfile(updates);
 
     // Cambio de contraseña
     const newPass = document.getElementById("edit-new-password")?.value || "";
@@ -629,8 +736,12 @@ async function loadAdminPage() {
     navigateTo("inicio");
     return;
   }
-  document.getElementById("owner-panel-section").classList.toggle("hidden", !AppState.hasRole("propietario"));
+  const isOwner = AppState.hasRole("propietario");
+  document.getElementById("owner-panel-section").classList.toggle("hidden", !isOwner);
+  const ownerPlansTab = document.getElementById("owner-plans-tab");
+  if (ownerPlansTab) ownerPlansTab.classList.toggle("hidden", !isOwner);
   loadAdminUsers();
+  if (isOwner) loadPlanUsers();
 }
 
 async function loadAdminUsers() {
@@ -639,18 +750,23 @@ async function loadAdminUsers() {
   container.innerHTML = skeletonCards(3);
   try {
     const users = await dbSelect("profiles", { order: "created_at" });
-    container.innerHTML = users.map(u => `
-      <div class="user-list-item">
-        <div class="avatar" style="width:34px;height:34px;font-size:.8rem">${(u.username||"U")[0].toUpperCase()}</div>
-        <div class="user-list-info">
-          <div class="user-list-name">${escHtml(u.username||"Sin nombre")}</div>
-          <div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">
-            ${roleBadge(u.role)}
-            ${u.plan && u.plan !== "free" ? `<span class="plan-badge plan-${u.plan}">${u.plan.toUpperCase()}</span>` : ""}
-          </div>
-        </div>
-        ${canSuspend(u) ? `<button class="btn btn-danger btn-sm" onclick="suspendUser('${u.id}')">Suspender</button>` : ""}
-      </div>`).join("");
+    container.innerHTML = users.map(u => {
+      var avatarInner = u.avatar_url
+        ? '<img src="'+escHtml(u.avatar_url)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : (u.username||"U")[0].toUpperCase();
+      return '<div class="user-list-item">'
+        +'<div class="avatar" style="width:36px;height:36px;font-size:.8rem;flex-shrink:0">'+avatarInner+'</div>'
+        +'<div class="user-list-info">'
+          +'<div class="user-list-name">'+escHtml(u.username||"Sin nombre")+'</div>'
+          +'<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">'
+            +roleBadge(u.role)
+            +(u.plan && u.plan !== "free" ? '<span class="plan-badge plan-'+u.plan+'">'+u.plan.toUpperCase()+'</span>' : '')
+            +(u.suspended ? '<span style="font-size:.65rem;color:#ff4c4c;font-weight:700">SUSPENDIDO</span>' : '')
+          +'</div>'
+        +'</div>'
+        +(canSuspend(u) ? '<button class="btn btn-danger btn-sm" onclick="suspendUser(\''+u.id+'\')">Suspender</button>' : '')
+      +'</div>';
+    }).join("");
   } catch (e) { container.innerHTML = "<p>Error</p>"; }
 }
 
@@ -689,13 +805,53 @@ async function createUserFromPanel() {
 
 async function setUserPlan(userId, plan) {
   if (!AppState.hasRole("propietario")) return;
-  const days = CONFIG[`PLAN_${plan.toUpperCase()}_DAYS`] || 30;
-  const expires = new Date(Date.now() + days * 86400000).toISOString();
+  if (!plan) return; // placeholder option selected
   try {
-    await dbUpdate("profiles", userId, { plan, plan_expires: expires });
-    showToast(`Plan ${plan.toUpperCase()} asignado`, "success");
+    var fields = plan === "free"
+      ? { plan: "free", plan_expires: null }
+      : { plan: plan, plan_expires: new Date(Date.now() + (CONFIG["PLAN_"+plan.toUpperCase()+"_DAYS"]||30)*86400000).toISOString() };
+    await sbFetch("/rest/v1/profiles?id=eq."+userId, "PATCH", fields);
+    showToast(plan === "free" ? "Plan revocado" : "Plan "+plan.toUpperCase()+" asignado ✓", "success");
+    loadPlanUsers();
     loadAdminUsers();
-  } catch (e) { showToast("Error", "error"); }
+  } catch (e) { showToast("Error: "+(e.message||""), "error"); }
+}
+
+async function loadPlanUsers() {
+  const container = document.getElementById("plans-users-list");
+  if (!container) return;
+  container.innerHTML = skeletonCards(3);
+  try {
+    const sb = await initSupabase();
+    const { data: users, error } = await sb.from("profiles").select("id,username,avatar_url,plan,plan_expires,role").order("created_at");
+    if (error) throw error;
+    if (!users || !users.length) { container.innerHTML = '<p style="color:var(--text-3);font-size:.85rem">No hay usuarios</p>'; return; }
+    container.innerHTML = users.map(u => {
+      var planExpiry = u.plan_expires ? new Date(u.plan_expires).toLocaleDateString("es",{day:"2-digit",month:"short",year:"numeric"}) : null;
+      var avatarInner = u.avatar_url
+        ? '<img src="'+escHtml(u.avatar_url)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : (u.username||"U")[0].toUpperCase();
+      return '<div class="user-list-item" style="flex-wrap:wrap;gap:.5rem">'
+        +'<div class="avatar" style="width:34px;height:34px;font-size:.8rem;flex-shrink:0">'+avatarInner+'</div>'
+        +'<div class="user-list-info" style="min-width:100px">'
+          +'<div class="user-list-name">'+escHtml(u.username||"—")+'</div>'
+          +'<div style="display:flex;gap:.3rem;align-items:center;margin-top:.2rem;flex-wrap:wrap">'
+            +(u.plan && u.plan !== "free" ? '<span class="plan-badge plan-'+u.plan+'">'+u.plan.toUpperCase()+'</span>' : '<span style="font-size:.72rem;color:var(--text-3)">Sin plan</span>')
+            +(planExpiry ? '<span style="font-size:.7rem;color:var(--text-3)">hasta '+planExpiry+'</span>' : '')
+          +'</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-left:auto">'
+          +'<select onchange="setUserPlan(\''+u.id+'\',this.value)" style="background:var(--bg-3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:.3rem .5rem;font-size:.78rem;cursor:pointer">'
+            +'<option value="">— Plan —</option>'
+            +'<option value="free"'+(u.plan==="free"?" selected":"")+'>Free (revocar)</option>'
+            +'<option value="n1"'+(u.plan==="n1"?" selected":"")+'>N1</option>'
+            +'<option value="n2"'+(u.plan==="n2"?" selected":"")+'>N2</option>'
+            +'<option value="n3"'+(u.plan==="n3"?" selected":"")+'>N3</option>'
+          +'</select>'
+        +'</div>'
+      +'</div>';
+    }).join("");
+  } catch(e) { container.innerHTML = '<p style="color:var(--text-3)">Error: '+e.message+'</p>'; }
 }
 
 /* ── PLANES ──────────────────────────────────────────────────── */
@@ -826,5 +982,148 @@ function togglePasswordSection() {
   if (!section) return;
   const isHidden = section.classList.contains("hidden");
   section.classList.toggle("hidden", !isHidden);
-  btn.textContent = isHidden ? "Cancelar cambio de contraseña" : "Cambiar contraseña";
+  btn.textContent = isHidden ? "🔒 Cancelar cambio de contraseña" : "🔒 Cambiar contraseña";
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   FORO — Gestión de miembros (admin del foro)
+══════════════════════════════════════════════════════════════ */
+
+async function openForumAdminModal(forumId) {
+  var modal = document.getElementById("forum-admin-modal");
+  if (!modal) return;
+  modal.dataset.forumId = forumId;
+  modal.classList.add("open");
+  loadForumMembers(forumId);
+}
+
+async function loadForumMembers(forumId) {
+  var list = document.getElementById("forum-members-list");
+  if (!list) return;
+  list.innerHTML = skeletonCards(3);
+  try {
+    var sb = await initSupabase();
+    var { data, error } = await sb.from("forum_members")
+      .select("*, profiles(id, username, avatar_url, role)")
+      .eq("forum_id", forumId);
+    if (error) throw error;
+    var me = AppState.currentUser;
+    list.innerHTML = (data||[]).map(function(m) {
+      var p = m.profiles || {};
+      var av = p.avatar_url
+        ? '<img src="'+escHtml(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : (p.username||"U")[0].toUpperCase();
+      var isSelf = me && p.id === me.id;
+      return '<div class="user-list-item">'
+        +'<div class="avatar" style="width:32px;height:32px;font-size:.75rem;flex-shrink:0">'+av+'</div>'
+        +'<div class="user-list-info"><div class="user-list-name">'+escHtml(p.username||"—")+'</div>'
+          +'<div style="font-size:.72rem;color:var(--text-3)">'+(m.role==="admin"?"Admin del foro":"Miembro")+'</div>'
+        +'</div>'
+        +(!isSelf
+          ? '<button class="btn btn-danger btn-sm" onclick="kickForumMember(\''+forumId+'\',\''+p.id+'\')">Expulsar</button>'
+          : '')
+      +'</div>';
+    }).join("") || '<p style="color:var(--text-3);font-size:.82rem">Sin miembros</p>';
+  } catch(e) {
+    list.innerHTML = '<p style="color:var(--text-3)">Error: '+e.message+'</p>';
+  }
+}
+
+async function kickForumMember(forumId, userId) {
+  if (!confirm("¿Expulsar a este miembro del foro?")) return;
+  try {
+    await sbFetch("/rest/v1/forum_members?forum_id=eq."+forumId+"&user_id=eq."+userId, "DELETE");
+    showToast("Miembro expulsado", "success");
+    loadForumMembers(forumId);
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+async function inviteToForum(forumId) {
+  var usernameInput = document.getElementById("forum-invite-username");
+  if (!usernameInput) return;
+  var username = usernameInput.value.trim();
+  if (!username) { showToast("Escribe un nombre de usuario", "error"); return; }
+  try {
+    var sb = await initSupabase();
+    var { data: profile } = await sb.from("profiles").select("id").eq("username", username).maybeSingle();
+    if (!profile) { showToast("Usuario '"+username+"' no encontrado", "error"); return; }
+    await sbFetch("/rest/v1/forum_members", "POST", { forum_id: forumId, user_id: profile.id, role: "member" });
+    usernameInput.value = "";
+    showToast("Usuario añadido al foro ✓", "success");
+    loadForumMembers(forumId);
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+async function uploadForumPhoto(forumId, input) {
+  if (!input.files[0]) return;
+  showToast("Subiendo foto del foro…");
+  try {
+    var url = await rcwUpload(input.files[0], "image");
+    await sbFetch("/rest/v1/forums?id=eq."+forumId, "PATCH", { photo_url: url });
+    showToast("Foto del foro actualizada ✓", "success");
+    loadComunidadesPage();
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+async function leaveForumConfirm(forumId) {
+  if (!confirm("¿Salir de este foro?")) return;
+  try {
+    var userId = AppState.currentUser.id;
+    await sbFetch("/rest/v1/forum_members?forum_id=eq."+forumId+"&user_id=eq."+userId, "DELETE");
+    _currentForum = null;
+    showToast("Saliste del foro", "success");
+    loadForosPage();
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GRUPO DE NOTICIAS — Gestión
+══════════════════════════════════════════════════════════════ */
+
+function openNewsGroupAdmin(groupId, groupName) {
+  var modal = document.getElementById("news-group-admin-modal");
+  if (!modal) return;
+  modal.dataset.groupId = groupId;
+  var title = modal.querySelector(".modal-title");
+  if (title) title.textContent = "Gestionar: " + groupName;
+  modal.classList.add("open");
+}
+
+async function uploadNewsGroupPhoto(input) {
+  var modal = document.getElementById("news-group-admin-modal");
+  if (!input.files[0] || !modal) return;
+  var groupId = modal.dataset.groupId;
+  showToast("Subiendo foto del grupo…");
+  try {
+    var url = await rcwUpload(input.files[0], "image");
+    await sbFetch("/rest/v1/news_groups?id=eq."+groupId, "PATCH", { photo_url: url });
+    showToast("Foto del grupo actualizada ✓", "success");
+    loadNoticiasPage();
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+async function renameNewsGroup() {
+  var modal = document.getElementById("news-group-admin-modal");
+  if (!modal) return;
+  var input = document.getElementById("news-group-rename");
+  var name = input && input.value.trim();
+  if (!name) { showToast("Escribe un nombre", "error"); return; }
+  try {
+    await sbFetch("/rest/v1/news_groups?id=eq."+modal.dataset.groupId, "PATCH", { name: name });
+    showToast("Grupo renombrado ✓", "success");
+    modal.classList.remove("open");
+    loadNoticiasPage();
+  } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+async function deleteNewsGroup() {
+  var modal = document.getElementById("news-group-admin-modal");
+  if (!modal || !confirm("¿Eliminar este grupo y todas sus publicaciones?")) return;
+  try {
+    await sbFetch("/rest/v1/news_groups?id=eq."+modal.dataset.groupId, "DELETE");
+    modal.classList.remove("open");
+    showToast("Grupo eliminado", "success");
+    loadNoticiasPage();
+  } catch(e) { showToast("Error: "+e.message, "error"); }
 }
