@@ -2,7 +2,7 @@
 
 // ── ADMIN: Cargar usuarios con lazy load ─────────────────────
 async function adminLoadUsers({ limit = 20, offset = 0, search = "" } = {}) {
-  let query = supabase
+  let query = window.supabase
     .from("profiles")
     .select("id, username, display_name, avatar_url, role, plan, plan_expires_at, is_suspended, is_banned, created_at")
     .order("created_at", { ascending: false })
@@ -17,21 +17,21 @@ async function adminLoadUsers({ limit = 20, offset = 0, search = "" } = {}) {
 // ── ADMIN: Suspender cuenta ──────────────────────────────────
 async function suspendUser(userId) {
   if (!isAdmin()) return { error: t("errPermission") };
-  const { data: target } = await supabase.from("profiles").select("role").eq("id", userId).single();
+  const { data: target } = await window.supabase.from("profiles").select("role").eq("id", userId).single();
   // No puede suspender mismo rango o superior
   const rankOrder = { usuario: 0, encargado: 1, administrador: 2, propietario: 3 };
-  const myRank = rankOrder[currentProfile.role] || 0;
+  const myRank = rankOrder[window.currentProfile.role] || 0;
   const targetRank = rankOrder[target?.role] || 0;
   if (targetRank >= myRank) return { error: t("errPermission") };
 
-  const { error } = await supabase.from("profiles")
+  const { error } = await window.supabase.from("profiles")
     .update({ is_suspended: true }).eq("id", userId);
   return { error };
 }
 
 async function restoreUser(userId) {
   if (!isAdmin()) return { error: t("errPermission") };
-  const { error } = await supabase.from("profiles")
+  const { error } = await window.supabase.from("profiles")
     .update({ is_suspended: false }).eq("id", userId);
   return { error };
 }
@@ -39,23 +39,23 @@ async function restoreUser(userId) {
 // ── ADMIN: Vetar (blacklist) ─────────────────────────────────
 async function banUser(userId) {
   if (!isAdmin()) return { error: t("errPermission") };
-  const { data: target } = await supabase.from("profiles")
+  const { data: target } = await window.supabase.from("profiles")
     .select("id, role").eq("id", userId).single();
   const rankOrder = { usuario: 0, encargado: 1, administrador: 2, propietario: 3 };
-  if ((rankOrder[target?.role] || 0) >= (rankOrder[currentProfile.role] || 0)) return { error: t("errPermission") };
+  if ((rankOrder[target?.role] || 0) >= (rankOrder[window.currentProfile.role] || 0)) return { error: t("errPermission") };
 
   // Obtener email del usuario
-  const { data: authUser } = await supabase.rpc("get_user_email", { uid: userId });
+  const { data: authUser } = await window.supabase.rpc("get_user_email", { uid: userId });
   const email = authUser || userId;
 
-  await supabase.from("blacklist").insert({ email, banned_by: currentUser.id });
-  await supabase.from("profiles").update({ is_banned: true }).eq("id", userId);
+  await window.supabase.from("blacklist").insert({ email, banned_by: window.currentUser.id });
+  await window.supabase.from("profiles").update({ is_banned: true }).eq("id", userId);
   return { success: true };
 }
 
 // ── ADMIN: Lista negra ───────────────────────────────────────
 async function loadBlacklist() {
-  const { data } = await supabase.from("blacklist")
+  const { data } = await window.supabase.from("blacklist")
     .select("*, banned_by_profile:profiles(username)")
     .order("created_at", { ascending: false });
   return data || [];
@@ -63,8 +63,8 @@ async function loadBlacklist() {
 
 async function removeFromBlacklist(id, email) {
   if (!isAdmin()) return { error: t("errPermission") };
-  await supabase.from("blacklist").delete().eq("id", id);
-  await supabase.from("profiles").update({ is_banned: false })
+  await window.supabase.from("blacklist").delete().eq("id", id);
+  await window.supabase.from("profiles").update({ is_banned: false })
     .eq("id", id); // fallback, ideally match by email
   return { success: true };
 }
@@ -74,8 +74,8 @@ async function ownerCreateUser({ email, password, username, role, plan }) {
   if (!isOwner()) return { error: t("errPermission") };
   // Crear via Supabase Admin API (solo desde backend/edge function)
   // Aquí se llama a una Edge Function de Supabase para evitar exponer service_role
-  const { data: session } = await supabase.auth.getSession();
-  const res = await fetch(`${REDCW_CONFIG.supabase.url}/functions/v1/admin-create-user`, {
+  const { data: session } = await window.supabase.auth.getSession();
+  const res = await fetch(`${REDCW_CONFIG.window.supabase.url}/functions/v1/admin-create-user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -93,7 +93,7 @@ async function assignPlan(userId, plan) {
   const expires = new Date();
   expires.setDate(expires.getDate() + REDCW_CONFIG.plans[plan]?.duration || 30);
 
-  const { error } = await supabase.from("profiles")
+  const { error } = await window.supabase.from("profiles")
     .update({ plan, plan_expires_at: expires.toISOString() })
     .eq("id", userId);
   return { error };
@@ -105,14 +105,14 @@ async function changeRole(userId, newRole) {
   const validRoles = ["usuario", "encargado", "administrador"];
   if (!validRoles.includes(newRole)) return { error: "Rol no válido" };
 
-  const { error } = await supabase.from("profiles")
+  const { error } = await window.supabase.from("profiles")
     .update({ role: newRole }).eq("id", userId);
   return { error };
 }
 
 // ── OWNER: Ver pagos / comprobantes ─────────────────────────
 async function loadPlanPayments({ status } = {}) {
-  let query = supabase.from("plan_payments")
+  let query = window.supabase.from("plan_payments")
     .select(`*, user:profiles(id, username, display_name, avatar_url)`)
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
@@ -123,8 +123,8 @@ async function loadPlanPayments({ status } = {}) {
 async function approvePayment(paymentId, userId, plan) {
   if (!isOwner() && !isAdmin()) return { error: t("errPermission") };
   await assignPlan(userId, plan);
-  await supabase.from("plan_payments").update({
-    status: "aprobado", reviewed_by: currentUser.id, reviewed_at: new Date().toISOString()
+  await window.supabase.from("plan_payments").update({
+    status: "aprobado", reviewed_by: window.currentUser.id, reviewed_at: new Date().toISOString()
   }).eq("id", paymentId);
   return { success: true };
 }
@@ -183,3 +183,5 @@ function confirmBan(userId) {
     banUser(userId).then(() => location.reload());
   }
 }
+
+Object.assign(window, { adminLoadUsers, suspendUser, restoreUser, banUser, loadBlacklist, removeFromBlacklist, ownerCreateUser, assignPlan, changeRole, loadPlanPayments, approvePayment, renderUserRow, confirmBan });
