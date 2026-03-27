@@ -67,7 +67,14 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
+<script>
+  window.supabase = window.supabase.createClient(
+    REDCW_CONFIG.supabase.url,
+    REDCW_CONFIG.supabase.anonKey
+  );
+</script>
 <script src="js/i18n.js"></script>
 <script src="js/cloudinary.js"></script>
 <script src="js/posts.js"></script>
@@ -75,10 +82,7 @@
 <script src="js/chat.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/app.js"></script>
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-window.supabase = createClient(REDCW_CONFIG.supabase.url, REDCW_CONFIG.supabase.anonKey);
-
+<script>
 window.openConversation = async (convId, userName, userAvatar) => {
   activeConversationId = convId;
   // Marcar activo en sidebar
