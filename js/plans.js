@@ -5,7 +5,7 @@ function renderPlansPage(containerId) {
   if (!container) return;
 
   const plans = REDCW_CONFIG.plans;
-  const currentPlan = currentProfile?.plan || "free";
+  const currentPlan = window.currentProfile?.plan || "free";
 
   const features = {
     free: [
@@ -78,7 +78,7 @@ function showPaymentModal(planKey) {
 
   // Pre-redact email para comprobante
   document.getElementById("send-receipt-btn").onclick = () => {
-    const user = currentProfile;
+    const user = window.currentProfile;
     const subject = encodeURIComponent(`Comprobante de pago – Plan ${plan.label} – ${user?.username}`);
     const body = encodeURIComponent(
       `Hola equipo RedCW,\n\nAdjunto mi comprobante de pago para el Plan ${plan.label}.\n\n` +
@@ -110,3 +110,5 @@ function selectPayTab(tab) {
   document.getElementById(`tab-${tab}`).classList.add("active");
   document.getElementById(`panel-${tab}`).classList.add("active");
 }
+
+Object.assign(window, { renderPlansPage, showPaymentModal, closePaymentModal, selectPayTab });
