@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RedCW — Pomodoro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--header-h:70px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden}
+header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:fixed;top:0;z-index:1000}
+.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+.menu-toggle{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;padding:6px;border-radius:8px;transition:.2s}
+.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:850}
+.overlay.active{display:block}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid var(--border);padding:20px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.sidebar.active{transform:translateX(280px)}
+.nav-links{list-style:none}
+.nav-links a{display:flex;align-items:center;padding:14px 18px;color:var(--text-dim);text-decoration:none;border-radius:12px;margin-bottom:8px;transition:all .2s;font-size:.95rem;background:rgba(255,255,255,.02);border-left:4px solid transparent}
+.nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:20px;height:20px;margin-right:12px;flex-shrink:0;transition:transform .2s ease, filter .2s ease}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor)}
+.nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent)}
+.nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2)}
+.nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3)}
+.main-content{margin-top:var(--header-h);padding:40px 20px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - var(--header-h))}
+.page-title{font-family:var(--font-display);font-weight:800;font-size:1.6rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{color:var(--text-dim);font-size:.88rem;margin:0 0 20px}
+.tools-wrap{width:100%;max-width:600px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card-bg);border-radius:28px;padding:25px;border:1px solid var(--border);box-shadow:0 30px 60px rgba(0,0,0,.6);width:100%}
+.card-title{font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:18px;display:flex;align-items:center;gap:10px;color:var(--accent-3)}
+.card-title svg{color:var(--accent-3)}
+.viz-input{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:#fff;font-family:var(--font-main);font-size:.9rem;outline:none;transition:.2s}
+.viz-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2)}
+.btn-primary{padding:12px 24px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(108,99,255,.3)}
+.btn-primary:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-secondary{padding:12px 24px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:#fff;font-family:var(--font-main);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{padding:12px 24px;border-radius:12px;background:rgba(255,107,157,.1);border:1px solid rgba(255,107,157,.3);color:var(--accent-2);font-family:var(--font-main);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:rgba(255,107,157,.2)}
+.category-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:20px}
+.category-btn{padding:14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--text-dim);font-size:.85rem;cursor:pointer;transition:all .2s;text-align:center;font-family:var(--font-main)}
+.category-btn:hover{border-color:var(--accent-3);color:var(--accent-3);background:rgba(0,217,165,.05)}
+.category-btn.active{border-color:var(--accent-3);color:var(--accent-3);background:rgba(0,217,165,.1);box-shadow:0 4px 15px rgba(0,217,165,.2)}
+.timer-display{text-align:center;font-family:var(--font-display);font-size:5rem;font-weight:800;letter-spacing:-2px;color:#fff;padding:20px 0;text-shadow:0 0 30px rgba(108,99,255,.3)}
+.timer-display.small{font-size:3rem;padding:10px 0}
+.timer-bar{height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin:20px 0;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--accent-3),var(--accent));border-radius:3px;transition:width .3s linear;width:100%}
+.timer-controls{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.time-input{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0}
+.time-input input{width:80px;text-align:center;font-size:1.5rem;font-family:var(--font-display);padding:10px}
+.time-separator{font-size:2rem;font-family:var(--font-display);color:var(--text-dim)}
+.player-timer{background:rgba(0,0,0,.3);border:2px solid var(--border);border-radius:16px;padding:20px;margin:10px 0;cursor:pointer;transition:all .2s}
+.player-timer:hover{border-color:rgba(108,99,255,.3)}
+.player-timer.active{border-color:var(--accent-3);background:rgba(0,217,165,.05);box-shadow:0 0 20px rgba(0,217,165,.1)}
+.player-timer.inactive{opacity:.6}
+.player-label{font-size:.9rem;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.player-indicator{width:12px;height:12px;border-radius:50%;background:var(--text-dim)}
+.player-timer.active .player-indicator{background:var(--accent-3);box-shadow:0 0 10px var(--accent-3)}
+.player-name{font-family:var(--font-display);font-weight:700;color:var(--accent-3)}
+.starting-player{margin:15px 0}
+.radio-group{display:flex;gap:20px;justify-content:center;margin:15px 0}
+.radio-option{display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 15px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid transparent;transition:.2s}
+.radio-option:hover{border-color:var(--accent)}
+.radio-option input[type="radio"]{width:18px;height:18px;accent-color:var(--accent)}
+.lap-list{max-height:200px;overflow-y:auto;margin-top:15px;padding:10px;background:rgba(0,0,0,.2);border-radius:12px}
+.lap-item{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-family:monospace;font-size:.9rem}
+.lap-item:last-child{border-bottom:none}
+.lap-number{color:var(--accent-3)}
+.lap-time{color:#fff}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Pomodoro</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="nav-links">
+    <a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a>
+    <a href="calculadora.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>Calculadora</a>
+    <a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Funciones</a>
+    <a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>Convertidor</a>
+    <a href="elementos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>Elementos</a>
+    <a href="estadistica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadistica</a>
+    <a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>Fisica</a>
+    <a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>Morse</a>
+    <a href="cronometro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronometro</a>
+    <a href="pomodoro.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a>
+    <a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contrasenas</a>
+    <a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Tablas</a>
+    <a href="notas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <h1 class="page-title">Temporizador</h1>
+  <p class="page-sub">Elige el tipo de temporizador y configura tu tiempo.</p>
+  
+  <div class="tools-wrap">
+    
+    <!-- Selector de tipo -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Tipo de Temporizador
+      </div>
+      <div class="category-grid">
+        <button class="category-btn active" data-type="normal" onclick="setTimerType('normal')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Normal
+        </button>
+        <button class="category-btn" data-type="double" onclick="setTimerType('double')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><circle cx="9" cy="12" r="7"/><circle cx="15" cy="12" r="7"/></svg>
+          Doble (Ajedrez)
+        </button>
+        <button class="category-btn" data-type="pomodoro" onclick="setTimerType('pomodoro')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+          Pomodoro
+        </button>
+      </div>
+    </div>
+
+    <!-- Configuracion Normal -->
+    <div class="card" id="normalConfig">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Temporizador Normal
+      </div>
+      <div class="time-input">
+        <input class="viz-input" id="normalMin" type="number" min="0" max="999" value="25" placeholder="MM"/>
+        <span class="time-separator">:</span>
+        <input class="viz-input" id="normalSec" type="number" min="0" max="59" value="0" placeholder="SS"/>
+      </div>
+      <div class="timer-display" id="normalDisplay">25:00</div>
+      <div class="timer-bar"><div class="timer-fill" id="normalFill"></div></div>
+      <div class="timer-controls">
+        <button class="btn-primary" id="normalStart" onclick="toggleNormal()">Iniciar</button>
+        <button class="btn-secondary" onclick="markLap()">Marcar</button>
+        <button class="btn-danger" onclick="resetNormal()">Resetear</button>
+      </div>
+      <div class="lap-list" id="lapList" style="display:none"></div>
+    </div>
+
+    <!-- Configuracion Doble (Ajedrez) -->
+    <div class="card" id="doubleConfig" style="display:none">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="7"/><circle cx="15" cy="12" r="7"/></svg>
+        Temporizador Doble (Ajedrez)
+      </div>
+      
+      <div style="text-align:center;margin-bottom:15px">
+        <label style="font-size:.85rem;color:var(--text-dim);display:block;margin-bottom:10px">Tiempo por jugador</label>
+        <div class="time-input" style="margin:0">
+          <input class="viz-input" id="doubleMin" type="number" min="1" max="180" value="5" placeholder="MM"/>
+          <span class="time-separator">:</span>
+          <input class="viz-input" id="doubleSec" type="number" min="0" max="59" value="0" placeholder="SS"/>
+        </div>
+      </div>
+
+      <div class="starting-player">
+        <label style="font-size:.85rem;color:var(--text-dim);display:block;margin-bottom:10px;text-align:center">Quien empieza</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" name="starter" value="1" checked/>
+            <span>Jugador 1</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="starter" value="2"/>
+            <span>Jugador 2</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="player-timer active" id="player1Timer" onclick="switchPlayer()">
+        <div class="player-label">
+          <span class="player-indicator"></span>
+          <span class="player-name">Jugador 1</span>
+          <span style="margin-left:auto;color:var(--accent-3);font-size:.8rem">CLICK para cambiar</span>
+        </div>
+        <div class="timer-display small" id="player1Display">05:00</div>
+      </div>
+
+      <div class="player-timer inactive" id="player2Timer" onclick="switchPlayer()">
+        <div class="player-label">
+          <span class="player-indicator"></span>
+          <span class="player-name">Jugador 2</span>
+          <span style="margin-left:auto;color:var(--text-dim);font-size:.8rem">Esperando...</span>
+        </div>
+        <div class="timer-display small" id="player2Display">05:00</div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="btn-primary" id="doubleStart" onclick="toggleDouble()">Iniciar</button>
+        <button class="btn-danger" onclick="resetDouble()">Resetear</button>
+      </div>
+    </div>
+
+    <!-- Configuracion Pomodoro -->
+    <div class="card" id="pomodoroConfig" style="display:none">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+        Pomodoro Clasico
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+        <div style="text-align:center">
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Trabajo</label>
+          <input class="viz-input" id="pomWorkMin" type="number" value="25" min="1" style="text-align:center"/>
+        </div>
+        <div style="text-align:center">
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Descanso</label>
+          <input class="viz-input" id="pomBreakMin" type="number" value="5" min="1" style="text-align:center"/>
+        </div>
+        <div style="text-align:center">
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Largo</label>
+          <input class="viz-input" id="pomLongMin" type="number" value="15" min="1" style="text-align:center"/>
+        </div>
+      </div>
+
+      <div class="timer-display" id="pomodoroDisplay">25:00</div>
+      <div style="text-align:center;margin:10px 0;color:var(--accent-3);font-family:var(--font-display)" id="pomodoroMode">Modo: Trabajo</div>
+      <div class="timer-bar"><div class="timer-fill" id="pomodoroFill"></div></div>
+      
+      <div class="timer-controls">
+        <button class="btn-primary" id="pomodoroStart" onclick="togglePomodoro()">Iniciar</button>
+        <button class="btn-secondary" onclick="skipPomodoro()">Saltar</button>
+        <button class="btn-danger" onclick="resetPomodoro()">Resetear</button>
+      </div>
+      
+      <div style="text-align:center;margin-top:15px;font-size:.85rem;color:var(--text-dim)">
+        Pomodoros completados: <span id="pomodoroCount" style="color:var(--accent-3);font-weight:700">0</span>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Toggle de Menu
+const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+menuBtn.onclick=overlay.onclick=function(){sidebar.classList.toggle('active');overlay.classList.toggle('active')};
+
+// Variables globales
+let currentType='normal';
+let normalInterval=null,normalRunning=false,normalTotal=0,normalRemaining=0;
+let doubleInterval=null,doubleRunning=false,currentPlayer=1;
+let player1Time=0,player2Time=0;
+let pomodoroInterval=null,pomodoroRunning=false,pomodoroMode='work',pomodoroCount=0;
+let pomodoroTimes={work:25*60,break:5*60,long:15*60};
+
+// Cambiar tipo de temporizador
+function setTimerType(type){
+  currentType=type;
+  
+  // Actualizar botones
+  document.querySelectorAll('.category-btn').forEach(function(btn){
+    btn.classList.remove('active');
+  });
+  document.querySelector('.category-btn[data-type="'+type+'"]').classList.add('active');
+  
+  // Mostrar configuracion correspondiente
+  document.getElementById('normalConfig').style.display='none';
+  document.getElementById('doubleConfig').style.display='none';
+  document.getElementById('pomodoroConfig').style.display='none';
+  
+  if(type==='normal'){
+    document.getElementById('normalConfig').style.display='block';
+  }else if(type==='double'){
+    document.getElementById('doubleConfig').style.display='block';
+    updateDoubleDisplay();
+  }else if(type==='pomodoro'){
+    document.getElementById('pomodoroConfig').style.display='block';
+    updatePomodoroDisplay();
+  }
+}
+
+// ==================== TEMPORIZADOR NORMAL ====================
+function formatTime(seconds){
+  const m=Math.floor(seconds/60);
+  const s=seconds%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function updateNormalDisplay(){
+  document.getElementById('normalDisplay').textContent=formatTime(normalRemaining);
+  const pct=normalTotal>0?(normalRemaining/normalTotal*100):100;
+  document.getElementById('normalFill').style.width=pct+'%';
+}
+
+function toggleNormal(){
+  if(normalRunning){
+    // Pausar
+    clearInterval(normalInterval);
+    normalRunning=false;
+    document.getElementById('normalStart').textContent='Continuar';
+  }else{
+    // Iniciar
+    if(normalRemaining===0){
+      const min=parseInt(document.getElementById('normalMin').value)||0;
+      const sec=parseInt(document.getElementById('normalSec').value)||0;
+      normalTotal=normalRemaining=min*60+sec;
+    }
+    if(normalRemaining===0)return;
+    
+    normalRunning=true;
+    document.getElementById('normalStart').textContent='Pausar';
+    document.getElementById('lapList').style.display='block';
+    
+    normalInterval=setInterval(function(){
+      normalRemaining--;
+      updateNormalDisplay();
+      if(normalRemaining<=0){
+        clearInterval(normalInterval);
+        normalRunning=false;
+        document.getElementById('normalStart').textContent='Iniciar';
+        alert('¡Tiempo completado!');
+      }
+    },1000);
+  }
+}
+
+function markLap(){
+  if(!normalRunning)return;
+  const lapList=document.getElementById('lapList');
+  const lapNum=lapList.children.length+1;
+  const lapTime=formatTime(normalTotal-normalRemaining);
+  
+  const lapDiv=document.createElement('div');
+  lapDiv.className='lap-item';
+  lapDiv.innerHTML='<span class="lap-number">Vuelta '+lapNum+'</span><span class="lap-time">'+lapTime+'</span>';
+  lapList.insertBefore(lapDiv,lapList.firstChild);
+}
+
+function resetNormal(){
+  clearInterval(normalInterval);
+  normalRunning=false;
+  normalRemaining=0;
+  document.getElementById('normalStart').textContent='Iniciar';
+  document.getElementById('lapList').innerHTML='';
+  document.getElementById('lapList').style.display='none';
+  updateNormalDisplay();
+}
+
+// ==================== TEMPORIZADOR DOBLE (AJEDREZ) ====================
+function updateDoubleDisplay(){
+  document.getElementById('player1Display').textContent=formatTime(player1Time);
+  document.getElementById('player2Display').textContent=formatTime(player2Time);
+}
+
+function toggleDouble(){
+  if(doubleRunning){
+    // Pausar ambos
+    clearInterval(doubleInterval);
+    doubleRunning=false;
+    document.getElementById('doubleStart').textContent='Continuar';
+  }else{
+    // Iniciar
+    if(player1Time===0 && player2Time===0){
+      const min=parseInt(document.getElementById('doubleMin').value)||5;
+      const sec=parseInt(document.getElementById('doubleSec').value)||0;
+      player1Time=player2Time=min*60+sec;
+      
+      // Determinar quien empieza
+      const starter=document.querySelector('input[name="starter"]:checked').value;
+      currentPlayer=parseInt(starter);
+      updatePlayerVisuals();
+    }
+    
+    doubleRunning=true;
+    document.getElementById('doubleStart').textContent='Pausar';
+    
+    doubleInterval=setInterval(function(){
+      if(currentPlayer===1){
+        player1Time--;
+        if(player1Time<=0){
+          clearInterval(doubleInterval);
+          doubleRunning=false;
+          document.getElementById('doubleStart').textContent='Iniciar';
+          alert('¡Jugador 1 se quedo sin tiempo! Gana Jugador 2');
+        }
+      }else{
+        player2Time--;
+        if(player2Time<=0){
+          clearInterval(doubleInterval);
+          doubleRunning=false;
+          document.getElementById('doubleStart').textContent='Iniciar';
+          alert('¡Jugador 2 se quedo sin tiempo! Gana Jugador 1');
+        }
+      }
+      updateDoubleDisplay();
+    },1000);
+  }
+}
+
+function switchPlayer(){
+  if(!doubleRunning)return;
+  currentPlayer=currentPlayer===1?2:1;
+  updatePlayerVisuals();
+}
+
+function updatePlayerVisuals(){
+  const p1=document.getElementById('player1Timer');
+  const p2=document.getElementById('player2Timer');
+  
+  if(currentPlayer===1){
+    p1.classList.add('active');
+    p1.classList.remove('inactive');
+    p2.classList.remove('active');
+    p2.classList.add('inactive');
+    p1.querySelector('.player-label span:last-child').textContent='Tu turno';
+    p2.querySelector('.player-label span:last-child').textContent='Esperando...';
+  }else{
+    p2.classList.add('active');
+    p2.classList.remove('inactive');
+    p1.classList.remove('active');
+    p1.classList.add('inactive');
+    p2.querySelector('.player-label span:last-child').textContent='Tu turno';
+    p1.querySelector('.player-label span:last-child').textContent='Esperando...';
+  }
+}
+
+function resetDouble(){
+  clearInterval(doubleInterval);
+  doubleRunning=false;
+  player1Time=player2Time=0;
+  currentPlayer=1;
+  document.getElementById('doubleStart').textContent='Iniciar';
+  
+  document.getElementById('player1Timer').classList.add('active');
+  document.getElementById('player1Timer').classList.remove('inactive');
+  document.getElementById('player2Timer').classList.remove('active');
+  document.getElementById('player2Timer').classList.add('inactive');
+  
+  updateDoubleDisplay();
+}
+
+// ==================== POMODORO ====================
+function updatePomodoroDisplay(){
+  const time=pomodoroTimes[pomodoroMode];
+  document.getElementById('pomodoroDisplay').textContent=formatTime(time);
+  document.getElementById('pomodoroMode').textContent='Modo: '+(pomodoroMode==='work'?'Trabajo':(pomodoroMode==='break'?'Descanso':'Descanso Largo'));
+  document.getElementById('pomodoroFill').style.width='100%';
+}
+
+function togglePomodoro(){
+  if(pomodoroRunning){
+    clearInterval(pomodoroInterval);
+    pomodoroRunning=false;
+    document.getElementById('pomodoroStart').textContent='Continuar';
+  }else{
+    // Actualizar tiempos desde inputs
+    pomodoroTimes.work=(parseInt(document.getElementById('pomWorkMin').value)||25)*60;
+    pomodoroTimes.break=(parseInt(document.getElementById('pomBreakMin').value)||5)*60;
+    pomodoroTimes.long=(parseInt(document.getElementById('pomLongMin').value)||15)*60;
+    
+    let remaining=pomodoroTimes[pomodoroMode];
+    const total=remaining;
+    
+    pomodoroRunning=true;
+    document.getElementById('pomodoroStart').textContent='Pausar';
+    
+    pomodoroInterval=setInterval(function(){
+      remaining--;
+      document.getElementById('pomodoroDisplay').textContent=formatTime(remaining);
+      document.getElementById('pomodoroFill').style.width=(remaining/total*100)+'%';
+      
+      if(remaining<=0){
+        clearInterval(pomodoroInterval);
+        pomodoroRunning=false;
+        
+        if(pomodoroMode==='work'){
+          pomodoroCount++;
+          document.getElementById('pomodoroCount').textContent=pomodoroCount;
+          pomodoroMode=pomodoroCount%4===0?'long':'break';
+        }else{
+          pomodoroMode='work';
+        }
+        
+        document.getElementById('pomodoroStart').textContent='Iniciar';
+        updatePomodoroDisplay();
+        alert('¡Ronda completada!');
+      }
+    },1000);
+  }
+}
+
+function skipPomodoro(){
+  clearInterval(pomodoroInterval);
+  pomodoroRunning=false;
+  
+  if(pomodoroMode==='work'){
+    pomodoroCount++;
+    document.getElementById('pomodoroCount').textContent=pomodoroCount;
+    pomodoroMode=pomodoroCount%4===0?'long':'break';
+  }else{
+    pomodoroMode='work';
+  }
+  
+  document.getElementById('pomodoroStart').textContent='Iniciar';
+  updatePomodoroDisplay();
+}
+
+function resetPomodoro(){
+  clearInterval(pomodoroInterval);
+  pomodoroRunning=false;
+  pomodoroMode='work';
+  pomodoroCount=0;
+  document.getElementById('pomodoroCount').textContent='0';
+  document.getElementById('pomodoroStart').textContent='Iniciar';
+  updatePomodoroDisplay();
+}
+
+// Inicializar
+updateNormalDisplay();
+</script>
+</body>
+</html>
