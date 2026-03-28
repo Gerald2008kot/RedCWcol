@@ -13,8 +13,8 @@ const ASSETS_TO_CACHE = [
   "/redcw/js/pages.js",
   "/redcw/js/auth.js",
   "/manifest.json",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
+  "/redcw/icons/icon-192.png",
+  "/redcw/icons/icon-512.png",
   "https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fira+Sans:wght@300;400;500;600&display=swap",
 ];
 
