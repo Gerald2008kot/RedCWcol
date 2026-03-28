@@ -11,38 +11,39 @@ body{margin:0;padding:0;background:var(--bg);color:var(--text-main);font-family:
 header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:fixed;top:0;z-index:1000;}
 .header-logo{font-family:var(--font-display);font-weight:800;font-size:1.4rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
 .menu-toggle{background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;}
-.sidebar{width:280px;background:var(--card-bg);border-right:1px solid rgba(255,255,255,.05);padding:16px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid rgba(255,255,255,.05);padding:20px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
 .sidebar.active{transform:translateX(280px);}
 .nav-links{list-style:none;padding:0;margin:0;}
-.nav-links a{display:flex;align-items:center;padding:12px 16px;color:var(--text-dim);text-decoration:none;border-radius:12px;margin-bottom:4px;transition:all .2s;font-size:.9rem;background:rgba(255,255,255,.02);border-left:3px solid transparent;}
+.nav-links a{display:flex;align-items:center;padding:14px 18px;color:var(--text-dim);text-decoration:none;border-radius:12px;margin-bottom:8px;transition:all .2s;font-size:.95rem;background:rgba(255,255,255,.02);border-left:4px solid transparent;}
 .nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:white;border-left-color:var(--accent);}
-.nav-icon{width:18px;height:18px;margin-right:12px;flex-shrink:0;}
+.nav-icon{width:20px;height:20px;margin-right:12px;flex-shrink:0;transition:transform .2s ease, filter .2s ease;}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor);}
 .nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent);}
 .nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2);}
 .nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3);}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:850;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:850;}
 .overlay.active{display:block;}
-.main-content{margin-top:var(--header-h);padding:24px 16px;display:flex;flex-direction:column;align-items:center;}
+.main-content{margin-top:var(--header-h);padding:40px 20px;display:flex;flex-direction:column;align-items:center;}
 .page-title{font-family:var(--font-display);font-weight:800;font-size:1.6rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .page-sub{color:var(--text-dim);font-size:.88rem;margin:0 0 20px;}
 .tools-wrap{width:100%;max-width:700px;display:flex;flex-direction:column;gap:14px;}
-.card{background:var(--card-bg);border-radius:20px;padding:22px;border:1px solid rgba(255,255,255,.05);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.card{background:var(--card-bg);border-radius:28px;padding:25px;border:1px solid rgba(255,255,255,.05);box-shadow:0 30px 60px rgba(0,0,0,.6);}
 .card-title{font-family:var(--font-display);font-size:1rem;font-weight:700;margin:0 0 14px;color:var(--accent-3);}
 .textarea-dark{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px 14px;color:white;font-family:'Inter',monospace;font-size:.88rem;resize:vertical;outline:none;min-height:80px;transition:border-color .2s;}
 .textarea-dark:focus{border-color:var(--accent);}
-.input-dark{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;color:white;font-family:var(--font-main);font-size:.88rem;outline:none;width:80px;transition:border-color .2s;}
+.input-dark{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;color:white;font-family:var(--font-main);font-size:.88rem;outline:none;width:100%;max-width: 120px;transition:border-color .2s;}
 .input-dark:focus{border-color:var(--accent);}
-.btn-primary{padding:11px 20px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;margin-top:10px;}
-.btn-primary:hover{transform:translateY(-1px);}
+.btn-primary{padding:11px 20px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;margin-top:10px;box-shadow:0 4px 15px rgba(108,99,255,.3);}
+.btn-primary:hover{transform:translateY(-1px); filter: brightness(1.1);}
 .btn-sm{padding:9px 14px;border-radius:10px;background:rgba(0,217,165,.1);border:1px solid rgba(0,217,165,.25);color:var(--accent-3);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;}
 .btn-sm:hover{background:rgba(0,217,165,.2);}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
-.stat-item{background:rgba(0,0,0,.3);border-radius:10px;padding:10px 12px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:8px;margin-top:12px;}
+.stat-item{background:rgba(0,0,0,.3);border-radius:10px;padding:10px 12px; border: 1px solid rgba(255,255,255,0.02);}
 .stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
-.stat-val{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--accent-3);margin-top:2px;}
+.stat-val{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--accent-3);margin-top:2px; word-break: break-all;}
 .row-flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;}
 .result-line{font-family:var(--font-display);font-size:1rem;color:var(--accent-3);margin-top:8px;font-weight:700;}
-/* bar chart */
+.error-msg { color: #ff4d4d; font-size: 0.85rem; margin-top: 8px; display: none; }
 .bar-chart{display:flex;align-items:flex-end;gap:4px;height:80px;margin-top:12px;border-bottom:1px solid rgba(255,255,255,.08);}
 .bar{flex:1;background:linear-gradient(to top,var(--accent),var(--accent-2));border-radius:3px 3px 0 0;transition:height .4s;}
 ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
@@ -51,45 +52,158 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
 <body>
 <header>
   <a href="../index.html" class="header-logo">RedCW — Estadística</a>
-  <button class="menu-toggle" id="menuBtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+  <button class="menu-toggle" id="menuBtn"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
 </header>
 <div class="overlay" id="overlay"></div>
 <nav class="sidebar" id="sidebar">
-  <ul class="nav-links">
-    <li><a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a></li>
-    <li><a href="calculadora.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/></svg>Calculadora</a></li>
-    <li><a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Funciones</a></li>
-    <li><a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>Convertidor</a></li>
-    <li><a href="elementos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>Elementos</a></li>
-    <li><a href="estadistica.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadística</a></li>
-    <li><a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><circle cx="12" cy="20" r="1"/></svg>Física</a></li>
-    <li><a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>Morse</a></li>
-    <li><a href="cronometro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronómetro</a></li>
-    <li><a href="pomodoro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a></li>
-    <li><a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contraseñas</a></li>
-    <li><a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Tablas</a></li>
-    <li><a href="notas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a></li>
-  </ul>
+    <div class="nav-links">
+        <a href="../index.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio RedCW
+        </a>
+
+        <a href="calculadora.html" class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+            Calculadora
+        </a>
+
+        <a href="funciones.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Funciones
+        </a>
+
+        <a href="convertidor.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>
+            Convertidor
+        </a>
+
+        <a href="elementos.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+            Elementos
+        </a>
+
+        <a href="estadistica.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Estadística
+        </a>
+
+        <a href="fisica.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>
+            Física
+        </a>
+
+        <a href="morse.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>
+            Morse
+        </a>
+
+        <a href="cronometro.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Cronómetro
+        </a>
+
+        <a href="pomodoro.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+            Pomodoro
+        </a>
+
+        <a href="contrasenas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Contraseñas
+        </a>
+
+        <a href="tablas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Tablas
+        </a>
+
+        <a href="notas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Notas
+        </a>
+    </div>
 </nav>
+
+<style>
+    /* Estilos específicos para los iconos del Sidebar */
+    .nav-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+        flex-shrink: 0;
+        transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .nav-links a:hover .nav-icon, 
+    .nav-links a.active .nav-icon {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 5px currentColor);
+    }
+
+    /* Colores alternados para los iconos para dar vida al menú */
+    .nav-links a:nth-child(3n+1) .nav-icon { color: var(--accent); }
+    .nav-links a:nth-child(3n+2) .nav-icon { color: var(--accent-2); }
+    .nav-links a:nth-child(3n+3) .nav-icon { color: var(--accent-3); }
+</style>
+
 <main class="main-content">
   <h1 class="page-title">Estadística Descriptiva</h1>
   <p class="page-sub">Ingresa datos numéricos y obtén métricas estadísticas completas al instante.</p>
+  
   <div class="tools-wrap">
+    
     <div class="card">
-      <div class="card-title">📊 Análisis de datos</div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Análisis de datos 1D
+      </div>
       <textarea class="textarea-dark" id="dataInput" placeholder="Ingresa números separados por comas o espacios&#10;Ejemplo: 12, 45, 67, 23, 89, 34, 56">12, 45, 67, 23, 89, 34, 56, 78, 42, 91</textarea>
       <button class="btn-primary" id="calcBtn">Calcular estadísticas</button>
       <div class="bar-chart" id="barChart"></div>
       <div class="stats-grid" id="statsGrid"></div>
     </div>
+
     <div class="card">
-      <div class="card-title">🎲 Combinatoria y Probabilidad</div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Regresión Lineal Simple (2D)
+      </div>
+      <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:12px;">Encuentra la relación lineal (y = mx + b) entre dos conjuntos de datos.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <textarea class="textarea-dark" id="regX" placeholder="Valores X&#10;Ej: 1, 2, 3, 4, 5" style="min-height:60px">1, 2, 3, 4, 5</textarea>
+        <textarea class="textarea-dark" id="regY" placeholder="Valores Y&#10;Ej: 2, 4, 5, 4, 5" style="min-height:60px">2, 4, 5, 4, 5</textarea>
+      </div>
+      <div id="regError" class="error-msg">Los conjuntos X e Y deben tener la misma cantidad de números.</div>
+      <button class="btn-primary" onclick="calcReg()" style="width: 100%;">Calcular Regresión</button>
+      <div class="stats-grid" id="regGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Distribución Normal (Puntaje Z)
+      </div>
+      <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:12px;">Calcula a cuántas desviaciones estándar se encuentra un valor de la media.</div>
+      <div class="row-flex" style="flex-wrap: nowrap;">
+        <input class="input-dark" id="zx" type="number" placeholder="Valor (X)" value="85"/>
+        <input class="input-dark" id="zmu" type="number" placeholder="Media (μ)" value="70"/>
+        <input class="input-dark" id="zsd" type="number" placeholder="Desv (σ)" value="10"/>
+        <button class="btn-sm" onclick="calcZ()" style="flex-shrink: 0;">Calcular Z</button>
+      </div>
+      <div class="result-line" id="zRes" style="margin-top: 14px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Combinatoria y Probabilidad
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div>
           <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">Combinaciones C(n, k)</div>
           <div class="row-flex">
-            <input class="input-dark" id="cn" type="number" value="10" placeholder="n"/>
-            <input class="input-dark" id="ck" type="number" value="3" placeholder="k"/>
+            <input class="input-dark" id="cn" type="number" value="10" placeholder="n" style="width:60px"/>
+            <input class="input-dark" id="ck" type="number" value="3" placeholder="k" style="width:60px"/>
             <button class="btn-sm" onclick="calcComb()">= ?</button>
           </div>
           <div class="result-line" id="combRes"></div>
@@ -97,23 +211,28 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
         <div>
           <div style="font-size:.82rem;color:var(--text-dim);margin-bottom:8px;font-weight:600;">Permutaciones P(n, k)</div>
           <div class="row-flex">
-            <input class="input-dark" id="pn" type="number" value="10" placeholder="n"/>
-            <input class="input-dark" id="pk" type="number" value="3" placeholder="k"/>
+            <input class="input-dark" id="pn" type="number" value="10" placeholder="n" style="width:60px"/>
+            <input class="input-dark" id="pk" type="number" value="3" placeholder="k" style="width:60px"/>
             <button class="btn-sm" onclick="calcPerm()">= ?</button>
           </div>
           <div class="result-line" id="permRes"></div>
         </div>
       </div>
     </div>
+
   </div>
 </main>
+
 <script>
+// Toggle de Menú
 const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
 menuBtn.onclick=()=>{sidebar.classList.toggle('active');overlay.classList.toggle('active');};
 overlay.onclick=()=>{sidebar.classList.remove('active');overlay.classList.remove('active');};
 
+// Función Factorial
 function fact(n){if(n<=1)return 1;let r=1;for(let i=2;i<=n;i++)r*=i;return r;}
 
+// Análisis de Datos 1D
 document.getElementById('calcBtn').onclick = () => {
   const raw = document.getElementById('dataInput').value;
   const nums = raw.split(/[\s,;]+/).map(Number).filter(n=>!isNaN(n)&&n!==null&&raw.trim()!=='');
@@ -127,27 +246,91 @@ document.getElementById('calcBtn').onclick = () => {
   const sd=Math.sqrt(variance);
   const q1=nums[Math.floor(n/4)], q3=nums[Math.floor(3*n/4)];
   const iqr=q3-q1, range=nums[n-1]-nums[0];
-  const skew=(mean-parseFloat(mode))/sd;
+  const skew= sd === 0 ? 0 : (mean-parseFloat(mode))/sd;
+  
   document.getElementById('statsGrid').innerHTML=[
     ['n (muestra)',n],['Suma',+sum.toFixed(4)],
     ['Media (μ)',+mean.toFixed(4)],['Mediana',median],
     ['Moda',mode],['Rango',+range.toFixed(4)],
-    ['Varianza (σ²)',+variance.toFixed(4)],['Desv. estándar (σ)',+sd.toFixed(4)],
+    ['Varianza (σ²)',+variance.toFixed(4)],['Desv. Est. (σ)',+sd.toFixed(4)],
     ['Mínimo',nums[0]],['Máximo',nums[n-1]],
     ['Q1 (25%)',q1],['Q3 (75%)',q3],
-    ['IQR (Q3-Q1)',+iqr.toFixed(4)],['Asimetría',+skew.toFixed(4)],
+    ['IQR',+iqr.toFixed(4)],['Asimetría',+skew.toFixed(4)],
   ].map(([l,v])=>`<div class="stat-item"><div class="stat-label">${l}</div><div class="stat-val">${v}</div></div>`).join('');
-  // Bar chart
+  
+  // Gráfico de Barras
   const max=nums[n-1]||1;
   const chart=document.getElementById('barChart');
   const show=nums.slice(0,30);
   chart.innerHTML=show.map(v=>`<div class="bar" style="height:${Math.max(4,(v/max*76))}px" title="${v}"></div>`).join('');
 };
 
-window.calcComb=()=>{const n=parseInt(document.getElementById('cn').value),k=parseInt(document.getElementById('ck').value);if(isNaN(n)||isNaN(k))return;const r=fact(n)/(fact(k)*fact(n-k));document.getElementById('combRes').textContent=`C(${n},${k}) = ${r}`;};
-window.calcPerm=()=>{const n=parseInt(document.getElementById('pn').value),k=parseInt(document.getElementById('pk').value);if(isNaN(n)||isNaN(k))return;const r=fact(n)/fact(n-k);document.getElementById('permRes').textContent=`P(${n},${k}) = ${r}`;};
+// Regresión Lineal Simple
+window.calcReg = () => {
+  const parseArr = val => val.split(/[\s,;]+/).map(Number).filter(n=>!isNaN(n)&&val.trim()!=='');
+  const xVals = parseArr(document.getElementById('regX').value);
+  const yVals = parseArr(document.getElementById('regY').value);
+  const errorMsg = document.getElementById('regError');
+  
+  if (xVals.length !== yVals.length || xVals.length === 0) {
+    errorMsg.style.display = 'block';
+    document.getElementById('regGrid').innerHTML = '';
+    return;
+  }
+  errorMsg.style.display = 'none';
 
+  const n = xVals.length;
+  const sumX = xVals.reduce((a,b)=>a+b,0);
+  const sumY = yVals.reduce((a,b)=>a+b,0);
+  const sumXY = xVals.reduce((sum, x, i) => sum + (x * yVals[i]), 0);
+  const sumX2 = xVals.reduce((sum, x) => sum + (x * x), 0);
+  const sumY2 = yVals.reduce((sum, y) => sum + (y * y), 0);
+
+  // Pendiente (m) y Constante (b)
+  const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const b = (sumY - m * sumX) / n;
+  
+  // Coeficiente de Correlación de Pearson (r)
+  const numR = (n * sumXY - sumX * sumY);
+  const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const r = denR === 0 ? 0 : numR / denR;
+  const r2 = r * r;
+
+  document.getElementById('regGrid').innerHTML=[
+    ['Correlación (r)', +r.toFixed(4)],
+    ['Determinación (r²)', +r2.toFixed(4)],
+    ['Pendiente (m)', +m.toFixed(4)],
+    ['Intersección (b)', +b.toFixed(4)],
+    ['Ecuación (y = mx+b)', `y = ${m.toFixed(2)}x ${b >= 0 ? '+' : ''} ${b.toFixed(2)}`]
+  ].map(([l,v])=>`<div class="stat-item"><div class="stat-label">${l}</div><div class="stat-val" style="font-size: ${l.includes('Ecuación') ? '0.95rem' : '1.1rem'}">${v}</div></div>`).join('');
+};
+
+// Puntaje Z
+window.calcZ = () => {
+  const x = parseFloat(document.getElementById('zx').value);
+  const mu = parseFloat(document.getElementById('zmu').value);
+  const sd = parseFloat(document.getElementById('zsd').value);
+  const resDiv = document.getElementById('zRes');
+
+  if(isNaN(x) || isNaN(mu) || isNaN(sd) || sd === 0) {
+    resDiv.textContent = "Ingresa valores válidos (σ no puede ser 0).";
+    return;
+  }
+
+  const z = (x - mu) / sd;
+  resDiv.innerHTML = `Z = <span style="color:#fff">${z.toFixed(4)}</span> desviaciones estándar`;
+};
+
+// Combinatoria
+window.calcComb=()=>{const n=parseInt(document.getElementById('cn').value),k=parseInt(document.getElementById('ck').value);if(isNaN(n)||isNaN(k)||n<k)return;const r=fact(n)/(fact(k)*fact(n-k));document.getElementById('combRes').textContent=`C(${n},${k}) = ${r}`;};
+window.calcPerm=()=>{const n=parseInt(document.getElementById('pn').value),k=parseInt(document.getElementById('pk').value);if(isNaN(n)||isNaN(k)||n<k)return;const r=fact(n)/fact(n-k);document.getElementById('permRes').textContent=`P(${n},${k}) = ${r}`;};
+
+// Ejecuciones iniciales
 document.getElementById('calcBtn').click();
+document.getElementById('regX').value && window.calcReg();
+document.getElementById('zx').value && window.calcZ();
+window.calcComb();
+window.calcPerm();
 </script>
 </body>
 </html>
