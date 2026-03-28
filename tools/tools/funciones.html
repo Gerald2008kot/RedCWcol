@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>RedCW — Visualizador de Funciones</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --accent: #6C63FF;
+            --accent-2: #FF6B9D;
+            --accent-3: #00D9A5;
+            --bg: #05070a;
+            --card-bg: #10141d;
+            --text-main: #fff;
+            --text-dim: #94a3b8;
+            --border: rgba(255,255,255,.06);
+            --font-display: 'Outfit', sans-serif;
+            --font-main: 'Inter', sans-serif;
+            --header-h: 70px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: var(--font-main); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+
+        /* --- HEADER --- */
+        header {
+            height: var(--header-h);
+            width: 100%;
+            background: rgba(16, 20, 29, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-logo {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 8px;
+            transition: .2s;
+        }
+
+        .menu-toggle:hover { background: rgba(255,255,255,.08); }
+
+        /* --- SIDEBAR & NAVIGATION --- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.6);
+            display: none;
+            z-index: 850;
+            backdrop-filter: blur(4px);
+        }
+        .overlay.active { display: block; }
+
+        .sidebar {
+            width: 280px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: var(--header-h);
+            bottom: 0;
+            left: -280px;
+            z-index: 900;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .sidebar.active { transform: translateX(280px); }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            color: var(--text-dim);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: #fff;
+            border-left: 4px solid var(--accent);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .nav-links a:hover .nav-icon, 
+        .nav-links a.active .nav-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        .nav-links a:nth-child(3n+1) .nav-icon { color: var(--accent); }
+        .nav-links a:nth-child(3n+2) .nav-icon { color: var(--accent-2); }
+        .nav-links a:nth-child(3n+3) .nav-icon { color: var(--accent-3); }
+
+        /* --- LAYOUT --- */
+        .main-content {
+            margin-top: var(--header-h);
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .viz-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 992px) {
+            .viz-layout { grid-template-columns: 1fr; }
+            .main-content { padding: 16px; }
+        }
+
+        /* --- CARDS & UI --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
+        .card-title svg { width: 18px; color: var(--accent-3); }
+
+        .viz-input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            transition: .2s;
+        }
+        .viz-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #5a52e0);
+            border: none;
+            color: #fff;
+            font-family: var(--font-display);
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: .2s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        /* --- CANVAS --- */
+        .canvas-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            height: 600px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        @media (max-width: 600px) { .canvas-wrapper { height: 400px; } }
+
+        #graphCanvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+
+        .zoom-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+        .zoom-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+        .canvas-info {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 0.75rem;
+            font-family: monospace;
+            background: rgba(16, 20, 29, 0.8);
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            color: var(--accent-3);
+        }
+
+        /* --- LISTS --- */
+        .func-list, .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .func-item, .history-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        .func-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+        .func-delete { margin-left: auto; background: none; border: none; color: #ff4d4d; cursor: pointer; padding-left: 10px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="../index.html" class="header-logo">RedCW</a>
+    <button class="menu-toggle" id="menuBtn">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<nav class="sidebar" id="sidebar">
+    <div class="nav-links">
+        <a href="../index.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Inicio RedCW
+        </a>
+        <a href="calculadora.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+            Calculadora
+        </a>
+        <a href="funciones.html" class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Funciones
+        </a>
+        <a href="convertidor.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>
+            Convertidor
+        </a>
+        <a href="elementos.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+            Elementos
+        </a>
+        <a href="estadistica.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Estadística
+        </a>
+        <a href="fisica.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>
+            Física
+        </a>
+        <a href="morse.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>
+            Morse
+        </a>
+        <a href="cronometro.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Cronómetro
+        </a>
+        <a href="pomodoro.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+            Pomodoro
+        </a>
+        <a href="contrasenas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Contraseñas
+        </a>
+        <a href="tablas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Tablas
+        </a>
+        <a href="notas.html">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Notas
+        </a>
+    </div>
+</nav>
+
+<main class="main-content">
+    <div class="viz-layout">
+        <aside>
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/></svg>
+                    Nueva Función
+                </div>
+                <input class="viz-input" id="funcInput" placeholder="ej: x^2 + 2*x" value="x^2"/>
+                <button class="btn-primary" id="addFuncBtn">Graficar</button>
+                <div class="func-list" id="funcList"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    Punto Específico
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input class="viz-input" id="coordX" type="number" placeholder="X" value="0" style="padding:8px"/>
+                    <button class="btn-primary" id="coordGo" style="margin:0; width:60px">Ir</button>
+                </div>
+                <div id="coordInfo" style="margin-top:12px; font-size:0.8rem; color:var(--text-dim)">Introduce un valor de X</div>
+            </div>
+        </aside>
+
+        <section class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="graphCanvas"></canvas>
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                <button class="zoom-btn" id="zoomOut"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                <button class="zoom-btn" id="zoomReset"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+            </div>
+            <div class="canvas-info" id="canvasInfo">x: 0.00, y: 0.00</div>
+        </section>
+    </div>
+</main>
+
+<script>
+    // --- Navegación Sidebar ---
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    
+    menuBtn.onclick = overlay.onclick = () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    };
+
+    // --- Lógica del Graficador ---
+    const canvas = document.getElementById('graphCanvas'), ctx = canvas.getContext('2d');
+    const funcColors = ['#6C63FF', '#FF6B9D', '#00D9A5', '#FFD166', '#EF476F'];
+    let graphFunctions = [], viewState = { xMin: -10, xMax: 10, yMin: -7, yMax: 7 };
+    let isDragging = false, dragStart = { x: 0, y: 0 }, viewStart = null, markerPoint = null;
+
+    function resizeCanvas() {
+        const wrapper = document.getElementById('canvasWrapper');
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        drawGraph();
+    }
+
+    function toScreen(wx, wy) {
+        return {
+            x: (wx - viewState.xMin) / (viewState.xMax - viewState.xMin) * canvas.width,
+            y: (1 - (wy - viewState.yMin) / (viewState.yMax - viewState.yMin)) * canvas.height
+        };
+    }
+
+    function toWorld(sx, sy) {
+        return {
+            x: viewState.xMin + sx / canvas.width * (viewState.xMax - viewState.xMin),
+            y: viewState.yMin + (1 - sy / canvas.height) * (viewState.yMax - viewState.yMin)
+        };
+    }
+
+    function evalFunc(expr, x) {
+        // Preprocesar expresión matemática para JavaScript
+        let e = expr.replace(/\^/g, '**')
+                    .replace(/(\d)(x)/g, '$1*x')
+                    .replace(/\bsin\b/g, 'Math.sin')
+                    .replace(/\bcos\b/g, 'Math.cos')
+                    .replace(/\btan\b/g, 'Math.tan')
+                    .replace(/\bsqrt\b/g, 'Math.sqrt')
+                    .replace(/\blog\b/g, 'Math.log10')
+                    .replace(/\bln\b/g, 'Math.log')
+                    .replace(/\bpi\b/g, 'Math.PI')
+                    .replace(/\be\b/g, 'Math.E');
+        return Function('x', `"use strict"; return (${e})`)(x);
+    }
+
+    function drawGraph() {
+        const W = canvas.width, H = canvas.height;
+        ctx.fillStyle = '#05070a'; // Fondo
+        ctx.fillRect(0, 0, W, H);
+        
+        // --- 1. Calcular paso de cuadrícula ---
+        const xRange = viewState.xMax - viewState.xMin;
+        let step = Math.pow(10, Math.floor(Math.log10(xRange / 5)));
+        if (xRange / step > 10) step *= 2;
+        if (xRange / step < 4) step /= 2;
+
+        ctx.font = '11px Inter';
+        const ox = toScreen(0, 0);
+
+        // --- 2. Dibujar Cuadrícula y Números ---
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+
+        // Líneas Verticales (Eje X)
+        for (let x = Math.ceil(viewState.xMin / step) * step; x <= viewState.xMax; x += step) {
+            const sp = toScreen(x, 0);
+            
+            // Línea de fondo
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            ctx.beginPath(); ctx.moveTo(sp.x, 0); ctx.lineTo(sp.x, H); ctx.stroke();
+            
+            // Texto del número
+            if (Math.abs(x) > 0.001) {
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                // Mantener el número pegado al eje X, pero sin salirse del canvas
+                const yPos = Math.min(Math.max(ox.y + 8, 5), H - 20);
+                ctx.fillText(parseFloat(x.toPrecision(4)), sp.x, yPos);
+            }
+        }
+
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+
+        // Líneas Horizontales (Eje Y)
+        for (let y = Math.ceil(viewState.yMin / step) * step; y <= viewState.yMax; y += step) {
+            const sp = toScreen(0, y);
+            
+            // Línea de fondo
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            ctx.beginPath(); ctx.moveTo(0, sp.y); ctx.lineTo(W, sp.y); ctx.stroke();
+            
+            // Texto del número
+            if (Math.abs(y) > 0.001) {
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                // Mantener el número pegado al eje Y, pero sin salirse del canvas
+                const xPos = Math.min(Math.max(ox.x - 8, 25), W - 5);
+                ctx.fillText(parseFloat(y.toPrecision(4)), xPos, sp.y);
+            }
+        }
+
+        // --- 3. Dibujar Ejes Principales ---
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(ox.x, 0); ctx.lineTo(ox.x, H);
+        ctx.moveTo(0, ox.y); ctx.lineTo(W, ox.y);
+        ctx.stroke();
+
+        // Punto de origen central (0,0)
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fillText("0", ox.x - 8, ox.y + 10);
+
+        // --- 4. Dibujar Funciones ---
+        graphFunctions.forEach((fn, i) => {
+            ctx.beginPath();
+            ctx.strokeStyle = funcColors[i % funcColors.length];
+            ctx.lineWidth = 3;
+            let first = true;
+            
+            // Evaluamos punto por punto a lo ancho del canvas
+            for (let sx = 0; sx < W; sx += 2) {
+                const wx = toWorld(sx, 0).x;
+                try {
+                    const wy = evalFunc(fn.expr, wx);
+                    // Saltar si el valor es infinito o no es un número (ej. logaritmos negativos)
+                    if (!isFinite(wy) || isNaN(wy)) {
+                        first = true;
+                        continue;
+                    }
+                    const sy = toScreen(wx, wy).y;
+                    if (first) ctx.moveTo(sx, sy); 
+                    else ctx.lineTo(sx, sy);
+                    first = false;
+                } catch(e) {
+                    first = true;
+                }
+            }
+            ctx.stroke();
+        });
+
+        // Marcador de punto específico
+        if (markerPoint) {
+            const sp = toScreen(markerPoint.x, markerPoint.y);
+            ctx.fillStyle = '#FF6B9D';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(sp.x, sp.y, 6, 0, Math.PI*2); 
+            ctx.fill(); ctx.stroke();
+        }
+    }
+
+    // --- Interacciones UI ---
+    document.getElementById('addFuncBtn').onclick = () => {
+        const val = document.getElementById('funcInput').value;
+        if(val) {
+            graphFunctions.push({expr: val, id: Date.now()});
+            document.getElementById('funcInput').value = '';
+            renderList();
+            drawGraph();
+        }
+    };
+
+    // Permite graficar presionando "Enter"
+    document.getElementById('funcInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') document.getElementById('addFuncBtn').click();
+    });
+
+    function renderList() {
+        const container = document.getElementById('funcList');
+        container.innerHTML = '';
+        graphFunctions.forEach((f, i) => {
+            const el = document.createElement('div');
+            el.className = 'func-item';
+            el.innerHTML = `<span class="func-dot" style="background:${funcColors[i%funcColors.length]}"></span>
+                            <span style="font-family:monospace; flex:1;">${f.expr}</span>
+                            <button class="func-delete" onclick="removeFunc(${f.id})"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+            container.appendChild(el);
+        });
+    }
+
+    window.removeFunc = (id) => {
+        graphFunctions = graphFunctions.filter(f => f.id !== id);
+        renderList();
+        drawGraph();
+    }
+
+    // Ir a un punto X específico
+    document.getElementById('coordGo').onclick = () => {
+        const x = parseFloat(document.getElementById('coordX').value);
+        if(!isNaN(x) && graphFunctions.length > 0) {
+            // Evalúa el punto en la primera función de la lista
+            try {
+                const y = evalFunc(graphFunctions[0].expr, x);
+                markerPoint = {x, y};
+                document.getElementById('coordInfo').innerHTML = `<span style="color:var(--accent)">f(${x.toFixed(2)})</span> = <span style="color:#fff; font-weight:bold">${y.toFixed(4)}</span>`;
+                drawGraph();
+            } catch(e) {
+                document.getElementById('coordInfo').textContent = "Error al evaluar";
+            }
+        }
+    };
+
+    // --- Controles de Cámara (Zoom y Paneo) ---
+    document.getElementById('zoomIn').onclick = () => zoom(0.8);
+    document.getElementById('zoomOut').onclick = () => zoom(1.25);
+    document.getElementById('zoomReset').onclick = () => { viewState = { xMin: -10, xMax: 10, yMin: -7, yMax: 7 }; markerPoint = null; drawGraph(); };
+
+    function zoom(f) {
+        const dx = (viewState.xMax - viewState.xMin) * f / 2;
+        const dy = (viewState.yMax - viewState.yMin) * f / 2;
+        const cx = (viewState.xMax + viewState.xMin) / 2;
+        const cy = (viewState.yMax + viewState.yMin) / 2;
+        viewState = { xMin: cx - dx, xMax: cx + dx, yMin: cy - dy, yMax: cy + dy };
+        drawGraph();
+    }
+
+    // Zoom con la rueda del ratón
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 1.1 : 0.9;
+        zoom(factor);
+    }, { passive: false });
+
+    // Paneo al arrastrar
+    canvas.onmousedown = (e) => {
+        isDragging = true;
+        dragStart = { x: e.clientX, y: e.clientY };
+        viewStart = { ...viewState };
+    };
+
+    window.onmousemove = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseW = toWorld(e.clientX - rect.left, e.clientY - rect.top);
+        document.getElementById('canvasInfo').textContent = `x: ${mouseW.x.toFixed(2)}, y: ${mouseW.y.toFixed(2)}`;
+
+        if (!isDragging) return;
+        const dx = (e.clientX - dragStart.x) / canvas.width * (viewStart.xMax - viewStart.xMin);
+        const dy = (e.clientY - dragStart.y) / canvas.height * (viewStart.yMax - viewStart.yMin);
+        viewState.xMin = viewStart.xMin - dx;
+        viewState.xMax = viewStart.xMax - dx;
+        viewState.yMin = viewStart.yMin + dy;
+        viewState.yMax = viewStart.yMax + dy;
+        drawGraph();
+    };
+
+    window.onmouseup = () => isDragging = false;
+    window.onmouseleave = () => isDragging = false;
+
+    // --- Inicialización ---
+    window.onload = () => {
+        resizeCanvas();
+        graphFunctions.push({expr: 'x^2', id: 1});
+        renderList();
+    };
+    window.onresize = resizeCanvas;
+</script>
+</body>
+</html>
