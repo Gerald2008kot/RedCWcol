@@ -63,8 +63,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "RedCW", {
       body: data.body || "Nueva notificación",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/redcw/icons/icon-192.png",
+      badge: "/redcw/icons/icon-192.png",
     })
   );
 });
