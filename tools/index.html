@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedCW - Herramientas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+
+    <style>
+        :root {
+            /* TUS COLORES OFICIALES */
+            --accent:       #6C63FF; /* Morado */
+            --accent-2:     #FF6B9D; /* Rosa */
+            --accent-3:     #00D9A5; /* Cian/Verde */
+            --accent-glow:  rgba(108,99,255,.3);
+            
+            /* Fondos y Textos para modo oscuro */
+            --bg: #05070a;
+            --card-bg: #10141d;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            
+            /* Tu fuente de display */
+            --font-display: 'Outfit', sans-serif;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+        }
+
+        /* Reutilizable para títulos */
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+            max-width: 600px;
+        }
+
+        /* --- TU LOGO ESTILIZADO --- */
+        .header-logo {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            margin: 0;
+        }
+
+        /* --- SECCIONES PRINCIPALES --- */
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        /* Hero Section (Inicio) */
+        .hero {
+            background: radial-gradient(circle at center, rgba(108,99,255,0.15) 0%, rgba(5,7,10,0) 70%);
+        }
+        .hero h1.main-title {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            margin: 20px 0;
+            line-height: 1.1;
+        }
+        .hero h1.main-title span { color: var(--accent-3); }
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* Indicador de Scroll */
+        .scroll-down {
+            margin-top: auto;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+        }
+
+        /* --- CARDS DE FUNCIONALIDADES (Sección 1) --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .feature-card .icon-emoji {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin: 0 0 15px 0;
+            color: white;
+        }
+
+        .feature-card p {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .card-feeds { border-bottom: 3px solid var(--accent); }
+        .card-comunidades { border-bottom: 3px solid var(--accent-2); }
+        .card-multimedia { border-bottom: 3px solid var(--accent-3); }
+
+        /* =========================================
+           --- NUEVA SECCIÓN DE HERRAMIENTAS ---
+           ========================================= */
+        .tools-section {
+            background: radial-gradient(circle at bottom, rgba(0, 217, 165, 0.08) 0%, rgba(5,7,10,0) 60%);
+            padding-bottom: 100px;
+        }
+
+        .tools-grid {
+            display: grid;
+            /* Cuadrícula adaptativa: mínimo 140px por carta */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+        }
+
+        .tool-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 30px 15px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Efecto hover con tu color accent principal */
+        .tool-card:hover {
+            background: rgba(108, 99, 255, 0.08);
+            border-color: rgba(108, 99, 255, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 99, 255, 0.1);
+        }
+
+        /* Estilo general para los SVGs */
+        .tool-icon-svg {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Colores asignados a los SVGs para variedad visual */
+        .icon-c1 { stop-color: var(--accent); color: var(--accent); }     /* Morado */
+        .icon-c2 { stop-color: var(--accent-2); color: var(--accent-2); } /* Rosa */
+        .icon-c3 { stop-color: var(--accent-3); color: var(--accent-3); } /* Cian */
+
+        /* Efecto de brillo en el icono al hacer hover */
+        .tool-card:hover .tool-icon-svg {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        .tool-card span {
+            color: var(--text-main);
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- SECCIÓN FINAL: TÉRMINOS --- */
+        .terms-section {
+            background: var(--card-bg);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            min-height: auto;
+            padding: 80px 20px;
+        }
+
+        .terms-box {
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .terms-box h2 {
+            font-family: var(--font-display);
+            margin-top: 0;
+            color: var(--text-main);
+        }
+
+        .terms-text {
+            text-align: left;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            height: 150px;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .terms-text b { color: var(--accent-3); }
+
+        .check-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .btn-final {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            text-align: center;
+            
+            /* Estado bloqueado por defecto */
+            background: #2d3748;
+            color: #718096;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .btn-final.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            pointer-events: auto;
+            opacity: 1;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-final.active:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(255,107,157,0.3);
+        }
+
+        /* Animaciones */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Scrollbar styling */
+        .terms-text::-webkit-scrollbar { width: 6px; }
+        .terms-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        /* Banner PWA */
+        #installBanner {
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 400px; background: var(--card-bg); 
+            border: 1px solid var(--accent); border-radius: 20px; padding: 15px; 
+            z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            align-items: center; justify-content: space-between; gap: 15px;
+        }
+
+    </style>
+</head>
+<body>
+    <section id="tools" class="tools-section">
+        <h2 class="section-title">RedCW - Herramientas</h2>
+        <p class="section-subtitle">Utilidades esenciales para tu día a día académico, accesibles rápidamente.</p>
+        
+        <div class="tools-grid">
+            
+            <a href="tools/calculadora.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                    <line x1="8" y1="6" x2="16" y2="6"></line>
+                    <line x1="16" y1="14" x2="16" y2="18"></line>
+                    <path d="M16 10h.01"></path>
+                    <path d="M12 10h.01"></path>
+                    <path d="M8 10h.01"></path>
+                    <path d="M12 14h.01"></path>
+                    <path d="M8 14h.01"></path>
+                    <path d="M12 18h.01"></path>
+                    <path d="M8 18h.01"></path>
+                </svg>
+                <span>Calculadora</span>
+            </a>
+
+            <a href="tools/funciones.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>Funciones</span>
+            </a>
+
+            <a href="tools/convertidor.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="16 3 21 3 21 8"></polyline>
+                    <line x1="4" y1="20" x2="21" y2="3"></line>
+                    <polyline points="21 16 21 21 16 21"></polyline>
+                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                </svg>
+                <span>Convertidor</span>
+            </a>
+
+            <a href="tools/elementos.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+                </svg>
+                <span>Elementos</span>
+            </a>
+
+            <a href="tools/estadistica.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Estadística</span>
+            </a>
+
+            <a href="tools/fisica.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                    <circle cx="12" cy="20" r="1"></circle>
+                </svg>
+                <span>Física</span>
+            </a>
+
+            <a href="tools/morse.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="1" fill="currentColor"></circle>
+                    <circle cx="19" cy="12" r="1" fill="currentColor"></circle>
+                    <circle cx="5" cy="12" r="1" fill="currentColor"></circle>
+                </svg>
+                <span>Morse</span>
+            </a>
+
+            <a href="tools/cronometro.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Cronómetro</span>
+            </a>
+
+            <a href="tools/pomodoro.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12 A10 10 0 1 1 2 12 A10 10 0 1 1 22 12 Z" fill="none" stroke="currentColor"/>
+                    <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor"/>
+                    <path d="M12 7 L12 12 L15 15" stroke="currentColor" stroke-width="3"/>
+                </svg>
+                <span>Pomodoro</span>
+            </a>
+
+            <a href="tools/contrasenas.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span>Contraseñas</span>
+            </a>
+
+            <a href="tools/tablas.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Tablas</span>
+            </a>
+
+            <a href="tools/notas.html" class="tool-card">
+                <svg class="tool-icon-svg icon-c3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span>Notas</span>
+            </a>
+
+        </div>
+    </section>
+
+    <section class="terms-section" id="terminos">
+        <div class="terms-box">
+            <h2>Casi listo...</h2>
+            <p style="color: var(--text-dim); margin-bottom: 20px;">Para mantener RedCW genial para todos, necesitamos que aceptes nuestras leyes.</p>
+            
+            <div class="terms-text">
+                <b>1. Respeto ante todo:</b> No toleramos el ciberacoso, doxxing o amenazas. Somos una comunidad.<br><br>
+                <b>2. Contenido Seguro:</b> Prohibido subir material ilegal, explícito (NSFW) o violencia gráfica.<br><br>
+                <b>3. Moderación y Anonimato:</b> Las funciones de anonimato son para libre expresión, no para atacar.<br><br>
+                <b>4. Responsabilidad:</b> Eres dueño de lo que publicas. RedCW no se hace responsable de las opiniones de los usuarios.
+            </div>
+
+            <label class="check-wrapper">
+                <input type="checkbox" id="acceptCheck">
+                <span style="font-size: 0.9rem;">Acepto las leyes de la comunidad RedCW</span>
+            </label>
+
+            <a href="index.html" id="enterBtn" class="btn-final">ENTRAR A LA RED</a>
+        </div>
+    </section>
+    
+    <div id="installBanner">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
+            <div>
+                <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
+            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer; padding:0 5px;">&times;</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Lógica de Términos ---
+        const checkbox = document.getElementById('acceptCheck');
+        const button = document.getElementById('enterBtn');
+
+        checkbox.addEventListener('change', function() {
+            if(this.checked) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+
+        // --- Lógica de Instalación PWA ---
+        let deferredPrompt;
+        const installBanner = document.getElementById('installBanner');
+        const btnInstall = document.getElementById('btnInstall');
+        const btnCancel = document.getElementById('btnCancel');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Muestra el banner tras 3 segundos
+            setTimeout(() => {
+                installBanner.style.display = 'flex';
+            }, 3000);
+        });
+
+        btnInstall.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBanner.style.display = 'none';
+            }
+        });
+
+        btnCancel.addEventListener('click', () => {
+            installBanner.style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installBanner.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Asegúrate de que sw.js existe en la raíz
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW error:", err));
+            });
+        }
+    </script>
+
+</body>
+</html>
