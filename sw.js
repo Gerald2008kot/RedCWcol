@@ -4,7 +4,8 @@
 const CACHE_NAME = "redcw-v1";
 const ASSETS_TO_CACHE = [
   "/",
-             // Tu nueva landing de bienvenida
+  "/index.html",       
+  // Tu nueva landing de bienvenida
   "/redcw/index.html",              // Tu app principal
   "/redcw/css/app.css",
   "/redcw/js/config.js",
