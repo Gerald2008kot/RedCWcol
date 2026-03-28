@@ -292,9 +292,9 @@
         </div>
     </section>
     
-    <div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
+<div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
     <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px;">
+        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px;" alt="Logo RedCW">
         <div>
             <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
             <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
@@ -325,12 +325,7 @@
     const btnInstall = document.getElementById('btnInstall');
     const btnCancel = document.getElementById('btnCancel');
 
-    // 1. Registrar el Service Worker (¡Importante!)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js');
-        });
-    }
+
 
     // 2. Capturar el evento de instalación
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -366,7 +361,14 @@
         deferredPrompt = null;
     });
 </script>
-
+<script>
+        // 1. Registrar el Service Worker (¡Importante!)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
+        });
+    }
+</script>
 
 </body>
 </html>
