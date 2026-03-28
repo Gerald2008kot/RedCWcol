@@ -291,19 +291,82 @@
             <a href="./redcw/index.html#inicio" id="enterBtn" class="btn-final">ENTRAR A LA RED</a>
         </div>
     </section>
+    
+    <div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="icons/icon-192.png" width="40" height="40" style="border-radius: 8px;">
+        <div>
+            <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
+        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+    </div>
+</div>
 
-    <script>
-        const checkbox = document.getElementById('acceptCheck');
-        const button = document.getElementById('enterBtn');
+<script>
+    // --- Lógica de Términos (Tu código original) ---
+    const checkbox = document.getElementById('acceptCheck');
+    const button = document.getElementById('enterBtn');
 
-        checkbox.addEventListener('change', function() {
-            if(this.checked) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
+    checkbox.addEventListener('change', function() {
+        if(this.checked) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    });
+
+    // --- Lógica de Instalación PWA ---
+    let deferredPrompt;
+    const installBanner = document.getElementById('installBanner');
+    const btnInstall = document.getElementById('btnInstall');
+    const btnCancel = document.getElementById('btnCancel');
+
+    // 1. Registrar el Service Worker (¡Importante!)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js');
         });
-    </script>
+    }
+
+    // 2. Capturar el evento de instalación
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Evita que Chrome muestre su propio mini-infobar
+        e.preventDefault();
+        // Guarda el evento para usarlo luego
+        deferredPrompt = e;
+        // Muestra nuestro banner personalizado tras 2 segundos de entrar
+        setTimeout(() => {
+            installBanner.style.display = 'flex';
+        }, 2000);
+    });
+
+    // 3. Acción al hacer clic en Instalar
+    btnInstall.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt(); // Muestra el diálogo nativo
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`Usuario respondió a la instalación: ${outcome}`);
+            deferredPrompt = null; // Limpiamos el prompt
+            installBanner.style.display = 'none';
+        }
+    });
+
+    // 4. Cerrar el banner
+    btnCancel.addEventListener('click', () => {
+        installBanner.style.display = 'none';
+    });
+
+    // Ocultar si ya está instalada
+    window.addEventListener('appinstalled', () => {
+        installBanner.style.display = 'none';
+        deferredPrompt = null;
+    });
+</script>
+
 
 </body>
 </html>
