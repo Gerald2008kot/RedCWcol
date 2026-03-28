@@ -237,19 +237,7 @@
     </style>
 </head>
 <body>
-<div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px;" alt="Logo RedCW">
-        <div>
-            <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
-            <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
-        </div>
-    </div>
-    <div style="display: flex; gap: 8px;">
-        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
-        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-    </div>
-</div>
+
     <section class="hero">
         <h1 class="header-logo">RedCW</h1>
         <h1>Tu Red. <span>Tus Reglas.</span></h1>
@@ -306,7 +294,19 @@
         </div>
     </section>
     
-
+<div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px;" alt="Logo RedCW">
+        <div>
+            <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
+        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+    </div>
+</div>
 
 <script>
     // --- Lógica de Términos (Tu código original) ---
