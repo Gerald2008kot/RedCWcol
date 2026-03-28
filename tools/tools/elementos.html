@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RedCW — Elementos Químicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--header-h:70px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden}
+header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:fixed;top:0;z-index:1000}
+.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+.menu-toggle{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;padding:6px;border-radius:8px;transition:.2s}
+.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:850}
+.overlay.active{display:block}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid var(--border);padding:20px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.sidebar.active{transform:translateX(280px)}
+.nav-links{list-style:none}
+.nav-links a{display:flex;align-items:center;padding:14px 18px;color:var(--text-dim);text-decoration:none;border-radius:12px;margin-bottom:8px;transition:all .2s;font-size:.95rem;background:rgba(255,255,255,.02);border-left:4px solid transparent}
+.nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:20px;height:20px;margin-right:12px;flex-shrink:0;transition:transform .2s ease, filter .2s ease}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor)}
+.nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent)}
+.nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2)}
+.nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3)}
+.main-content{margin-top:var(--header-h);padding:40px 20px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - var(--header-h))}
+.page-title{font-family:var(--font-display);font-weight:800;font-size:1.6rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{color:var(--text-dim);font-size:.88rem;margin:0 0 20px}
+.tools-wrap{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card-bg);border-radius:28px;padding:25px;border:1px solid var(--border);box-shadow:0 30px 60px rgba(0,0,0,.6);width:100%}
+.card-title{font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:18px;display:flex;align-items:center;gap:10px;color:var(--accent-3)}
+.card-title svg{color:var(--accent-3)}
+.viz-input{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:#fff;font-family:var(--font-main);font-size:.9rem;outline:none;transition:.2s}
+.viz-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2)}
+.btn-primary{padding:12px 24px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(108,99,255,.3)}
+.btn-primary:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-secondary{padding:12px 24px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:#fff;font-family:var(--font-main);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:8px 16px;border-radius:10px;background:rgba(0,217,165,.1);border:1px solid rgba(0,217,165,.25);color:var(--accent-3);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:rgba(0,217,165,.2)}
+.btn-sm.active{background:var(--accent-3);color:var(--bg)}
+.filter-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.element-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:10px;max-height:500px;overflow-y:auto;padding-right:10px}
+.element-card{padding:12px 8px;text-align:center;border-radius:14px;background:rgba(0,0,0,.3);border:1px solid var(--border);transition:all .2s;cursor:pointer;position:relative;overflow:hidden}
+.element-card:hover{border-color:var(--accent);background:rgba(108,99,255,.1);transform:translateY(-2px)}
+.element-card.active{border-color:var(--accent-3);background:rgba(0,217,165,.1);box-shadow:0 4px 20px rgba(0,217,165,.2)}
+.element-num{font-size:.65rem;color:var(--text-dim);font-weight:600}
+.element-symbol{font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--accent);margin:4px 0}
+.element-name{font-size:.7rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.element-card.active .element-symbol{color:var(--accent-3)}
+.element-card.cat-no-metal{border-left:3px solid #00D9A5}
+.element-card.cat-metal-alcalino{border-left:3px solid #FF6B9D}
+.element-card.cat-metal-alcalinoterrero{border-left:3px solid #FF9F43}
+.element-card.cat-metal-transicion{border-left:3px solid #6C63FF}
+.element-card.cat-metal{border-left:3px solid #A55EEA}
+.element-card.cat-halogeno{border-left:3px solid #00D4FF}
+.element-card.cat-gas-noble{border-left:3px solid #FF6B6B}
+.element-card.cat-lantanido{border-left:3px solid #F9CA24}
+.element-card.cat-actinido{border-left:3px solid #FF7979}
+.element-card.cat-metal-oide{border-left:3px solid #BADC58}
+.element-card.cat-no-metal-pnictogeno{border-left:3px solid #E056FD}
+.element-card.cat-no-metal-calcogeno{border-left:3px solid #22A6B3}
+.element-card.cat-no-metal-reactivo{border-left:3px solid #7BED9F}
+.element-detail{display:none;margin-top:20px;padding:24px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:20px}
+.element-detail.active{display:block}
+.detail-header{display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+.detail-symbol{width:100px;height:100px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:3rem;font-weight:800;color:#fff;box-shadow:0 10px 30px rgba(108,99,255,.3)}
+.detail-title{flex:1}
+.detail-name{font-family:var(--font-display);font-size:2rem;font-weight:800;color:#fff;margin-bottom:4px}
+.detail-num{color:var(--accent-3);font-size:1.1rem;font-weight:600}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:20px}
+.detail-item{background:rgba(255,255,255,.03);padding:16px;border-radius:12px;border:1px solid var(--border)}
+.detail-label{font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.detail-value{font-size:1.1rem;color:#fff;font-weight:600}
+.detail-desc{margin-top:20px;padding:20px;background:rgba(108,99,255,.05);border-radius:12px;border-left:4px solid var(--accent);line-height:1.7;color:var(--text-dim)}
+.category-legend{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;font-size:.8rem}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:12px;border-radius:3px}
+.legend-dot.no-metal{background:#00D9A5}
+.legend-dot.metal-alcalino{background:#FF6B9D}
+.legend-dot.metal-alcalinoterrero{background:#FF9F43}
+.legend-dot.metal-transicion{background:#6C63FF}
+.legend-dot.metal{background:#A55EEA}
+.legend-dot.halogeno{background:#00D4FF}
+.legend-dot.gas-noble{background:#FF6B6B}
+.legend-dot.lantanido{background:#F9CA24}
+.legend-dot.actinido{background:#FF7979}
+.legend-dot.metal-oide{background:#BADC58}
+.legend-dot.no-metal-pnictogeno{background:#E056FD}
+.legend-dot.no-metal-calcogeno{background:#22A6B3}
+.legend-dot.no-metal-reactivo{background:#7BED9F}
+.formula-section{margin-top:30px}
+.formula-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;margin-top:20px}
+.formula-card{padding:20px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:16px;cursor:pointer;transition:all .2s}
+.formula-card:hover{border-color:var(--accent-2);background:rgba(255,107,157,.05);transform:translateY(-2px)}
+.formula-card.active{border-color:var(--accent-2);background:rgba(255,107,157,.1)}
+.formula-name{font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:8px}
+.formula-chem{font-size:1.5rem;color:var(--accent-2);font-weight:700;font-family:var(--font-display);margin-bottom:8px}
+.formula-type{font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+.formula-composition{margin-top:10px;font-size:.85rem;color:var(--text-dim)}
+.formula-detail{display:none;margin-top:20px;padding:24px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:20px}
+.formula-detail.active{display:block}
+.composition-list{display:flex;flex-direction:column;gap:10px;margin-top:15px}
+.composition-item{display:flex;align-items:center;gap:15px;padding:12px 16px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid var(--border)}
+.comp-symbol{width:40px;height:40px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:#fff;font-size:1.2rem}
+.comp-info{flex:1}
+.comp-name{font-weight:600;color:#fff}
+.comp-count{color:var(--accent-3);font-size:.9rem}
+.comp-desc{font-size:.8rem;color:var(--text-dim);margin-top:2px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:.9rem}
+.empty-state svg{margin-bottom:15px;opacity:.5}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.section-divider{height:1px;background:var(--border);margin:40px 0}
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Elementos</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="nav-links">
+    <a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a>
+    <a href="calculadora.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>Calculadora</a>
+    <a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Funciones</a>
+    <a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>Convertidor</a>
+    <a href="elementos.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>Elementos</a>
+    <a href="estadistica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadistica</a>
+    <a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>Fisica</a>
+    <a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>Morse</a>
+    <a href="cronometro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronometro</a>
+    <a href="pomodoro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a>
+    <a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contrasenas</a>
+    <a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Tablas</a>
+    <a href="notas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <h1 class="page-title">Tabla Periodica de Elementos</h1>
+  <p class="page-sub">118 elementos quimicos con informacion detallada y composicion de formulas.</p>
+  
+  <div class="tools-wrap">
+    
+    <!-- Elementos Quimicos -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+        Elementos Quimicos (1-118)
+      </div>
+      
+      <div class="category-legend">
+        <div class="legend-item"><div class="legend-dot no-metal"></div>No metal</div>
+        <div class="legend-item"><div class="legend-dot metal-alcalino"></div>Metal alcalino</div>
+        <div class="legend-item"><div class="legend-dot metal-alcalinoterrero"></div>Alcalinoterreo</div>
+        <div class="legend-item"><div class="legend-dot metal-transicion"></div>Metal transicion</div>
+        <div class="legend-item"><div class="legend-dot metal"></div>Metal</div>
+        <div class="legend-item"><div class="legend-dot halogeno"></div>Halogeno</div>
+        <div class="legend-item"><div class="legend-dot gas-noble"></div>Gas noble</div>
+        <div class="legend-item"><div class="legend-dot lantanido"></div>Lantanido</div>
+        <div class="legend-item"><div class="legend-dot actinido"></div>Actinido</div>
+        <div class="legend-item"><div class="legend-dot metal-oide"></div>Metaloide</div>
+      </div>
+      
+      <div class="filter-row">
+        <input class="viz-input" id="elemSearch" placeholder="Buscar por nombre, simbolo o numero..." style="flex:1;max-width:400px"/>
+        <button class="btn-sm" onclick="filterElements('all')">Todos</button>
+        <button class="btn-sm" onclick="filterElements('metal')">Metales</button>
+        <button class="btn-sm" onclick="filterElements('no-metal')">No metales</button>
+        <button class="btn-sm" onclick="filterElements('gas-noble')">Gases nobles</button>
+      </div>
+      
+      <div class="element-grid" id="elementGrid"></div>
+      
+      <div class="element-detail" id="elementDetail">
+        <div class="detail-header">
+          <div class="detail-symbol" id="detailSymbol">H</div>
+          <div class="detail-title">
+            <div class="detail-name" id="detailName">Hidrogeno</div>
+            <div class="detail-num" id="detailNum">Numero atomico: 1 | Masa: 1.008 u</div>
+          </div>
+        </div>
+        <div class="detail-desc" id="detailDesc"></div>
+        <div class="detail-grid" id="detailGrid"></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Mesa de Formulas -->
+    <div class="card formula-section">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Mesa de Formulas Quimicas
+      </div>
+      <p style="color:var(--text-dim);font-size:.9rem;margin-bottom:20px">Selecciona una formula para ver su composicion elemental.</p>
+      
+      <div class="formula-grid" id="formulaGrid"></div>
+      
+      <div class="formula-detail" id="formulaDetail">
+        <div class="detail-header">
+          <div class="detail-title">
+            <div class="detail-name" id="formulaDetailName">Agua</div>
+            <div class="detail-num" id="formulaDetailChem">H2O</div>
+          </div>
+        </div>
+        <div class="detail-desc" id="formulaDetailDesc"></div>
+        <h3 style="color:var(--accent-3);font-family:var(--font-display);margin:20px 0 10px">Composicion:</h3>
+        <div class="composition-list" id="compositionList"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Toggle de Menu
+const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+menuBtn.onclick=overlay.onclick=function(){sidebar.classList.toggle('active');overlay.classList.toggle('active')};
+
+// Base de datos de 118 elementos
+const elements=[
+  {n:1,sym:'H',name:'Hidrogeno',mass:1.008,cat:'no-metal',config:'1s1',desc:'El elemento mas ligero del universo. Gas incoloro, inflamable y el mas abundante del cosmos. Esencial para el agua y la vida.',electroneg:2.20,estado:'gas'},
+  {n:2,sym:'He',name:'Helio',mass:4.003,cat:'gas-noble',config:'1s2',desc:'Gas noble inerte. Segundo elemento mas abundante del universo. Usado en globos y como refrigerante en superconductores.',electroneg:null,estado:'gas'},
+  {n:3,sym:'Li',name:'Litio',mass:6.941,cat:'metal-alcalino',config:'[He] 2s1',desc:'Metal alcalino muy ligero. Usado en baterias recargables, especialmente para dispositivos electronicos y vehiculos electricos.',electroneg:0.98,estado:'solido'},
+  {n:4,sym:'Be',name:'Berilio',mass:9.012,cat:'metal-alcalinoterrero',config:'[He] 2s2',desc:'Metal ligero y rigido. Usado en aleaciones con cobre y como moderador de neutrones en reactores nucleares. Muy toxico.',electroneg:1.57,estado:'solido'},
+  {n:5,sym:'B',name:'Boro',mass:10.81,cat:'metal-oide',config:'[He] 2s2 2p1',desc:'Metaloide usado en fibra de vidrio, detergentes y semiconductores. Esencial para el crecimiento de plantas en cantidades traza.',electroneg:2.04,estado:'solido'},
+  {n:6,sym:'C',name:'Carbono',mass:12.011,cat:'no-metal',config:'[He] 2s2 2p2',desc:'Base de la quimica organica. Existe como diamante, grafito, grafeno y fullerenos. Esencial para la vida en la Tierra.',electroneg:2.55,estado:'solido'},
+  {n:7,sym:'N',name:'Nitrogeno',mass:14.007,cat:'no-metal',config:'[He] 2s2 2p3',desc:'Forma el 78% de la atmosfera terrestre. Esencial para los acidos nucleicos (ADN/ARN) y proteinas. Gas inerte a temperatura ambiente.',electroneg:3.04,estado:'gas'},
+  {n:8,sym:'O',name:'Oxigeno',mass:15.999,cat:'no-metal',config:'[He] 2s2 2p4',desc:'Esencial para la respiracion y combustion. Forma el 21% de la atmosfera. El elemento mas abundante en la corteza terrestre.',electroneg:3.44,estado:'gas'},
+  {n:9,sym:'F',name:'Fluor',mass:18.998,cat:'halogeno',config:'[He] 2s2 2p5',desc:'El elemento mas electronegativo. Gas amarillo pálido muy reactivo. Usado en pasta de dientes y refrigerantes.',electroneg:3.98,estado:'gas'},
+  {n:10,sym:'Ne',name:'Neon',mass:20.180,cat:'gas-noble',config:'[He] 2s2 2p6',desc:'Gas noble. Emite luz roja-naranja en tubos de descarga. Usado en anuncios luminosos y criogenia.',electroneg:null,estado:'gas'},
+  {n:11,sym:'Na',name:'Sodio',mass:22.990,cat:'metal-alcalino',config:'[Ne] 3s1',desc:'Metal muy reactivo con el agua. Componente principal de la sal de mesa (NaCl). Esencial para la funcion nerviosa.',electroneg:0.93,estado:'solido'},
+  {n:12,sym:'Mg',name:'Magnesio',mass:24.305,cat:'metal-alcalinoterrero',config:'[Ne] 3s2',desc:'Metal ligero usado en aleaciones, pirotecnia y como suplemento dietetico. Arde con llama blanca brillante.',electroneg:1.31,estado:'solido'},
+  {n:13,sym:'Al',name:'Aluminio',mass:26.982,cat:'metal',config:'[Ne] 3s2 3p1',desc:'El metal mas abundante en la corteza terrestre. Ligero, resistente a la corrosion. Usado en envases, aviones y construccion.',electroneg:1.61,estado:'solido'},
+  {n:14,sym:'Si',name:'Silicio',mass:28.086,cat:'metal-oide',config:'[Ne] 3s2 3p2',desc:'Base de la electronica moderna y semiconductores. Segundo elemento mas abundante en la corteza terrestre despues del oxigeno.',electroneg:1.90,estado:'solido'},
+  {n:15,sym:'P',name:'Fosforo',mass:30.974,cat:'no-metal',config:'[Ne] 3s2 3p3',desc:'Esencial para los acidos nucleicos (ADN/ARN) y huesos. Existe como fosforo blanco (venenoso) y rojo (usado en cerillas).',electroneg:2.19,estado:'solido'},
+  {n:16,sym:'S',name:'Azufre',mass:32.06,cat:'no-metal',config:'[Ne] 3s2 3p4',desc:'Sólido amarillo. Importante en la sintesis de acido sulfurico. Esencial para algunos aminoacidos y proteinas.',electroneg:2.58,estado:'solido'},
+  {n:17,sym:'Cl',name:'Cloro',mass:35.45,cat:'halogeno',config:'[Ne] 3s2 3p5',desc:'Gas toxico verde amarillento. Usado para purificar agua y en la produccion de PVC. Componente de la sal de mesa.',electroneg:3.16,estado:'gas'},
+  {n:18,sym:'Ar',name:'Argon',mass:39.948,cat:'gas-noble',config:'[Ne] 3s2 3p6',desc:'El gas noble mas abundante en la atmosfera (0.93%). Usado en soldadura y bombillas incandescentes.',electroneg:null,estado:'gas'},
+  {n:19,sym:'K',name:'Potasio',mass:39.098,cat:'metal-alcalino',config:'[Ar] 4s1',desc:'Metal alcalino esencial para la funcion muscular y nerviosa. Muy reactivo con el agua.',electroneg:0.82,estado:'solido'},
+  {n:20,sym:'Ca',name:'Calcio',mass:40.078,cat:'metal-alcalinoterrero',config:'[Ar] 4s2',desc:'Esencial para huesos y dientes. Metal reactivo usado en aleaciones y como agente reductor.',electroneg:1.00,estado:'solido'},
+  {n:21,sym:'Sc',name:'Escandio',mass:44.956,cat:'metal-transicion',config:'[Ar] 3d1 4s2',desc:'Metal de transicion raro. Usado en aleaciones de aluminio para aplicaciones aeroespaciales.',electroneg:1.36,estado:'solido'},
+  {n:22,sym:'Ti',name:'Titanio',mass:47.867,cat:'metal-transicion',config:'[Ar] 3d2 4s2',desc:'Metal ligero, fuerte y resistente a la corrosion. Usado en aviones, implantes medicos y joyeria.',electroneg:1.54,estado:'solido'},
+  {n:23,sym:'V',name:'Vanadio',mass:50.942,cat:'metal-transicion',config:'[Ar] 3d3 4s2',desc:'Metal usado en aceros especiales y como catalizador. Resistente a la corrosion.',electroneg:1.63,estado:'solido'},
+  {n:24,sym:'Cr',name:'Cromo',mass:51.996,cat:'metal-transicion',config:'[Ar] 3d5 4s1',desc:'Metal duro usado en acero inoxidable, cromado decorativo y pigmentos. Esencial en metabolismo de glucosa.',electroneg:1.66,estado:'solido'},
+  {n:25,sym:'Mn',name:'Manganeso',mass:54.938,cat:'metal-transicion',config:'[Ar] 3d5 4s2',desc:'Metal usado en acero y baterias. Esencial para el metabolismo y funcion de enzimas.',electroneg:1.55,estado:'solido'},
+  {n:26,sym:'Fe',name:'Hierro',mass:55.845,cat:'metal-transicion',config:'[Ar] 3d6 4s2',desc:'El metal mas usado industrialmente. Base del acero. Esencial para la hemoglobina y transporte de oxigeno.',electroneg:1.83,estado:'solido'},
+  {n:27,sym:'Co',name:'Cobalto',mass:58.933,cat:'metal-transicion',config:'[Ar] 3d7 4s2',desc:'Metal usado en imanes, aleaciones y baterias. Componente de la vitamina B12.',electroneg:1.88,estado:'solido'},
+  {n:28,sym:'Ni',name:'Niquel',mass:58.693,cat:'metal-transicion',config:'[Ar] 3d8 4s2',desc:'Metal resistente a la corrosion. Usado en monedas, acero inoxidable y baterias.',electroneg:1.91,estado:'solido'},
+  {n:29,sym:'Cu',name:'Cobre',mass:63.546,cat:'metal-transicion',config:'[Ar] 3d10 4s1',desc:'Excelente conductor electrico y termico. Usado en cables, tuberias y monedas desde la antiguedad.',electroneg:1.90,estado:'solido'},
+  {n:30,sym:'Zn',name:'Zinc',mass:65.38,cat:'metal-transicion',config:'[Ar] 3d10 4s2',desc:'Metal usado en galvanizacion, aleaciones (laton) y baterias. Esencial para el sistema inmunologico.',electroneg:1.65,estado:'solido'},
+  {n:31,sym:'Ga',name:'Galio',mass:69.723,cat:'metal',config:'[Ar] 3d10 4s2 4p1',desc:'Metal que se derrite en la mano (29.76°C). Usado en semiconductores y LEDs.',electroneg:1.81,estado:'solido'},
+  {n:32,sym:'Ge',name:'Germanio',mass:72.63,cat:'metal-oide',config:'[Ar] 3d10 4s2 4p2',desc:'Semiconductor usado en fibra optica y transistores. Descubierto en 1886.',electroneg:2.01,estado:'solido'},
+  {n:33,sym:'As',name:'Arsenico',mass:74.922,cat:'metal-oide',config:'[Ar] 3d10 4s2 4p3',desc:'Metaloide toxico. Usado en semiconductores y pesticidas historicamente. Compuesto en venenos famosos.',electroneg:2.18,estado:'solido'},
+  {n:34,sym:'Se',name:'Selenio',mass:78.96,cat:'no-metal',config:'[Ar] 3d10 4s2 4p4',desc:'No metal esencial en trazas. Usado en fotocopiadoras, vidrio y suplementos antioxidantes.',electroneg:2.55,estado:'solido'},
+  {n:35,sym:'Br',name:'Bromo',mass:79.904,cat:'halogeno',config:'[Ar] 3d10 4s2 4p5',desc:'Unico elemento no metal liquido a temperatura ambiente. Usado en retardantes de fuego y medicamentos.',electroneg:2.96,estado:'liquido'},
+  {n:36,sym:'Kr',name:'Kripton',mass:83.798,cat:'gas-noble',config:'[Ar] 3d10 4s2 4p6',desc:'Gas noble usado en lamparas de alta intensidad y laseres. Mas denso que el aire.',electroneg:3.00,estado:'gas'},
+  {n:37,sym:'Rb',name:'Rubidio',mass:85.468,cat:'metal-alcalino',config:'[Kr] 5s1',desc:'Metal alcalino muy reactivo. Usado en relojes atomicos y celdas fotoelectricas.',electroneg:0.82,estado:'solido'},
+  {n:38,sym:'Sr',name:'Estroncio',mass:87.62,cat:'metal-alcalinoterrero',config:'[Kr] 5s2',desc:'Metal que arde con llama roja brillante. Usado en fuegos artificiales y en vidrio para televisores CRT.',electroneg:0.95,estado:'solido'},
+  {n:39,sym:'Y',name:'Itrio',mass:88.906,cat:'metal-transicion',config:'[Kr] 4d1 5s2',desc:'Metal de tierras raras. Usado en LED rojos, laseres y superconductores.',electroneg:1.22,estado:'solido'},
+  {n:40,sym:'Zr',name:'Zirconio',mass:91.224,cat:'metal-transicion',config:'[Kr] 4d2 5s2',desc:'Metal resistente a la corrosion. Usado en reactores nucleares, joyeria y ceramicas.',electroneg:1.33,estado:'solido'},
+  {n:41,sym:'Nb',name:'Niobio',mass:92.906,cat:'metal-transicion',config:'[Kr] 4d4 5s1',desc:'Metal usado en aceros especiales, imanes superconductores y joyeria.',electroneg:1.6,estado:'solido'},
+  {n:42,sym:'Mo',name:'Molibdeno',mass:95.95,cat:'metal-transicion',config:'[Kr] 4d5 5s1',desc:'Metal de alto punto de fusion. Usado en aceros de alta resistencia y catalizadores.',electroneg:2.16,estado:'solido'},
+  {n:43,sym:'Tc',name:'Tecnecio',mass:98,cat:'metal-transicion',config:'[Kr] 4d5 5s2',desc:'Primer elemento artificial. Radioactivo. Usado en medicina nuclear para imagenes diagnosticas.',electroneg:1.9,estado:'solido'},
+  {n:44,sym:'Ru',name:'Rutenio',mass:101.07,cat:'metal-transicion',config:'[Kr] 4d7 5s1',desc:'Metal de platino raro. Usado en contactos electricos y catalizadores.',electroneg:2.2,estado:'solido'},
+  {n:45,sym:'Rh',name:'Rodio',mass:102.91,cat:'metal-transicion',config:'[Kr] 4d8 5s1',desc:'Metal precioso raro. Usado en catalizadores de automoviles y recubrimientos reflectantes.',electroneg:2.28,estado:'solido'},
+  {n:46,sym:'Pd',name:'Paladio',mass:106.42,cat:'metal-transicion',config:'[Kr] 4d10',desc:'Metal precioso. Usado en catalizadores, joyeria y componentes electronicos.',electroneg:2.20,estado:'solido'},
+  {n:47,sym:'Ag',name:'Plata',mass:107.87,cat:'metal-transicion',config:'[Kr] 4d10 5s1',desc:'El mejor conductor electrico. Usado en joyeria, fotografia, monedas y medicina.',electroneg:1.93,estado:'solido'},
+  {n:48,sym:'Cd',name:'Cadmio',mass:112.41,cat:'metal-transicion',config:'[Kr] 4d10 5s2',desc:'Metal toxico. Usado en baterias Ni-Cd, recubrimientos y pigmentos. Prohibido en muchos usos por su toxicidad.',electroneg:1.69,estado:'solido'},
+  {n:49,sym:'In',name:'Indio',mass:114.82,cat:'metal',config:'[Kr] 4d10 5s2 5p1',desc:'Metal blando usado en pantallas tactiles (ITO), soldaduras y semiconductores.',electroneg:1.78,estado:'solido'},
+  {n:50,sym:'Sn',name:'Estano',mass:118.71,cat:'metal',config:'[Kr] 4d10 5s2 5p2',desc:'Metal usado en soldaduras, recubrimientos de lata y aleaciones (bronce).',electroneg:1.96,estado:'solido'},
+  {n:51,sym:'Sb',name:'Antimonio',mass:121.76,cat:'metal-oide',config:'[Kr] 4d10 5s2 5p3',desc:'Metaloide usado en baterias de plomo-acido, semiconductores y retardantes de fuego.',electroneg:2.05,estado:'solido'},
+  {n:52,sym:'Te',name:'Teluro',mass:127.60,cat:'metal-oide',config:'[Kr] 4d10 5s2 5p4',desc:'Metaloide raro. Usado en aleaciones, placas solares y semiconductor.',electroneg:2.1,estado:'solido'},
+  {n:53,sym:'I',name:'Yodo',mass:126.90,cat:'halogeno',config:'[Kr] 4d10 5s2 5p5',desc:'Solido violeta que sublima. Esencial para la funcion tiroidea. Usado en desinfectantes y fotografia.',electroneg:2.66,estado:'solido'},
+  {n:54,sym:'Xe',name:'Xenon',mass:131.29,cat:'gas-noble',config:'[Kr] 4d10 5s2 5p6',desc:'Gas noble mas pesado comun. Usado en lamparas de alta intensidad, anestesia y propulsion ionica.',electroneg:2.6,estado:'gas'},
+  {n:55,sym:'Cs',name:'Cesio',mass:132.91,cat:'metal-alcalino',config:'[Xe] 6s1',desc:'Metal alcalino liquido a temperatura ambiente (28.5°C). Usado en relojes atomicos.',electroneg:0.79,estado:'solido'},
+  {n:56,sym:'Ba',name:'Bario',mass:137.33,cat:'metal-alcalinoterrero',config:'[Xe] 6s2',desc:'Metal que arde con llama verde. Usado en fuegos artificiales, pinturas y rayos X.',electroneg:0.89,estado:'solido'},
+  {n:57,sym:'La',name:'Lantano',mass:138.91,cat:'lantanido',config:'[Xe] 5d1 6s2',desc:'Primer lantanido. Usado en baterias Ni-MH, lentes de camara y catalizadores.',electroneg:1.10,estado:'solido'},
+  {n:58,sym:'Ce',name:'Cerio',mass:140.12,cat:'lantanido',config:'[Xe] 4f1 5d1 6s2',desc:'Lantanido mas abundante. Usado en piedras de encendedor, catalizadores y vidrio de proteccion.',electroneg:1.12,estado:'solido'},
+  {n:59,sym:'Pr',name:'Praseodimio',mass:140.91,cat:'lantanido',config:'[Xe] 4f3 6s2',desc:'Lantanido usado en imanes, aleaciones y vidrio de color amarillo.',electroneg:1.13,estado:'solido'},
+  {n:60,sym:'Nd',name:'Neodimio',mass:144.24,cat:'lantanido',config:'[Xe] 4f4 6s2',desc:'Lantanido usado en imanes muy potentes (NdFeB), laseres y catalizadores.',electroneg:1.14,estado:'solido'},
+  {n:61,sym:'Pm',name:'Prometio',mass:145,cat:'lantanido',config:'[Xe] 4f5 6s2',desc:'Unico lantanido sin isotopos estables. Radioactivo. Usado en baterias nucleares y luminiscencia.',electroneg:1.13,estado:'solido'},
+  {n:62,sym:'Sm',name:'Samario',mass:150.36,cat:'lantanido',config:'[Xe] 4f6 6s2',desc:'Lantanido usado en imanes, reactores nucleares y catalizadores.',electroneg:1.17,estado:'solido'},
+  {n:63,sym:'Eu',name:'Europio',mass:151.96,cat:'lantanido',config:'[Xe] 4f7 6s2',desc:'Lantanido usado en fosforescentes rojos para pantallas y lamparas.',electroneg:1.2,estado:'solido'},
+  {n:64,sym:'Gd',name:'Gadolinio',mass:157.25,cat:'lantanido',config:'[Xe] 4f7 5d1 6s2',desc:'Lantanido usado en resonancia magnetica (MRI), reactores nucleares y magnetos.',electroneg:1.20,estado:'solido'},
+  {n:65,sym:'Tb',name:'Terbio',mass:158.93,cat:'lantanido',config:'[Xe] 4f9 6s2',desc:'Lantanido usado en fosforescentes verdes, imanes y aleaciones.',electroneg:1.2,estado:'solido'},
+  {n:66,sym:'Dy',name:'Disprosio',mass:162.50,cat:'lantanido',config:'[Xe] 4f10 6s2',desc:'Lantanido usado en imanes de alta temperatura, laseres y reactores nucleares.',electroneg:1.22,estado:'solido'},
+  {n:67,sym:'Ho',name:'Holmio',mass:164.93,cat:'lantanido',config:'[Xe] 4f11 6s2',desc:'Lantanido usado en laseres medicos, imanes y colorantes para vidrio.',electroneg:1.23,estado:'solido'},
+  {n:68,sym:'Er',name:'Erbio',mass:167.26,cat:'lantanido',config:'[Xe] 4f12 6s2',desc:'Lantanido usado en amplificadores de fibra optica, laseres y joyeria.',electroneg:1.24,estado:'solido'},
+  {n:69,sym:'Tm',name:'Tulio',mass:168.93,cat:'lantanido',config:'[Xe] 4f13 6s2',desc:'Lantanido menos abundante. Usado en laseres medicos portatiles y detectores de rayos X.',electroneg:1.25,estado:'solido'},
+  {n:70,sym:'Yb',name:'Iterbio',mass:173.05,cat:'lantanido',config:'[Xe] 4f14 6s2',desc:'Lantanido usado en laseres, relojes atomicos y como dopante en acero.',electroneg:1.1,estado:'solido'},
+  {n:71,sym:'Lu',name:'Lutecio',mass:174.97,cat:'lantanido',config:'[Xe] 4f14 5d1 6s2',desc:'Ultimo lantanido. Usado en catalizadores, detectores de rayos PET y relojes atomicos.',electroneg:1.27,estado:'solido'},
+  {n:72,sym:'Hf',name:'Hafnio',mass:178.49,cat:'metal-transicion',config:'[Xe] 4f14 5d2 6s2',desc:'Metal similar al circonio. Usado en reactores nucleares, microchips y filamentos.',electroneg:1.3,estado:'solido'},
+  {n:73,sym:'Ta',name:'Tantalio',mass:180.95,cat:'metal-transicion',config:'[Xe] 4f14 5d3 6s2',desc:'Metal muy resistente a la corrosion. Usado en capacitores, implantes medicos y aviacion.',electroneg:1.5,estado:'solido'},
+  {n:74,sym:'W',name:'Wolframio',mass:183.84,cat:'metal-transicion',config:'[Xe] 4f14 5d4 6s2',desc:'Metal de mayor punto de fusion (3422°C). Usado en filamentos de bombillas, herramientas de corte.',electroneg:2.36,estado:'solido'},
+  {n:75,sym:'Re',name:'Renio',mass:186.21,cat:'metal-transicion',config:'[Xe] 4f14 5d5 6s2',desc:'Metal de alto punto de fusion. Usado en catalizadores, termopares y aleaciones de alta temperatura.',electroneg:1.9,estado:'solido'},
+  {n:76,sym:'Os',name:'Osmio',mass:190.23,cat:'metal-transicion',config:'[Xe] 4f14 5d6 6s2',desc:'Metal mas denso natural. Usado en aleaciones duras, contactos electricos y manchas de tinta.',electroneg:2.2,estado:'solido'},
+  {n:77,sym:'Ir',name:'Iridio',mass:192.22,cat:'metal-transicion',config:'[Xe] 4f14 5d7 6s2',desc:'Metal muy denso y resistente a la corrosion. Usado en contactos electricos y aleaciones.',electroneg:2.20,estado:'solido'},
+  {n:78,sym:'Pt',name:'Platino',mass:195.08,cat:'metal-transicion',config:'[Xe] 4f14 5d9 6s1',desc:'Metal precioso muy denso. Usado en catalizadores, joyeria, implantes dentales y medicina.',electroneg:2.28,estado:'solido'},
+  {n:79,sym:'Au',name:'Oro',mass:196.97,cat:'metal-transicion',config:'[Xe] 4f14 5d10 6s1',desc:'Metal precioso brillante amarillo. No se oxida. Usado en joyeria, electronica y reserva monetaria.',electroneg:2.54,estado:'solido'},
+  {n:80,sym:'Hg',name:'Mercurio',mass:200.59,cat:'metal-transicion',config:'[Xe] 4f14 5d10 6s2',desc:'Unico metal liquido a temperatura ambiente. Usado en termometros, lamparas y amalgamas dentales.',electroneg:2.00,estado:'liquido'},
+  {n:81,sym:'Tl',name:'Talio',mass:204.38,cat:'metal',config:'[Xe] 4f14 5d10 6s2 6p1',desc:'Metal toxico y venenoso. Usado historicamente en pesticidas y raticidas. Prohibido en muchos paises.',electroneg:1.62,estado:'solido'},
+  {n:82,sym:'Pb',name:'Plomo',mass:207.2,cat:'metal',config:'[Xe] 4f14 5d10 6s2 6p2',desc:'Metal pesado y denso. Toxico para el sistema nervioso. Usado en baterias, blindaje radiologico.',electroneg:2.33,estado:'solido'},
+  {n:83,sym:'Bi',name:'Bismuto',mass:208.98,cat:'metal',config:'[Xe] 4f14 5d10 6s2 6p3',desc:'Metal pesado con propiedades diamagneticas. Usado en medicamentos (Pepto-Bismol), cosmesticos y soldaduras.',electroneg:2.02,estado:'solido'},
+  {n:84,sym:'Po',name:'Polonio',mass:209,cat:'metal-oide',config:'[Xe] 4f14 5d10 6s2 6p4',desc:'Elemento altamente radioactivo y raro. Usado en fuentes de neutrones y eliminacion de electricidad estatica.',electroneg:2.0,estado:'solido'},
+  {n:85,sym:'At',name:'Astato',mass:210,cat:'halogeno',config:'[Xe] 4f14 5d10 6s2 6p5',desc:'Halogeno raro y altamente radioactivo. Uno de los elementos mas raros de la naturaleza.',electroneg:2.2,estado:'solido'},
+  {n:86,sym:'Rn',name:'Radon',mass:222,cat:'gas-noble',config:'[Xe] 4f14 5d10 6s2 6p6',desc:'Gas noble radioactivo. Producto de desintegracion del radio. Peligroso en espacios cerrados.',electroneg:null,estado:'gas'},
+  {n:87,sym:'Fr',name:'Francio',mass:223,cat:'metal-alcalino',config:'[Rn] 7s1',desc:'Elemento mas inestable natural. Altamente radioactivo. No se encuentra en cantidades apreciables.',electroneg:0.7,estado:'solido'},
+  {n:88,sym:'Ra',name:'Radio',mass:226,cat:'metal-alcalinoterrero',config:'[Rn] 7s2',desc:'Metal alcalinoterreo radioactivo. Usado historicamente en pinturas luminiscentes. Peligroso por radiacion.',electroneg:0.9,estado:'solido'},
+  {n:89,sym:'Ac',name:'Actinio',mass:227,cat:'actinido',config:'[Rn] 6d1 7s2',desc:'Primer actinido. Radioactivo. Brilla en la oscuridad por desintegracion. Usado en investigacion nuclear.',electroneg:1.1,estado:'solido'},
+  {n:90,sym:'Th',name:'Torio',mass:232.04,cat:'actinido',config:'[Rn] 6d2 7s2',desc:'Actinido fertil. Potencial combustible nuclear. Mas abundante que el uranio en la corteza terrestre.',electroneg:1.3,estado:'solido'},
+  {n:91,sym:'Pa',name:'Protactinio',mass:231.04,cat:'actinido',config:'[Rn] 5f2 6d1 7s2',desc:'Actinido raro y radioactivo. Usado en investigacion cientifica.',electroneg:1.5,estado:'solido'},
+  {n:92,sym:'U',name:'Uranio',mass:238.03,cat:'actinido',config:'[Rn] 5f3 6d1 7s2',desc:'Metal radiactivo. Principal combustible nuclear. Usado en reactores y armas atomicas.',electroneg:1.38,estado:'solido'},
+  {n:93,sym:'Np',name:'Neptunio',mass:237,cat:'actinido',config:'[Rn] 5f4 6d1 7s2',desc:'Primer elemento transuranico. Radioactivo. Usado en detectores de neutrones.',electroneg:1.36,estado:'solido'},
+  {n:94,sym:'Pu',name:'Plutonio',mass:244,cat:'actinido',config:'[Rn] 5f6 7s2',desc:'Elemento radioactivo. Usado en combustible nuclear y armas. Calorifico por desintegracion.',electroneg:1.28,estado:'solido'},
+  {n:95,sym:'Am',name:'Americio',mass:243,cat:'actinido',config:'[Rn] 5f7 7s2',desc:'Elemento sintetico. Usado en detectores de humo y espectrometria.',electroneg:1.3,estado:'solido'},
+  {n:96,sym:'Cm',name:'Curio',mass:247,cat:'actinido',config:'[Rn] 5f7 6d1 7s2',desc:'Elemento sintetico radioactivo. Usado en generadores termoelectricos espaciales.',electroneg:1.3,estado:'solido'},
+  {n:97,sym:'Bk',name:'Berkelio',mass:247,cat:'actinido',config:'[Rn] 5f9 7s2',desc:'Elemento sintetico. Usado unicamente en investigacion cientifica.',electroneg:1.3,estado:'solido'},
+  {n:98,sym:'Cf',name:'Californio',mass:251,cat:'actinido',config:'[Rn] 5f10 7s2',desc:'Elemento sintetico. Emite neutrones. Usado en tratamiento de cancer y deteccion de materiales.',electroneg:1.3,estado:'solido'},
+  {n:99,sym:'Es',name:'Einstenio',mass:252,cat:'actinido',config:'[Rn] 5f11 7s2',desc:'Elemento sintetico nombrado en honor a Einstein. Usado solo en investigacion.',electroneg:1.3,estado:'solido'},
+  {n:100,sym:'Fm',name:'Fermio',mass:257,cat:'actinido',config:'[Rn] 5f12 7s2',desc:'Elemento sintetico. Creado por bombardeo de neutrones. Investigacion cientifica unicamente.',electroneg:1.3,estado:'solido'},
+  {n:101,sym:'Md',name:'Mendelevio',mass:258,cat:'actinido',config:'[Rn] 5f13 7s2',desc:'Elemento sintetico nombrado por Mendeleiev. Investigacion cientifica.',electroneg:1.3,estado:'solido'},
+  {n:102,sym:'No',name:'Nobelio',mass:259,cat:'actinido',config:'[Rn] 5f14 7s2',desc:'Elemento sintetico nombrado por Alfred Nobel. Investigacion cientifica.',electroneg:1.3,estado:'solido'},
+  {n:103,sym:'Lr',name:'Lawrencio',mass:262,cat:'actinido',config:'[Rn] 5f14 7s2 7p1',desc:'Ultimo actinido. Elemento sintetico. Investigacion cientifica.',electroneg:null,estado:'solido'},
+  {n:104,sym:'Rf',name:'Rutherfordio',mass:267,cat:'metal-transicion',config:'[Rn] 5f14 6d2 7s2',desc:'Elemento superpesado sintetico. Vida media de segundos. Investigacion nuclear.',electroneg:null,estado:'solido'},
+  {n:105,sym:'Db',name:'Dubnio',mass:268,cat:'metal-transicion',config:'[Rn] 5f14 6d3 7s2',desc:'Elemento superpesado sintetico. Nombrado por Dubna, Rusia.',electroneg:null,estado:'solido'},
+  {n:106,sym:'Sg',name:'Seaborgio',mass:269,cat:'metal-transicion',config:'[Rn] 5f14 6d4 7s2',desc:'Elemento superpesado sintetico. Nombrado por Glenn Seaborg.',electroneg:null,estado:'solido'},
+  {n:107,sym:'Bh',name:'Bohrio',mass:270,cat:'metal-transicion',config:'[Rn] 5f14 6d5 7s2',desc:'Elemento superpesado sintetico. Nombrado por Niels Bohr.',electroneg:null,estado:'solido'},
+  {n:108,sym:'Hs',name:'Hassio',mass:277,cat:'metal-transicion',config:'[Rn] 5f14 6d6 7s2',desc:'Elemento superpesado sintetico. Nombrado por Hesse, Alemania.',electroneg:null,estado:'solido'},
+  {n:109,sym:'Mt',name:'Meitnerio',mass:278,cat:'metal-transicion',config:'[Rn] 5f14 6d7 7s2',desc:'Elemento superpesado sintetico. Nombrado por Lise Meitner.',electroneg:null,estado:'solido'},
+  {n:110,sym:'Ds',name:'Darmstadio',mass:281,cat:'metal-transicion',config:'[Rn] 5f14 6d9 7s1',desc:'Elemento superpesado sintetico. Nombrado por Darmstadt, Alemania.',electroneg:null,estado:'solido'},
+  {n:111,sym:'Rg',name:'Roentgenio',mass:282,cat:'metal-transicion',config:'[Rn] 5f14 6d10 7s1',desc:'Elemento superpesado sintetico. Nombrado por Wilhelm Roentgen.',electroneg:null,estado:'solido'},
+  {n:112,sym:'Cn',name:'Copernicio',mass:285,cat:'metal-transicion',config:'[Rn] 5f14 6d10 7s2',desc:'Elemento superpesado sintetico. Nombrado por Nicolas Copernico.',electroneg:null,estado:'solido'},
+  {n:113,sym:'Nh',name:'Nihonio',mass:286,cat:'metal',config:'[Rn] 5f14 6d10 7s2 7p1',desc:'Elemento superpesado sintetico. Nombrado por Japon (Nihon).',electroneg:null,estado:'solido'},
+  {n:114,sym:'Fl',name:'Flerovio',mass:289,cat:'metal',config:'[Rn] 5f14 6d10 7s2 7p2',desc:'Elemento superpesado sintetico. Nombrado por el Laboratorio Flerov.',electroneg:null,estado:'solido'},
+  {n:115,sym:'Mc',name:'Moscovio',mass:290,cat:'metal',config:'[Rn] 5f14 6d10 7s2 7p3',desc:'Elemento superpesado sintetico. Nombrado por Moscu.',electroneg:null,estado:'solido'},
+  {n:116,sym:'Lv',name:'Livermorio',mass:293,cat:'metal',config:'[Rn] 5f14 6d10 7s2 7p4',desc:'Elemento superpesado sintetico. Nombrado por Livermore, California.',electroneg:null,estado:'solido'},
+  {n:117,sym:'Ts',name:'Teneso',mass:294,cat:'halogeno',config:'[Rn] 5f14 6d10 7s2 7p5',desc:'Elemento superpesado sintetico. Nombrado por Tennessee.',electroneg:null,estado:'solido'},
+  {n:118,sym:'Og',name:'Oganeson',mass:294,cat:'gas-noble',config:'[Rn] 5f14 6d10 7s2 7p6',desc:'Elemento superpesado sintetico. Nombrado por Yuri Oganessian. Posiblemente gas noble.',electroneg:null,estado:'gas'}
+];
+
+const formulas=[
+  {name:'Agua',chem:'H2O',type:'Molecula simple',desc:'Compuesto esencial para la vida. Disolvente universal.',composition:[{sym:'H',count:2,desc:'Hidrogeno - enlaces covalentes con oxigeno'},{sym:'O',count:1,desc:'Oxigeno - dos pares de electrones libres'}]},
+  {name:'Sal de mesa',chem:'NaCl',type:'Compuesto ionico',desc:'Cristal ionico formado por iones sodio y cloro. Esencial para la funcion nerviosa.',composition:[{sym:'Na',count:1,desc:'Sodio - cation (+1)'},{sym:'Cl',count:1,desc:'Cloro - anion (-1)'}]},
+  {name:'Dioxido de carbono',chem:'CO2',type:'Oxido',desc:'Gas de efecto invernadero. Producto de la respiracion y combustion.',composition:[{sym:'C',count:1,desc:'Carbono - enlaces dobles con oxigeno'},{sym:'O',count:2,desc:'Oxigeno - enlaces dobles con carbono'}]},
+  {name:'Amoniaco',chem:'NH3',type:'Hidruro',desc:'Gas con olor pungente. Usado en fertilizantes y productos de limpieza.',composition:[{sym:'N',count:1,desc:'Nitrogeno - par de electrones libre'},{sym:'H',count:3,desc:'Hidrogeno - enlaces covalentes'}]},
+  {name:'Acido sulfurico',chem:'H2SO4',type:'Acido fuerte',desc:'El acido mas producido industrialmente. Usado en baterias y fertilizantes.',composition:[{sym:'H',count:2,desc:'Hidrogeno - iones hidronio en disolucion'},{sym:'S',count:1,desc:'Azufre - centro del anion sulfato'},{sym:'O',count:4,desc:'Oxigeno - enlaces con azufre'}]},
+  {name:'Glucosa',chem:'C6H12O6',type:'Carbohidrato',desc:'Azucar simple. Fuente principal de energia celular.',composition:[{sym:'C',count:6,desc:'Carbono - estructura principal'},{sym:'H',count:12,desc:'Hidrogeno - enlaces con carbono y oxigeno'},{sym:'O',count:6,desc:'Oxigeno - grupos hidroxilo'}]},
+  {name:'Acido clorhidrico',chem:'HCl',type:'Acido fuerte',desc:'Acido estomacal. Disolucion de cloruro de hidrogeno en agua.',composition:[{sym:'H',count:1,desc:'Hidrogeno - proton en disolucion'},{sym:'Cl',count:1,desc:'Cloro - anion cloruro'}]},
+  {name:'Oxido de calcio',chem:'CaO',type:'Oxido basico',desc:'Cal viva. Usada en construccion y tratamiento de aguas.',composition:[{sym:'Ca',count:1,desc:'Calcio - cation Ca2+'},{sym:'O',count:1,desc:'Oxigeno - anion O2-'}]},
+  {name:'Carbonato de calcio',chem:'CaCO3',type:'Sal',desc:'Principal componente de piedra caliza, marmol y conchas.',composition:[{sym:'Ca',count:1,desc:'Calcio - cation'},{sym:'C',count:1,desc:'Carbono - centro del anion carbonato'},{sym:'O',count:3,desc:'Oxigeno - tres atomos en anion carbonato'}]},
+  {name:'Metano',chem:'CH4',type:'Hidrocarburo',desc:'Gas natural principal. Combustible fosil y gas de efecto invernadero.',composition:[{sym:'C',count:1,desc:'Carbono - cuatro enlaces covalentes'},{sym:'H',count:4,desc:'Hidrogeno - enlaces con carbono'}]},
+  {name:'Etanol',chem:'C2H5OH',type:'Alcohol',desc:'Alcohol de bebidas. Disolvente y combustible.',composition:[{sym:'C',count:2,desc:'Carbono - cadena de dos atomos'},{sym:'H',count:6,desc:'Hidrogeno - enlaces con carbono y oxigeno'},{sym:'O',count:1,desc:'Oxigeno - grupo hidroxilo'}]},
+  {name:'Peroxido de hidrogeno',chem:'H2O2',type:'Peroxido',desc:'Agua oxigenada. Desinfectante y blanqueador.',composition:[{sym:'H',count:2,desc:'Hidrogeno - enlaces con oxigeno'},{sym:'O',count:2,desc:'Oxigeno - enlace O-O simple'}]},
+  {name:'Amonio nitrato',chem:'NH4NO3',type:'Sal',desc:'Fertilizante nitrogenado. Tambien usado en explosivos industriales.',composition:[{sym:'N',count:2,desc:'Nitrogeno - cation amonio y anion nitrato'},{sym:'H',count:4,desc:'Hidrogeno - enlaces con nitrogeno'},{sym:'O',count:3,desc:'Oxigeno - anion nitrato'}]},
+  {name:'Sulfato de cobre(II)',chem:'CuSO4',type:'Sal',desc:'Solido azul cristalino. Usado en agricultura y electroquimica.',composition:[{sym:'Cu',count:1,desc:'Cobre - cation Cu2+'},{sym:'S',count:1,desc:'Azufre - centro del anion sulfato'},{sym:'O',count:4,desc:'Oxigeno - anion sulfato'}]},
+  {name:'Oxido de hierro(III)',chem:'Fe2O3',type:'Oxido',desc:'Hematita. Principal mineral de hierro. Color rojo en oxido.',composition:[{sym:'Fe',count:2,desc:'Hierro - cation Fe3+'},{sym:'O',count:3,desc:'Oxigeno - anion O2-'}]},
+  {name:'Cloruro de sodio',chem:'NaCl',type:'Sal ionica',desc:'Mismo que sal de mesa. Cristal cubico tipico.',composition:[{sym:'Na',count:1,desc:'Sodio - cation'},{sym:'Cl',count:1,desc:'Cloro - anion'}]},
+  {name:'Bicarbonato de sodio',chem:'NaHCO3',type:'Sal acida',desc:'Bicarbonato sódico. Usado en reposteria y antiacidos.',composition:[{sym:'Na',count:1,desc:'Sodio - cation'},{sym:'H',count:1,desc:'Hidrogeno - proton acido'},{sym:'C',count:1,desc:'Carbono - centro anion'},{sym:'O',count:3,desc:'Oxigeno - tres atomos'}]},
+  {name:'Silice',chem:'SiO2',type:'Oxido covalente',desc:'Dioxido de silicio. Principal componente de la arena y vidrio.',composition:[{sym:'Si',count:1,desc:'Silicio - centro tetraedrico'},{sym:'O',count:2,desc:'Oxigeno - enlaces dobles'}]},
+  {name:'Acido acetico',chem:'CH3COOH',type:'Acido carboxilico',desc:'Componente principal del vinagre. Conservante y condimento.',composition:[{sym:'C',count:2,desc:'Carbono - grupo metilo y carboxilo'},{sym:'H',count:4,desc:'Hidrogeno - enlaces con carbono'},{sym:'O',count:2,desc:'Oxigeno - grupo carboxilo'}]},
+  {name:'Acido nitrico',chem:'HNO3',type:'Acido fuerte',desc:'Acido oxidante fuerte. Usado en fertilizantes y explosivos.',composition:[{sym:'H',count:1,desc:'Hidrogeno - proton'},{sym:'N',count:1,desc:'Nitrogeno - centro oxidado'},{sym:'O',count:3,desc:'Oxigeno - enlaces con nitrogeno'}]},
+  {name:'Fosfato tricalcico',chem:'Ca3(PO4)2',type:'Sal',desc:'Principal componente del hueso y diente. Fertilizante.',composition:[{sym:'Ca',count:3,desc:'Calcio - tres cationes'},{sym:'P',count:2,desc:'Fosforo - centro anion fosfato'},{sym:'O',count:8,desc:'Oxigeno - anion fosfato'}]},
+  {name:'Cianuro de hidrogeno',chem:'HCN',type:'Compuesto toxico',desc:'Gas venenoso con olor a almendras amargas. Muy toxico.',composition:[{sym:'H',count:1,desc:'Hidrogeno - enlace con carbono'},{sym:'C',count:1,desc:'Carbono - triple enlace con nitrogeno'},{sym:'N',count:1,desc:'Nitrogeno - triple enlace'}]},
+  {name:'Cloroformo',chem:'CHCl3',type:'Halocarbono',desc:'Triclorometano. Antiguo anestesico. Disolvente industrial.',composition:[{sym:'C',count:1,desc:'Carbono - centro tetraedrico'},{sym:'H',count:1,desc:'Hidrogeno - enlace con carbono'},{sym:'Cl',count:3,desc:'Cloro - tres atomos'}]},
+  {name:'Dioxido de azufre',chem:'SO2',type:'Oxido acido',desc:'Gas contaminante. Causa lluvia acida. Conservante de alimentos.',composition:[{sym:'S',count:1,desc:'Azufre - centro'},{sym:'O',count:2,desc:'Oxigeno - enlaces dobles'}]},
+  {name:'Tetracloruro de carbono',chem:'CCl4',type:'Halocarbono',desc:'Disolvente historico. Prohibido por toxicidad y efecto ozono.',composition:[{sym:'C',count:1,desc:'Carbono - centro tetraedrico'},{sym:'Cl',count:4,desc:'Cloro - cuatro atomos'}]},
+  {name:'Permanganato de potasio',chem:'KMnO4',type:'Sal oxidante',desc:'Solido purpura. Oxidante fuerte. Desinfectante y tratamiento de agua.',composition:[{sym:'K',count:1,desc:'Potasio - cation'},{sym:'Mn',count:1,desc:'Manganeso - centro oxidado (+7)'},{sym:'O',count:4,desc:'Oxigeno - anion permanganato'}]},
+  {name:'Cromato de potasio',chem:'K2CrO4',type:'Sal',desc:'Solido amarillo. Indicador quimico. Toxicidad moderada.',composition:[{sym:'K',count:2,desc:'Potasio - dos cationes'},{sym:'Cr',count:1,desc:'Cromo - centro oxidado (+6)'},{sym:'O',count:4,desc:'Oxigeno - anion cromato'}]},
+  {name:'Sulfuro de hidrogeno',chem:'H2S',type:'Hidruro',desc:'Gas con olor a huevos podridos. Muy toxico. Gas volcanico.',composition:[{sym:'H',count:2,desc:'Hidrogeno - enlaces con azufre'},{sym:'S',count:1,desc:'Azufre - dos pares de electrones libres'}]},
+  {name:'Nitrato de plata',chem:'AgNO3',type:'Sal',desc:'Solido blanco que oscurece con luz. Usado en fotografia y medicina.',composition:[{sym:'Ag',count:1,desc:'Plata - cation'},{sym:'N',count:1,desc:'Nitrogeno - centro anion nitrato'},{sym:'O',count:3,desc:'Oxigeno - anion nitrato'}]},
+  {name:'Oxido de aluminio',chem:'Al2O3',type:'Oxido anfotero',desc:'Corindon. Muy duro. Usado en abrasivos y ceramicas.',composition:[{sym:'Al',count:2,desc:'Aluminio - cation Al3+'},{sym:'O',count:3,desc:'Oxigeno - anion O2-'}]},
+  {name:'Hidroxido de sodio',chem:'NaOH',type:'Base fuerte',desc:'Sosa caustica. Usada en jabones, detergentes y procesos industriales.',composition:[{sym:'Na',count:1,desc:'Sodio - cation'},{sym:'O',count:1,desc:'Oxigeno - grupo hidroxilo'},{sym:'H',count:1,desc:'Hidrogeno - grupo hidroxilo'}]},
+  {name:'Carbonato de sodio',chem:'Na2CO3',type:'Sal basica',desc:'Soda Solvay. Usada en vidrio, detergentes y tratamiento de agua.',composition:[{sym:'Na',count:2,desc:'Sodio - dos cationes'},{sym:'C',count:1,desc:'Carbono - centro anion carbonato'},{sym:'O',count:3,desc:'Oxigeno - anion carbonato'}]},
+  {name:'Sulfato de calcio',chem:'CaSO4',type:'Sal',desc:'Yeso. Usado en construccion, escayola y agricultura.',composition:[{sym:'Ca',count:1,desc:'Calcio - cation'},{sym:'S',count:1,desc:'Azufre - centro anion sulfato'},{sym:'O',count:4,desc:'Oxigeno - anion sulfato'}]},
+  {name:'Cloruro de calcio',chem:'CaCl2',type:'Sal',desc:'Deshidratante. Usado en carreteras para derretir hielo.',composition:[{sym:'Ca',count:1,desc:'Calcio - cation Ca2+'},{sym:'Cl',count:2,desc:'Cloro - dos aniones'}]},
+  {name:'Acido fosforico',chem:'H3PO4',type:'Acido',desc:'Usado en fertilizantes, bebidas gaseosas y tratamiento dental.',composition:[{sym:'H',count:3,desc:'Hidrogeno - tres protones'},{sym:'P',count:1,desc:'Fosforo - centro'},{sym:'O',count:4,desc:'Oxigeno - cuatro atomos'}]},
+  {name:'Nitrogeno molecular',chem:'N2',type:'Molecula diatomica',desc:'Gas que forma el 78% de la atmosfera. Enlace triple muy fuerte.',composition:[{sym:'N',count:2,desc:'Nitrogeno - enlace triple N≡N'}]},
+  {name:'Oxigeno molecular',chem:'O2',type:'Molecula diatomica',desc:'Gas esencial para respiracion. Enlace doble O=O.',composition:[{sym:'O',count:2,desc:'Oxigeno - enlace doble'}]},
+  {name:'Ozon',chem:'O3',type:'Alotropo',desc:'Forma alotropica del oxigeno. Capa de ozono protege de UV.',composition:[{sym:'O',count:3,desc:'Oxigeno - tres atomos en anillo'}]},
+  {name:'Cianuro de potasio',chem:'KCN',type:'Sal toxica',desc:'Extremadamente venenoso. Inhibe la respiracion celular.',composition:[{sym:'K',count:1,desc:'Potasio - cation'},{sym:'C',count:1,desc:'Carbono - enlace triple con nitrogeno'},{sym:'N',count:1,desc:'Nitrogeno - anion cianuro'}]},
+  {name:'Diamante',chem:'C',type:'Alotropo',desc:'Forma cristalina del carbono. El material natural mas duro.',composition:[{sym:'C',count:1,desc:'Carbono - red covalente tridimensional'}]},
+  {name:'Grafito',chem:'C',type:'Alotropo',desc:'Forma laminar del carbono. Conductor electrico. Usado en lapices.',composition:[{sym:'C',count:1,desc:'Carbono - capas hexagonales'}]},
+  {name:'Fulminato de plata',chem:'AgCNO',type:'Explosivo',desc:'Explosivo primario muy sensible. Usado historicamente en fulminantes.',composition:[{sym:'Ag',count:1,desc:'Plata - cation'},{sym:'C',count:1,desc:'Carbono'},{sym:'N',count:1,desc:'Nitrogeno'},{sym:'O',count:1,desc:'Oxigeno'}]},
+  {name:'Acido fluorhidrico',chem:'HF',type:'Acido debil',desc:'Unico acido que disuelve vidrio. Muy corrosivo y toxico.',composition:[{sym:'H',count:1,desc:'Hidrogeno'},{sym:'F',count:1,desc:'Fluor - muy electronegativo'}]},
+  {name:'Hexacianoferrato(II) de potasio',chem:'K4[Fe(CN)6]',type:'Complejo',desc:'Amarillo de Prusia soluble. Usado en analisis quimico.',composition:[{sym:'K',count:4,desc:'Potasio - cationes'},{sym:'Fe',count:1,desc:'Hierro - centro del complejo'},{sym:'C',count:6,desc:'Carbono - ligandos cianuro'},{sym:'N',count:6,desc:'Nitrogeno - ligandos cianuro'}]},
+  {name:'Tiocianato de hierro(III)',chem:'Fe(SCN)3',type:'Complejo',desc:'Complejo rojo sangre. Usado como prueba de hierro y tiocianato.',composition:[{sym:'Fe',count:1,desc:'Hierro - centro'},{sym:'S',count:3,desc:'Azufre - ligandos'},{sym:'C',count:3,desc:'Carbono'},{sym:'N',count:3,desc:'Nitrogeno'}]},
+  {name:'Yoduro de plomo(II)',chem:'PbI2',type:'Sal',desc:'Precipitado amarillo brillante. Usado en fotografia y detectores de radiacion.',composition:[{sym:'Pb',count:1,desc:'Plomo - cation Pb2+'},{sym:'I',count:2,desc:'Yodo - dos aniones'}]},
+  {name:'Cromato de plomo(II)',chem:'PbCrO4',type:'Pigmento',desc:'Amarillo de cromo. Pigmento historico. Toxicidad moderada.',composition:[{sym:'Pb',count:1,desc:'Plomo - cation'},{sym:'Cr',count:1,desc:'Cromo - centro'},{sym:'O',count:4,desc:'Oxigeno - anion cromato'}]},
+  {name:'Sulfato de bario',chem:'BaSO4',type:'Sal insoluble',desc:'Barita. Opaco a rayos X. Usado en estudios radiologicos.',composition:[{sym:'Ba',count:1,desc:'Bario - cation'},{sym:'S',count:1,desc:'Azufre - centro'},{sym:'O',count:4,desc:'Oxigeno - anion sulfato'}]},
+  {name:'Clorato de potasio',chem:'KClO3',type:'Oxidante',desc:'Oxidante fuerte. Usado en fosforos de seguridad y pirotecnia.',composition:[{sym:'K',count:1,desc:'Potasio - cation'},{sym:'Cl',count:1,desc:'Cloro - centro oxidado (+5)'},{sym:'O',count:3,desc:'Oxigeno - anion clorato'}]},
+  {name:'Perclorato de amonio',chem:'NH4ClO4',type:'Oxidante',desc:'Comburente en propulsores de cohetes. Muy potente.',composition:[{sym:'N',count:1,desc:'Nitrogeno - cation amonio'},{sym:'H',count:4,desc:'Hidrogeno'},{sym:'Cl',count:1,desc:'Cloro - centro'},{sym:'O',count:4,desc:'Oxigeno - anion perclorato'}]},
+  {name:'Hidruro de litio',chem:'LiH',type:'Hidruro ionico',desc:'Fuente de hidruro. Usado en sintesis organica y baterias.',composition:[{sym:'Li',count:1,desc:'Litio - cation Li+'},{sym:'H',count:1,desc:'Hidrogeno - anion hidruro H-'}]},
+  {name:'Carburo de calcio',chem:'CaC2',type:'Carburo',desc:'Produce acetileno al reaccionar con agua. Usado en lamparas de minero.',composition:[{sym:'Ca',count:1,desc:'Calcio - cation'},{sym:'C',count:2,desc:'Carbono - anion acetiluro [C≡C]2-'}]},
+  {name:'Nitruro de boro',chem:'BN',type:'Compuesto covalente',desc:'Estructura similar al grafito y diamante. Material ceramico avanzado.',composition:[{sym:'B',count:1,desc:'Boro - enlaces con nitrogeno'},{sym:'N',count:1,desc:'Nitrogeno - enlaces con boro'}]},
+  {name:'Siliciuro de calcio',chem:'CaSi2',type:'Siliciuro',desc:'Usado en la produccion de silicio metalico y como desoxidante.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Si',count:2,desc:'Silicio - dos atomos'}]},
+  {name:'Fosfina',chem:'PH3',type:'Hidruro',desc:'Gas venenoso con olor a pescado. Usado en semiconductores.',composition:[{sym:'P',count:1,desc:'Fosforo - centro'},{sym:'H',count:3,desc:'Hidrogeno - tres enlaces'}]},
+  {name:'Arsina',chem:'AsH3',type:'Hidruro toxico',desc:'Gas extremadamente toxico. Usado en industria de semiconductores.',composition:[{sym:'As',count:1,desc:'Arsenico - centro'},{sym:'H',count:3,desc:'Hidrogeno - tres enlaces'}]},
+  {name:'Estibina',chem:'SbH3',type:'Hidruro',desc:'Gas toxico. Analogo de arsina y fosfina.',composition:[{sym:'Sb',count:1,desc:'Antimonio - centro'},{sym:'H',count:3,desc:'Hidrogeno - tres enlaces'}]},
+  {name:'Teluro de hidrogeno',chem:'H2Te',type:'Hidruro',desc:'Compuesto muy toxico y maloliente. Analogo de sulfuro de hidrogeno.',composition:[{sym:'H',count:2,desc:'Hidrogeno'},{sym:'Te',count:1,desc:'Teluro - centro'}]},
+  {name:'Oxido de mercurio(II)',chem:'HgO',type:'Oxido',desc:'Solido rojo o amarillo. Descompone al calentar liberando oxigeno.',composition:[{sym:'Hg',count:1,desc:'Mercurio - cation Hg2+'},{sym:'O',count:1,desc:'Oxigeno - anion'}]},
+  {name:'Cloruro mercurico',chem:'HgCl2',type:'Sal toxica',desc:'Cloruro de mercurio(II). Muy toxico. Antiguo desinfectante.',composition:[{sym:'Hg',count:1,desc:'Mercurio'},{sym:'Cl',count:2,desc:'Cloro - dos atomos'}]},
+  {name:'Yoduro de mercurio(II)',chem:'HgI2',type:'Sal',desc:'Solido rojo o amarillo. Usado en termometros y detectores de amoniaco.',composition:[{sym:'Hg',count:1,desc:'Mercurio'},{sym:'I',count:2,desc:'Yodo - dos atomos'}]},
+  {name:'Fulminato de mercurio',chem:'Hg(CNO)2',type:'Explosivo primario',desc:'Explosivo muy sensible. Usado historicamente en fulminantes.',composition:[{sym:'Hg',count:1,desc:'Mercurio'},{sym:'C',count:2,desc:'Carbono'},{sym:'N',count:2,desc:'Nitrogeno'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Cianuro de mercurio',chem:'Hg(CN)2',type:'Compuesto toxico',desc:'Muy toxico. Usado en galvanoplastia y sintesis organica.',composition:[{sym:'Hg',count:1,desc:'Mercurio'},{sym:'C',count:2,desc:'Carbono'},{sym:'N',count:2,desc:'Nitrogeno'}]},
+  {name:'Acetato de plomo(II)',chem:'Pb(CH3COO)2',type:'Sal toxica',desc:'Azucar de plomo. Dulce pero mortalmente venenoso.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'C',count:4,desc:'Carbono - dos grupos acetato'},{sym:'H',count:6,desc:'Hidrogeno'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Tetraetilo de plomo',chem:'Pb(C2H5)4',type:'Compuesto organometalico',desc:'Antiguo aditivo de gasolina. Prohibido por toxicidad ambiental.',composition:[{sym:'Pb',count:1,desc:'Plomo - centro'},{sym:'C',count:8,desc:'Carbono - cuatro grupos etilo'},{sym:'H',count:20,desc:'Hidrogeno'}]},
+  {name:'Cromo hexacarbonilo',chem:'Cr(CO)6',type:'Complejo organometalico',desc:'Solido cristalino blanco. Compuesto de coordinacion cero valente.',composition:[{sym:'Cr',count:1,desc:'Cromo - centro'},{sym:'C',count:6,desc:'Carbono - ligandos CO'},{sym:'O',count:6,desc:'Oxigeno - ligandos CO'}]},
+  {name:'Ferroceno',chem:'Fe(C5H5)2',type:'Compuesto organometalico',desc:'Primer compuesto sandwich. Importante en quimica organometalica.',composition:[{sym:'Fe',count:1,desc:'Hierro - centro entre dos anillos'},{sym:'C',count:10,desc:'Carbono - dos anillos ciclopentadienilo'},{sym:'H',count:10,desc:'Hidrogeno'}]},
+  {name:'Tungsteno hexacarbonilo',chem:'W(CO)6',type:'Complejo',desc:'Analogo del cromo hexacarbonilo. Usado en deposicion quimica.',composition:[{sym:'W',count:1,desc:'Wolframio - centro'},{sym:'C',count:6,desc:'Carbono'},{sym:'O',count:6,desc:'Oxigeno'}]},
+  {name:'Dicromato de potasio',chem:'K2Cr2O7',type:'Oxidante fuerte',desc:'Solido naranja-rojo. Oxidante fuerte usado en sintesis organica y tratamiento de agua.',composition:[{sym:'K',count:2,desc:'Potasio - dos cationes'},{sym:'Cr',count:2,desc:'Cromo - centro oxidado (+6)'},{sym:'O',count:7,desc:'Oxigeno - anion dicromato'}]},
+  {name:'Permanganato de potasio',chem:'KMnO4',type:'Oxidante',desc:'Solido purpura intenso. Oxidante fuerte y desinfectante.',composition:[{sym:'K',count:1,desc:'Potasio'},{sym:'Mn',count:1,desc:'Manganeso'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Fosfina',chem:'PH3',type:'Hidruro',desc:'Gas venenoso con olor a pescado podrido. Usado en semiconductores.',composition:[{sym:'P',count:1,desc:'Fosforo'},{sym:'H',count:3,desc:'Hidrogeno'}]},
+  {name:'Diborano',chem:'B2H6',type:'Hidruro electrono deficiente',desc:'Gas inflamable. Usado en sintesis organica y dopado de semiconductores.',composition:[{sym:'B',count:2,desc:'Boro - dos atomos'},{sym:'H',count:6,desc:'Hidrogeno - seis atomos'}]},
+  {name:'Pentaborano',chem:'B5H9',type:'Hidruro borano',desc:'Compuesto de borano altamente reactivo. Usado como combustible de cohetes.',composition:[{sym:'B',count:5,desc:'Boro'},{sym:'H',count:9,desc:'Hidrogeno'}]},
+  {name:'Decaborano',chem:'B10H14',type:'Hidruro borano',desc:'Solido cristalino. Usado en sintesis organica y como fuente de borano.',composition:[{sym:'B',count:10,desc:'Boro'},{sym:'H',count:14,desc:'Hidrogeno'}]},
+  {name:'Carborano',chem:'C2B10H12',type:'Cluster borano',desc:'Estructura tridimensional estable. Usado en aplicaciones medicas y materiales.',composition:[{sym:'C',count:2,desc:'Carbono'},{sym:'B',count:10,desc:'Boro'},{sym:'H',count:12,desc:'Hidrogeno'}]},
+  {name:'Silano',chem:'SiH4',type:'Hidruro',desc:'Gas analogo al metano. Usado en deposicion de silicio para semiconductores.',composition:[{sym:'Si',count:1,desc:'Silicio'},{sym:'H',count:4,desc:'Hidrogeno'}]},
+  {name:'Germano',chem:'GeH4',type:'Hidruro',desc:'Gas analogo al silano. Usado en epitaxia de germanio.',composition:[{sym:'Ge',count:1,desc:'Germanio'},{sym:'H',count:4,desc:'Hidrogeno'}]},
+  {name:'Estannano',chem:'SnH4',type:'Hidruro',desc:'Gas inestable. Analogo del metano con estano.',composition:[{sym:'Sn',count:1,desc:'Estano'},{sym:'H',count:4,desc:'Hidrogeno'}]},
+  {name:'Plumbano',chem:'PbH4',type:'Hidruro',desc:'Compuesto muy inestable. Analogo del metano con plomo.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'H',count:4,desc:'Hidrogeno'}]},
+  {name:'Sulfuro de carbono',chem:'CS2',type:'Compuesto covalente',desc:'Liquido inflamable con olor desagradable. Disolvente organico.',composition:[{sym:'C',count:1,desc:'Carbono'},{sym:'S',count:2,desc:'Azufre'}]},
+  {name:'Oxicloruro de fosforo',chem:'POCl3',type:'Compuesto de fosforo',desc:'Liquido usado en sintesis de pesticidas y plasticos.',composition:[{sym:'P',count:1,desc:'Fosforo'},{sym:'O',count:1,desc:'Oxigeno'},{sym:'Cl',count:3,desc:'Cloro'}]},
+  {name:'Pentacloruro de fosforo',chem:'PCl5',type:'Haluro de fosforo',desc:'Solido usado como clorurante en sintesis organica.',composition:[{sym:'P',count:1,desc:'Fosforo'},{sym:'Cl',count:5,desc:'Cloro'}]},
+  {name:'Tricloruro de fosforo',chem:'PCl3',type:'Haluro de fosforo',desc:'Liquido usado en sintesis de pesticidas y productos farmaceuticos.',composition:[{sym:'P',count:1,desc:'Fosforo'},{sym:'Cl',count:3,desc:'Cloro'}]},
+  {name:'Pentafluoruro de fosforo',chem:'PF5',type:'Haluro de fosforo',desc:'Gas usado en sintesis de compuestos de fosforo fluorados.',composition:[{sym:'P',count:1,desc:'Fosforo'},{sym:'F',count:5,desc:'Fluor'}]},
+  {name:'Hexafluoruro de azufre',chem:'SF6',type:'Haluro de azufre',desc:'Gas inerte usado en aisladores electricos y como contraste en ecografia.',composition:[{sym:'S',count:1,desc:'Azufre'},{sym:'F',count:6,desc:'Fluor'}]},
+  {name:'Tetrafluoruro de carbono',chem:'CF4',type:'Halocarbono',desc:'Gas inerte. Usado en plasma para grabado de semiconductores.',composition:[{sym:'C',count:1,desc:'Carbono'},{sym:'F',count:4,desc:'Fluor'}]},
+  {name:'Difluoruro de xenon',chem:'XeF2',type:'Compuesto de gas noble',desc:'Solido cristalino. Primer compuesto de gas noble sintetizado.',composition:[{sym:'Xe',count:1,desc:'Xenon'},{sym:'F',count:2,desc:'Fluor'}]},
+  {name:'Tetrafluoruro de xenon',chem:'XeF4',type:'Compuesto de gas noble',desc:'Solido usado como fluorurante en sintesis organica.',composition:[{sym:'Xe',count:1,desc:'Xenon'},{sym:'F',count:4,desc:'Fluor'}]},
+  {name:'Hexafluoruro de xenon',chem:'XeF6',type:'Compuesto de gas noble',desc:'Solido altamente reactivo. Fuente de fluor en reacciones.',composition:[{sym:'Xe',count:1,desc:'Xenon'},{sym:'F',count:6,desc:'Fluor'}]},
+  {name:'Trioxido de azufre',chem:'SO3',type:'Oxido acido',desc:'Gas que forma acido sulfurico con agua. Usado en sulfonacion.',composition:[{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Heptaoxido de dicloruro',chem:'Cl2O7',type:'Oxido acido',desc:'Liquido explosivo. Anhidrido del acido perclorico.',composition:[{sym:'Cl',count:2,desc:'Cloro'},{sym:'O',count:7,desc:'Oxigeno'}]},
+  {name:'Tetroxido de dinitrogeno',chem:'N2O4',type:'Oxido de nitrogeno',desc:'Gas marron en equilibrio con NO2. Usado en propelentes de cohetes.',composition:[{sym:'N',count:2,desc:'Nitrogeno'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Trioxido de diboro',chem:'B2O3',type:'Oxido acido',desc:'Solido vidrioso. Anhidrido del acido borico.',composition:[{sym:'B',count:2,desc:'Boro'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Oxido nitroso',chem:'N2O',type:'Oxido de nitrogeno',desc:'Gas hilarante. Usado como anestesico y propelente.',composition:[{sym:'N',count:2,desc:'Nitrogeno'},{sym:'O',count:1,desc:'Oxigeno'}]},
+  {name:'Monoxido de nitrogeno',chem:'NO',type:'Oxido de nitrogeno',desc:'Gas incoloro. Neurotransmisor y mediador biologico.',composition:[{sym:'N',count:1,desc:'Nitrogeno'},{sym:'O',count:1,desc:'Oxigeno'}]},
+  {name:'Trioxido de nitrogeno',chem:'N2O3',type:'Oxido de nitrogeno',desc:'Gas azul. Anhidrido del acido nitroso.',composition:[{sym:'N',count:2,desc:'Nitrogeno'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Pentoxido de dinitrogeno',chem:'N2O5',type:'Oxido de nitrogeno',desc:'Solido blanco. Anhidrido del acido nitrico.',composition:[{sym:'N',count:2,desc:'Nitrogeno'},{sym:'O',count:5,desc:'Oxigeno'}]},
+  {name:'Superoxido de potasio',chem:'KO2',type:'Superoxido',desc:'Solido amarillo. Libera oxigeno al reaccionar con CO2. Usado en mascaras de oxigeno.',composition:[{sym:'K',count:1,desc:'Potasio'},{sym:'O',count:2,desc:'Oxigeno - anion superoxido'}]},
+  {name:'Peroxido de sodio',chem:'Na2O2',type:'Peroxido',desc:'Solido amarillo. Oxidante fuerte usado en blanqueamiento.',composition:[{sym:'Na',count:2,desc:'Sodio'},{sym:'O',count:2,desc:'Oxigeno - enlace peroxido'}]},
+  {name:'Hidruro de sodio',chem:'NaH',type:'Hidruro ionico',desc:'Base fuerte. Usado como agente reductor en sintesis organica.',composition:[{sym:'Na',count:1,desc:'Sodio'},{sym:'H',count:1,desc:'Hidrogeno - anion hidruro'}]},
+  {name:'Nitruro de sodio',chem:'Na3N',type:'Nitruro ionico',desc:'Solido rojo. Descompone violentamente con agua.',composition:[{sym:'Na',count:3,desc:'Sodio'},{sym:'N',count:1,desc:'Nitrogeno - anion nitruro N3-'}]},
+  {name:'Carburo de silicio',chem:'SiC',type:'Carburo covalente',desc:'Carborundo. Material ceramico muy duro. Usado en abrasivos.',composition:[{sym:'Si',count:1,desc:'Silicio'},{sym:'C',count:1,desc:'Carbono'}]},
+  {name:'Nitruro de silicio',chem:'Si3N4',type:'Nitruro covalente',desc:'Ceramica avanzada de alta resistencia termica y mecanica.',composition:[{sym:'Si',count:3,desc:'Silicio'},{sym:'N',count:4,desc:'Nitrogeno'}]},
+  {name:'Carburo de boro',chem:'B4C',type:'Carburo covalente',desc:'Tercer material mas duro conocido. Usado en blindaje y abrasivos.',composition:[{sym:'B',count:4,desc:'Boro'},{sym:'C',count:1,desc:'Carbono'}]},
+  {name:'Nitruro de aluminio',chem:'AlN',type:'Nitruro',desc:'Ceramica con alta conductividad termica. Usada en electronica.',composition:[{sym:'Al',count:1,desc:'Aluminio'},{sym:'N',count:1,desc:'Nitrogeno'}]},
+  {name:'Carburo de tungsteno',chem:'WC',type:'Carburo',desc:'Material extremadamente duro. Usado en herramientas de corte.',composition:[{sym:'W',count:1,desc:'Wolframio'},{sym:'C',count:1,desc:'Carbono'}]},
+  {name:'Siliciuro de tungsteno',chem:'WSi2',type:'Siliciuro',desc:'Material refractario usado en microelectronica.',composition:[{sym:'W',count:1,desc:'Wolframio'},{sym:'Si',count:2,desc:'Silicio'}]},
+  {name:'Germaniuro de galio',chem:'GaGe',type:'Compuesto intermetalico',desc:'Material semiconductor usado en optoelectronica.',composition:[{sym:'Ga',count:1,desc:'Galio'},{sym:'Ge',count:1,desc:'Germanio'}]},
+  {name:'Arseniuro de galio',chem:'GaAs',type:'Semiconductor III-V',desc:'Semiconductor importante para optoelectronica y microondas.',composition:[{sym:'Ga',count:1,desc:'Galio'},{sym:'As',count:1,desc:'Arsenico'}]},
+  {name:'Fosfuro de indio',chem:'InP',type:'Semiconductor III-V',desc:'Semiconductor usado en fibra optica y comunicaciones de alta velocidad.',composition:[{sym:'In',count:1,desc:'Indio'},{sym:'P',count:1,desc:'Fosforo'}]},
+  {name:'Antimoniuro de indio',chem:'InSb',type:'Semiconductor III-V',desc:'Semiconductor usado en detectores infrarrojos.',composition:[{sym:'In',count:1,desc:'Indio'},{sym:'Sb',count:1,desc:'Antimonio'}]},
+  {name:'Telururo de cadmio',chem:'CdTe',type:'Semiconductor II-VI',desc:'Material para celdas solares de pelicula delgada.',composition:[{sym:'Cd',count:1,desc:'Cadmio'},{sym:'Te',count:1,desc:'Teluro'}]},
+  {name:'Sulfuro de cadmio',chem:'CdS',type:'Semiconductor II-VI',desc:'Pigmento amarillo. Usado en fotoceldas y pinturas.',composition:[{sym:'Cd',count:1,desc:'Cadmio'},{sym:'S',count:1,desc:'Azufre'}]},
+  {name:'Selenuro de zinc',chem:'ZnSe',type:'Semiconductor II-VI',desc:'Material optico usado en lentes infrarrojas y laseres.',composition:[{sym:'Zn',count:1,desc:'Zinc'},{sym:'Se',count:1,desc:'Selenio'}]},
+  {name:'Telururo de zinc',chem:'ZnTe',type:'Semiconductor II-VI',desc:'Material para dispositivos optoelectronicos.',composition:[{sym:'Zn',count:1,desc:'Zinc'},{sym:'Te',count:1,desc:'Teluro'}]},
+  {name:'Arseniuro de aluminio',chem:'AlAs',type:'Semiconductor III-V',desc:'Material usado en heteroestructuras de semiconductores.',composition:[{sym:'Al',count:1,desc:'Aluminio'},{sym:'As',count:1,desc:'Arsenico'}]},
+  {name:'Nitruro de galio',chem:'GaN',type:'Semiconductor III-V',desc:'Material para LEDs azules y laseres de alta potencia.',composition:[{sym:'Ga',count:1,desc:'Galio'},{sym:'N',count:1,desc:'Nitrogeno'}]},
+  {name:'Nitruro de indio',chem:'InN',type:'Semiconductor III-V',desc:'Semiconductor con banda prohibida estrecha.',composition:[{sym:'In',count:1,desc:'Indio'},{sym:'N',count:1,desc:'Nitrogeno'}]},
+  {name:'Aluminuro de titanio',chem:'TiAl',type:'Compuesto intermetalico',desc:'Material ligero de alta temperatura para aplicaciones aeroespaciales.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'Al',count:1,desc:'Aluminio'}]},
+  {name:'Nitruro de titanio',chem:'TiN',type:'Nitruro',desc:'Recubrimiento duro dorado usado en herramientas y joyeria.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'N',count:1,desc:'Nitrogeno'}]},
+  {name:'Carburo de titanio',chem:'TiC',type:'Carburo',desc:'Material ceramico muy duro. Usado en herramientas de corte.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'C',count:1,desc:'Carbono'}]},
+  {name:'Boruro de titanio',chem:'TiB2',type:'Boruro',desc:'Ceramica refractaria de alta dureza y conductividad electrica.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'B',count:2,desc:'Boro'}]},
+  {name:'Siliciuro de molibdeno',chem:'MoSi2',type:'Siliciuro',desc:'Material refractario usado en elementos calefactores.',composition:[{sym:'Mo',count:1,desc:'Molibdeno'},{sym:'Si',count:2,desc:'Silicio'}]},
+  {name:'Carburo de silicio',chem:'SiC',type:'Carburo covalente',desc:'Carborundo. Ceramica estructural de alta temperatura.',composition:[{sym:'Si',count:1,desc:'Silicio'},{sym:'C',count:1,desc:'Carbono'}]},
+  {name:'Nitruro de boro cubico',chem:'c-BN',type:'Nitruro',desc:'Segundo material mas duro despues del diamante.',composition:[{sym:'B',count:1,desc:'Boro'},{sym:'N',count:1,desc:'Nitrogeno'}]},
+  {name:'Oxido de zinc',chem:'ZnO',type:'Oxido anfotero',desc:'Blanco de zinc. Usado en protectores solares y catalizadores.',composition:[{sym:'Zn',count:1,desc:'Zinc'},{sym:'O',count:1,desc:'Oxigeno'}]},
+  {name:'Sulfuro de zinc',chem:'ZnS',type:'Sulfuro',desc:'Fosforo blanco. Usado en pantallas CRT y pinturas luminiscentes.',composition:[{sym:'Zn',count:1,desc:'Zinc'},{sym:'S',count:1,desc:'Azufre'}]},
+  {name:'Oxido de estaño(IV)',chem:'SnO2',type:'Oxido',desc:'Casiterita. Mineral principal de estano. Conductor transparente.',composition:[{sym:'Sn',count:1,desc:'Estano'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Oxido de indio-estano',chem:'ITO',type:'Oxido mixto',desc:'Oxido de indio y estano. Conductor transparente usado en pantallas tactiles.',composition:[{sym:'In',count:2,desc:'Indio'},{sym:'Sn',count:1,desc:'Estano'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Vanadato de itrio',chem:'YVO4',type:'Vanadato',desc:'Cristal usado en laseres de estado solido.',composition:[{sym:'Y',count:1,desc:'Itrio'},{sym:'V',count:1,desc:'Vanadio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Aluminato de itrio',chem:'YAlO3',type:'Aluminato',desc:'Cristal usado en laseres y scintiladores.',composition:[{sym:'Y',count:1,desc:'Itrio'},{sym:'Al',count:1,desc:'Aluminio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Granate de itrio-aluminio',chem:'Y3Al5O12',type:'Granate',desc:'YAG. Cristal usado en laseres y joyeria sintetica.',composition:[{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Granate de itrio-hierro',chem:'Y3Fe5O12',type:'Granate ferrimagnetico',desc:'YIG. Material magnetico usado en dispositivos de microondas.',composition:[{sym:'Y',count:3,desc:'Itrio'},{sym:'Fe',count:5,desc:'Hierro'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Ferrita de bario',chem:'BaFe12O19',type:'Ferrita',desc:'Iman ceramico permanente. Usado en altavoces y motores.',composition:[{sym:'Ba',count:1,desc:'Bario'},{sym:'Fe',count:12,desc:'Hierro'},{sym:'O',count:19,desc:'Oxigeno'}]},
+  {name:'Ferrita de estroncio',chem:'SrFe12O19',type:'Ferrita',desc:'Iman ceramico con alta coercitividad.',composition:[{sym:'Sr',count:1,desc:'Estroncio'},{sym:'Fe',count:12,desc:'Hierro'},{sym:'O',count:19,desc:'Oxigeno'}]},
+  {name:'Ferrita de zinc-manganeso',chem:'MnZnFe2O4',type:'Ferrita suave',desc:'Material magnetico suave para transformadores e inductores.',composition:[{sym:'Mn',count:1,desc:'Manganeso'},{sym:'Zn',count:1,desc:'Zinc'},{sym:'Fe',count:2,desc:'Hierro'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Ferrita de niquel-zinc',chem:'NiZnFe2O4',type:'Ferrita suave',desc:'Material magnetico de alta resistividad.',composition:[{sym:'Ni',count:1,desc:'Niquel'},{sym:'Zn',count:1,desc:'Zinc'},{sym:'Fe',count:2,desc:'Hierro'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Titanato de bario',chem:'BaTiO3',type:'Titanato',desc:'Material ferroelectrico. Usado en capacitores y sensores.',composition:[{sym:'Ba',count:1,desc:'Bario'},{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Titanato de estroncio',chem:'SrTiO3',type:'Titanato',desc:'Sustrato para peliculas delgadas de oxidos funcionales.',composition:[{sym:'Sr',count:1,desc:'Estroncio'},{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Zirconato de plomo',chem:'PbZrO3',type:'Zirconato',desc:'Material ferroelectrico antecesor del PZT.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'Zr',count:1,desc:'Zirconio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Titanato-zirconato de plomo',chem:'Pb(Zr,Ti)O3',type:'Ceramica piezoelectrica',desc:'PZT. Material piezoelectrico mas importante comercialmente.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'Zr',count:0.5,desc:'Zirconio'},{sym:'Ti',count:0.5,desc:'Titanio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Niobato de litio',chem:'LiNbO3',type:'Niobato',desc:'Cristal ferroelectrico usado en moduladores opticos.',composition:[{sym:'Li',count:1,desc:'Litio'},{sym:'Nb',count:1,desc:'Niobio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Tantalato de litio',chem:'LiTaO3',type:'Tantalato',desc:'Cristal piezoelectrico usado en filtros de frecuencia.',composition:[{sym:'Li',count:1,desc:'Litio'},{sym:'Ta',count:1,desc:'Tantalio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Molibdato de calcio',chem:'CaMoO4',type:'Molibdato',desc:'Scheelita. Mineral fosforescente usado en lamparas.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Mo',count:1,desc:'Molibdeno'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Wolframato de calcio',chem:'CaWO4',type:'Wolframato',desc:'Scheelita. Mineral principal de wolframio.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'W',count:1,desc:'Wolframio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Vanadato de bismuto',chem:'BiVO4',type:'Vanadato',desc:'Fotocatalizador visible para degradacion de contaminantes.',composition:[{sym:'Bi',count:1,desc:'Bismuto'},{sym:'V',count:1,desc:'Vanadio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Fosfato de bismuto',chem:'BiPO4',type:'Fosfato',desc:'Material luminescente y catalizador.',composition:[{sym:'Bi',count:1,desc:'Bismuto'},{sym:'P',count:1,desc:'Fosforo'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Molibdato de bismuto',chem:'Bi2MoO6',type:'Molibdato',desc:'Fotocatalizador para oxidacion de compuestos organicos.',composition:[{sym:'Bi',count:2,desc:'Bismuto'},{sym:'Mo',count:1,desc:'Molibdeno'},{sym:'O',count:6,desc:'Oxigeno'}]},
+  {name:'Tungstato de bismuto',chem:'Bi2WO6',type:'Tungstato',desc:'Fotocatalizador activo bajo luz visible.',composition:[{sym:'Bi',count:2,desc:'Bismuto'},{sym:'W',count:1,desc:'Wolframio'},{sym:'O',count:6,desc:'Oxigeno'}]},
+  {name:'Estannato de calcio',chem:'CaSnO3',type:'Estannato',desc:'Material dielectrico y catalizador.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Sn',count:1,desc:'Estano'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Zirconato de calcio',chem:'CaZrO3',type:'Zirconato',desc:'Ceramica refractaria y material para crucibles.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Zr',count:1,desc:'Zirconio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Hafnato de calcio',chem:'CaHfO3',type:'Hafnato',desc:'Material de alta permitividad para capacitores.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Hf',count:1,desc:'Hafnio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Cerato de calcio',chem:'CaCeO3',type:'Cerato',desc:'Material catalitico y conductor ionico.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Ce',count:1,desc:'Cerio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Aluminato de lantano',chem:'LaAlO3',type:'Aluminato',desc:'Sustrato para peliculas delgadas de superconductores.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Al',count:1,desc:'Aluminio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Manganito de lantano',chem:'LaMnO3',type:'Manganito',desc:'Material magnetico y catalizador.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Mn',count:1,desc:'Manganeso'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Cromito de lantano',chem:'LaCrO3',type:'Cromito',desc:'Material refractario y conductor electrico a alta temperatura.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Cr',count:1,desc:'Cromo'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Cobaltita de lantano',chem:'LaCoO3',type:'Cobaltita',desc:'Material catalitico y electrodo para celdas de combustible.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Co',count:1,desc:'Cobalto'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Niquelita de lantano',chem:'LaNiO3',type:'Niquelita',desc:'Conductor metalico y catalizador.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Ni',count:1,desc:'Niquel'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Ferrita de lantano',chem:'LaFeO3',type:'Ferrita',desc:'Material catalitico y sensor de gases.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Fe',count:1,desc:'Hierro'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Galato de lantano',chem:'LaGaO3',type:'Galato',desc:'Conductor ionico de oxigeno a alta temperatura.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Ga',count:1,desc:'Galio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Scandato de lantano',chem:'LaScO3',type:'Scandato',desc:'Sustrato para peliculas delgadas de oxidos.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Sc',count:1,desc:'Escandio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Itriato de lantano',chem:'LaYO3',type:'Itriato',desc:'Material ceramico de alta temperatura.',composition:[{sym:'La',count:1,desc:'Lantano'},{sym:'Y',count:1,desc:'Itrio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Aluminato de samario',chem:'SmAlO3',type:'Aluminato',desc:'Sustrato para peliculas epitaxiales.',composition:[{sym:'Sm',count:1,desc:'Samario'},{sym:'Al',count:1,desc:'Aluminio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Gadolinato de samario',chem:'SmGdO3',type:'Gadolinato',desc:'Material ceramico y sustrato.',composition:[{sym:'Sm',count:1,desc:'Samario'},{sym:'Gd',count:1,desc:'Gadolinio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Europiato de estroncio',chem:'SrEuO3',type:'Europiato',desc:'Material luminiscente y magnetico.',composition:[{sym:'Sr',count:1,desc:'Estroncio'},{sym:'Eu',count:1,desc:'Europio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Ytrio-europio-aluminio oxido',chem:'(Y,Eu)3Al5O12',type:'Granate luminiscente',desc:'YAG:Eu. Fosforo rojo para lamparas y pantallas.',composition:[{sym:'Y',count:3,desc:'Itrio'},{sym:'Eu',count:0.1,desc:'Europio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Cerio-ytrio-aluminio oxido',chem:'(Ce,Y)3Al5O12',type:'Granate luminiscente',desc:'YAG:Ce. Fosforo amarillo para LEDs blancos.',composition:[{sym:'Ce',count:0.1,desc:'Cerio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Neodimio-ytrio-aluminio oxido',chem:'(Nd,Y)3Al5O12',type:'Granate laser',desc:'YAG:Nd. Material laser de estado solido mas importante.',composition:[{sym:'Nd',count:0.1,desc:'Neodimio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Erbio-ytrio-aluminio oxido',chem:'(Er,Y)3Al5O12',type:'Granate laser',desc:'YAG:Er. Laser de estado solido de 2.9 micras.',composition:[{sym:'Er',count:0.1,desc:'Erbio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Itterbio-ytrio-aluminio oxido',chem:'(Yb,Y)3Al5O12',type:'Granate laser',desc:'YAG:Yb. Laser de alta potencia y eficiencia.',composition:[{sym:'Yb',count:0.1,desc:'Iterbio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Holmio-ytrio-aluminio oxido',chem:'(Ho,Y)3Al5O12',type:'Granate laser',desc:'YAG:Ho. Laser de estado solido de 2.1 micras.',composition:[{sym:'Ho',count:0.1,desc:'Holmio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Tulio-ytrio-aluminio oxido',chem:'(Tm,Y)3Al5O12',type:'Granate laser',desc:'YAG:Tm. Laser de estado solido de 2.0 micras.',composition:[{sym:'Tm',count:0.1,desc:'Tulio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Praseodimio-ytrio-aluminio oxido',chem:'(Pr,Y)3Al5O12',type:'Granate laser',desc:'YAG:Pr. Laser de estado solido visible.',composition:[{sym:'Pr',count:0.1,desc:'Praseodimio'},{sym:'Y',count:3,desc:'Itrio'},{sym:'Al',count:5,desc:'Aluminio'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Crisoberilo',chem:'BeAl2O4',type:'Oxido mineral',desc:'Alejandrita. Gema que cambia de color. Mineral de berilio.',composition:[{sym:'Be',count:1,desc:'Berilio'},{sym:'Al',count:2,desc:'Aluminio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Esfena',chem:'CaTiSiO5',type:'Silicato mineral',desc:'Mineral accesorio en rocas igneas. Contiene titanio.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Ti',count:1,desc:'Titanio'},{sym:'Si',count:1,desc:'Silicio'},{sym:'O',count:5,desc:'Oxigeno'}]},
+  {name:'Perovskita',chem:'CaTiO3',type:'Oxido mineral',desc:'Estructura cristalina importante. Mineral tipo de una familia grande.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Ilmenita',chem:'FeTiO3',type:'Oxido mineral',desc:'Principal mineral de titanio. Estructura similar a la perovskita.',composition:[{sym:'Fe',count:1,desc:'Hierro'},{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Rutilo',chem:'TiO2',type:'Oxido mineral',desc:'Mineral mas estable de dioxido de titanio. Pigmento blanco.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Anatasa',chem:'TiO2',type:'Oxido mineral',desc:'Forma metastable de TiO2. Fotocatalizador importante.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Brookita',chem:'TiO2',type:'Oxido mineral',desc:'Tercera forma mineral de TiO2. Rara en la naturaleza.',composition:[{sym:'Ti',count:1,desc:'Titanio'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Cassiterita',chem:'SnO2',type:'Oxido mineral',desc:'Principal mineral de estano. Cristales prismáticos.',composition:[{sym:'Sn',count:1,desc:'Estano'},{sym:'O',count:2,desc:'Oxigeno'}]},
+  {name:'Pirita',chem:'FeS2',type:'Sulfuro mineral',desc:'Oro de los tontos. Sulfuro de hierro con brillo metalico.',composition:[{sym:'Fe',count:1,desc:'Hierro'},{sym:'S',count:2,desc:'Azufre'}]},
+  {name:'Galena',chem:'PbS',type:'Sulfuro mineral',desc:'Principal mineral de plomo. Cristales cubicos.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'S',count:1,desc:'Azufre'}]},
+  {name:'Esfalerita',chem:'ZnS',type:'Sulfuro mineral',desc:'Principal mineral de zinc. Tambien llamada blenda.',composition:[{sym:'Zn',count:1,desc:'Zinc'},{sym:'S',count:1,desc:'Azufre'}]},
+  {name:'Calcopirita',chem:'CuFeS2',type:'Sulfuro mineral',desc:'Principal mineral de cobre. Color dorado.',composition:[{sym:'Cu',count:1,desc:'Cobre'},{sym:'Fe',count:1,desc:'Hierro'},{sym:'S',count:2,desc:'Azufre'}]},
+  {name:'Cinabrio',chem:'HgS',type:'Sulfuro mineral',desc:'Principal mineral de mercurio. Color rojo brillante.',composition:[{sym:'Hg',count:1,desc:'Mercurio'},{sym:'S',count:1,desc:'Azufre'}]},
+  {name:'Molibdenita',chem:'MoS2',type:'Sulfuro mineral',desc:'Principal mineral de molibdeno. Estructura en capas.',composition:[{sym:'Mo',count:1,desc:'Molibdeno'},{sym:'S',count:2,desc:'Azufre'}]},
+  {name:'Wolframita',chem:'(Fe,Mn)WO4',type:'Wolframato mineral',desc:'Principal mineral de wolframio. Serie de solucion solida.',composition:[{sym:'Fe',count:0.5,desc:'Hierro'},{sym:'Mn',count:0.5,desc:'Manganeso'},{sym:'W',count:1,desc:'Wolframio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Scheelita',chem:'CaWO4',type:'Wolframato mineral',desc:'Mineral secundario de wolframio. Fluorescente.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'W',count:1,desc:'Wolframio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Cromita',chem:'FeCr2O4',type:'Oxido mineral',desc:'Principal mineral de cromo. Estructura de espinela.',composition:[{sym:'Fe',count:1,desc:'Hierro'},{sym:'Cr',count:2,desc:'Cromo'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Magnetita',chem:'Fe3O4',type:'Oxido mineral',desc:'Oxido magnetico de hierro. Mineral ferrimagnetico natural.',composition:[{sym:'Fe',count:3,desc:'Hierro - mezcla Fe2+ y Fe3+'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Hematites',chem:'Fe2O3',type:'Oxido mineral',desc:'Oxido ferrico. Principal mineral de hierro. Color rojo.',composition:[{sym:'Fe',count:2,desc:'Hierro'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Goethita',chem:'FeO(OH)',type:'Oxihidroxido mineral',desc:'Oxihidroxido de hierro(III). Mineral de alteracion.',composition:[{sym:'Fe',count:1,desc:'Hierro'},{sym:'O',count:2,desc:'Oxigeno'},{sym:'H',count:1,desc:'Hidrogeno'}]},
+  {name:'Lepidocrocita',chem:'FeO(OH)',type:'Oxihidroxido mineral',desc:'Polimorfo de goethita. Estructura en capas.',composition:[{sym:'Fe',count:1,desc:'Hierro'},{sym:'O',count:2,desc:'Oxigeno'},{sym:'H',count:1,desc:'Hidrogeno'}]},
+  {name:'Bauxita',chem:'Al(OH)3 + AlO(OH)',type:'Mezcla mineral',desc:'Principal mineral de aluminio. Mezcla de gibbsita y boehmita.',composition:[{sym:'Al',count:1,desc:'Aluminio'},{sym:'O',count:2,desc:'Oxigeno'},{sym:'H',count:3,desc:'Hidrogeno'}]},
+  {name:'Corindon',chem:'Al2O3',type:'Oxido mineral',desc:'Oxido de aluminio. Rubi y zafiro son variedades gemas.',composition:[{sym:'Al',count:2,desc:'Aluminio'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Espinela',chem:'MgAl2O4',type:'Oxido mineral',desc:'Estructura tipo espinela. Gema y ceramica refractaria.',composition:[{sym:'Mg',count:1,desc:'Magnesio'},{sym:'Al',count:2,desc:'Aluminio'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Magnesita',chem:'MgCO3',type:'Carbonato mineral',desc:'Carbonato de magnesio. Mineral de alteracion ultrabasica.',composition:[{sym:'Mg',count:1,desc:'Magnesio'},{sym:'C',count:1,desc:'Carbono'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Calcita',chem:'CaCO3',type:'Carbonato mineral',desc:'Carbonato de calcio mas estable. Doble refraccion.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'C',count:1,desc:'Carbono'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Aragonito',chem:'CaCO3',type:'Carbonato mineral',desc:'Polimorfo de calcita. Mas denso y duro.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'C',count:1,desc:'Carbono'},{sym:'O',count:3,desc:'Oxigeno'}]},
+  {name:'Dolomita',chem:'CaMg(CO3)2',type:'Carbonato mineral',desc:'Carbonato doble de calcio y magnesio. Roca sedimentaria.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'Mg',count:1,desc:'Magnesio'},{sym:'C',count:2,desc:'Carbono'},{sym:'O',count:6,desc:'Oxigeno'}]},
+  {name:'Azurita',chem:'Cu3(CO3)2(OH)2',type:'Carbonato mineral',desc:'Carbonato basico de cobre. Color azul intenso.',composition:[{sym:'Cu',count:3,desc:'Cobre'},{sym:'C',count:2,desc:'Carbono'},{sym:'O',count:8,desc:'Oxigeno'},{sym:'H',count:2,desc:'Hidrogeno'}]},
+  {name:'Malaquita',chem:'Cu2CO3(OH)2',type:'Carbonato mineral',desc:'Carbonato basico de cobre. Color verde bandeado.',composition:[{sym:'Cu',count:2,desc:'Cobre'},{sym:'C',count:1,desc:'Carbono'},{sym:'O',count:5,desc:'Oxigeno'},{sym:'H',count:2,desc:'Hidrogeno'}]},
+  {name:'Yeso',chem:'CaSO4·2H2O',type:'Sulfato mineral',desc:'Sulfato de calcio hidratado. Usado en construccion.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:6,desc:'Oxigeno'},{sym:'H',count:4,desc:'Hidrogeno'}]},
+  {name:'Anhidrita',chem:'CaSO4',type:'Sulfato mineral',desc:'Sulfato de calcio anhidro. Forma a alta temperatura.',composition:[{sym:'Ca',count:1,desc:'Calcio'},{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Barita',chem:'BaSO4',type:'Sulfato mineral',desc:'Sulfato de bario. Denso, usado en lodo de perforacion.',composition:[{sym:'Ba',count:1,desc:'Bario'},{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Celestina',chem:'SrSO4',type:'Sulfato mineral',desc:'Sulfato de estroncio. Color azul celeste.',composition:[{sym:'Sr',count:1,desc:'Estroncio'},{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Anglesita',chem:'PbSO4',type:'Sulfato mineral',desc:'Sulfato de plomo. Mineral secundario de galena.',composition:[{sym:'Pb',count:1,desc:'Plomo'},{sym:'S',count:1,desc:'Azufre'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Apatito',chem:'Ca5(PO4)3(F,Cl,OH)',type:'Fosfato mineral',desc:'Grupo de fosfatos de calcio. Principal fuente de fosforo.',composition:[{sym:'Ca',count:5,desc:'Calcio'},{sym:'P',count:3,desc:'Fosforo'},{sym:'O',count:12,desc:'Oxigeno'}]},
+  {name:'Monacita',chem:'(Ce,La,Nd,Th)PO4',type:'Fosfato mineral',desc:'Fosfato de tierras raras. Fuente de elementos raros.',composition:[{sym:'Ce',count:0.25,desc:'Cerio'},{sym:'La',count:0.25,desc:'Lantano'},{sym:'Nd',count:0.25,desc:'Neodimio'},{sym:'Th',count:0.25,desc:'Torio'},{sym:'P',count:1,desc:'Fosforo'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Xenotima',chem:'YPO4',type:'Fosfato mineral',desc:'Fosfato de itrio. Tambien contiene tierras raras pesadas.',composition:[{sym:'Y',count:1,desc:'Itrio'},{sym:'P',count:1,desc:'Fosforo'},{sym:'O',count:4,desc:'Oxigeno'}]},
+  {name:'Turquesa',chem:'CuAl6(PO4)4(OH)8·4H2O',type:'Fosfato mineral',desc:'Fosfato hidratado de cobre y aluminio. Gema.',composition:[{sym:'Cu',count:1,desc:'Cobre'},{sym:'Al',count:6,desc:'Aluminio'},{sym:'P',count:4,desc:'Fosforo'},{sym:'O',count:28,desc:'Oxigeno'},{sym:'H',count:16,desc:'Hidrogeno'}]},
+  {name:'Osmato de potasio',chem:'K2[OsO2(OH)4]',type:'Complejo oxidante',desc:'Oxidante fuerte usado en síntesis orgánica. Contiene osmio en estado de oxidación +6.',composition:[{sym:'K',count:2,desc:'Potasio - cationes'},{sym:'Os',count:1,desc:'Osmio - centro metálico'},{sym:'O',count:6,desc:'Oxígeno - dos oxos y cuatro hidroxos'},{sym:'H',count:4,desc:'Hidrógeno - grupos hidroxilo'}]},
+  {name:'Cisplatino',chem:'Pt(NH3)2Cl2',type:'Fármaco anticancerígeno',desc:'Complejo de platino usado en quimioterapia. Inhibe la replicación del ADN.',composition:[{sym:'Pt',count:1,desc:'Platino - centro cuadrado plano'},{sym:'N',count:2,desc:'Nitrógeno - dos ligandos amoníaco'},{sym:'H',count:6,desc:'Hidrógeno - amoníaco'},{sym:'Cl',count:2,desc:'Cloro - dos ligandos cloruro'}]},
+  {name:'Tetracloroaurato(III) de sodio',chem:'Na[AuCl4]',type:'Sal compleja',desc:'Usado en electrodepósito de oro y en tratamientos médicos históricos.',composition:[{sym:'Na',count:1,desc:'Sodio - catión'},{sym:'Au',count:1,desc:'Oro - centro +3'},{sym:'Cl',count:4,desc:'Cloro - cuatro ligandos'}]},
+  {name:'Hidruro de uranio',chem:'UH3',type:'Hidruro metálico',desc:'Compuesto radioactivo. Usado como fuente de tritio en reactores nucleares.',composition:[{sym:'U',count:1,desc:'Uranio - metal'},{sym:'H',count:3,desc:'Hidrógeno - tres átomos'}]},
+  {name:'Plutonio hexafluoruro',chem:'PuF6',type:'Compuesto volátil',desc:'Compuesto de plutonio volátil. Usado en procesos de separación isotópica.',composition:[{sym:'Pu',count:1,desc:'Plutonio - centro'},{sym:'F',count:6,desc:'Flúor - seis ligandos'}]}
+];
+
+let currentFilter='all';
+let selectedElement=null;
+let selectedFormula=null;
+
+function renderElements(list){
+  const grid=document.getElementById('elementGrid');
+  grid.innerHTML='';
+  list.forEach(el=>{
+    const card=document.createElement('div');
+    card.className='element-card cat-'+el.cat+(selectedElement&&selectedElement.n===el.n?' active':'');
+    card.innerHTML='<div class="element-num">'+el.n+'</div><div class="element-symbol">'+el.sym+'</div><div class="element-name">'+el.name+'</div>';
+    card.onclick=function(){selectElement(el)};
+    grid.appendChild(card);
+  });
+}
+
+function selectElement(el){
+  selectedElement=el;
+  document.querySelectorAll('.element-card').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  
+  const detail=document.getElementById('elementDetail');
+  detail.classList.add('active');
+  
+  document.getElementById('detailSymbol').textContent=el.sym;
+  document.getElementById('detailName').textContent=el.name;
+  document.getElementById('detailNum').textContent='Número atómico: '+el.n+' | Masa: '+el.mass+' u | Estado: '+el.estado;
+  document.getElementById('detailDesc').textContent=el.desc;
+  
+  const grid=document.getElementById('detailGrid');
+  grid.innerHTML='';
+  
+  const items=[
+    {label:'Categoría',value:el.cat.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase())},
+    {label:'Configuración electrónica',value:el.config},
+    {label:'Electronegatividad',value:el.electroneg?el.electroneg+' (Pauling)':'No aplicable'},
+    {label:'Masa atómica',value:el.mass+' u'},
+    {label:'Estado estándar',value:el.estado.charAt(0).toUpperCase()+el.estado.slice(1)},
+    {label:'Número atómico',value:el.n}
+  ];
+  
+  items.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='detail-item';
+    div.innerHTML='<div class="detail-label">'+item.label+'</div><div class="detail-value">'+item.value+'</div>';
+    grid.appendChild(div);
+  });
+}
+
+function filterElements(type){
+  currentFilter=type;
+  document.querySelectorAll('.filter-row .btn-sm').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  let filtered=elements;
+  if(type==='metal')filtered=elements.filter(e=>e.cat.includes('metal')&&!e.cat.includes('oide'));
+  else if(type==='no-metal')filtered=elements.filter(e=>e.cat==='no-metal'||e.cat==='halogeno');
+  else if(type==='gas-noble')filtered=elements.filter(e=>e.cat==='gas-noble');
+  
+  renderElements(filtered);
+}
+
+document.getElementById('elemSearch').oninput=function(){
+  const q=this.value.toLowerCase();
+  const filtered=elements.filter(e=>e.name.toLowerCase().includes(q)||e.sym.toLowerCase().includes(q)||e.n.toString().includes(q));
+  renderElements(filtered);
+};
+
+function renderFormulas(){
+  const grid=document.getElementById('formulaGrid');
+  grid.innerHTML='';
+  formulas.forEach(f=>{
+    const card=document.createElement('div');
+    card.className='formula-card'+(selectedFormula&&selectedFormula.name===f.name?' active':'');
+    card.innerHTML='<div class="formula-name">'+f.name+'</div><div class="formula-chem">'+f.chem+'</div><div class="formula-type">'+f.type+'</div><div class="formula-composition">'+f.composition.map(c=>c.sym+(c.count>1?c.count:'')).join(' + ')+'</div>';
+    card.onclick=function(){selectFormula(f)};
+    grid.appendChild(card);
+  });
+}
+
+function selectFormula(f){
+  selectedFormula=f;
+  document.querySelectorAll('.formula-card').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  
+  const detail=document.getElementById('formulaDetail');
+  detail.classList.add('active');
+  
+  document.getElementById('formulaDetailName').textContent=f.name;
+  document.getElementById('formulaDetailChem').textContent=f.chem;
+  document.getElementById('formulaDetailDesc').textContent=f.desc;
+  
+  const list=document.getElementById('compositionList');
+  list.innerHTML='';
+  f.composition.forEach(c=>{
+    const el=elements.find(e=>e.sym===c.sym);
+    const item=document.createElement('div');
+    item.className='composition-item';
+    item.innerHTML='<div class="comp-symbol">'+c.sym+'</div><div class="comp-info"><div class="comp-name">'+(el?el.name:c.sym)+'<span class="comp-count"> × '+c.count+'</span></div><div class="comp-desc">'+c.desc+'</div></div>';
+    list.appendChild(item);
+  });
+}
+
+// Inicializar
+renderElements(elements);
+renderFormulas();
+
+// Marcar botón "Todos" como activo inicialmente
+document.querySelector('.filter-row .btn-sm').classList.add('active');
+</script>
+</body>
+</html>
