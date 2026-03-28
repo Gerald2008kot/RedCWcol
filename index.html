@@ -6,26 +6,21 @@
     <title>Bienvenido a RedCW - Tu Espacio</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
-<link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json">
 
-    
     <style>
         :root {
-            /* TUS COLORES OFICIALES */
             --accent:       #6C63FF;
             --accent-2:     #FF6B9D;
             --accent-3:     #00D9A5;
             --accent-glow:  rgba(108,99,255,.25);
-            
-            /* Fondos y Textos para modo oscuro */
             --bg: #05070a;
             --card-bg: #10141d;
             --text-main: #ffffff;
             --text-dim: #94a3b8;
-            
-            /* Tu fuente de display */
             --font-display: 'Outfit', sans-serif;
             --font-main: 'Inter', sans-serif;
+            --line-color: rgba(108, 99, 255, 0.2);
         }
 
         * { box-sizing: border-box; scroll-behavior: smooth; }
@@ -37,13 +32,26 @@
             color: var(--text-main);
             font-family: var(--font-main);
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* --- TU LOGO ESTILIZADO --- */
+        /* --- LÍNEA DE CONEXIÓN GLOBAL --- */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 450px; 
+            left: 50%;
+            width: 2px;
+            height: calc(100% - 900px);
+            background: linear-gradient(to bottom, var(--accent), var(--accent-2), var(--accent-3), transparent);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
         .header-logo {
             font-family: var(--font-display);
             font-weight: 800;
-            font-size: 2.5rem; /* Agrandado para la bienvenida */
+            font-size: 2.5rem;
             background: linear-gradient(135deg, var(--accent), var(--accent-2));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -52,25 +60,44 @@
             margin: 0;
         }
 
-        /* --- SECCIONES PRINCIPALES --- */
         section {
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             text-align: center;
+            position: relative;
         }
 
-        /* Hero Section (Inicio) */
-        .hero {
-            background: radial-gradient(circle at center, rgba(108,99,255,0.15) 0%, rgba(5,7,10,0) 70%);
+        .hero { min-height: 80vh; padding-top: 100px; }
+
+        .title-box {
+            border: 2px solid var(--accent);
+            padding: 30px 50px;
+            border-radius: 20px;
+            position: relative;
+            background: rgba(108, 99, 255, 0.05);
+            box-shadow: 0 0 30px rgba(108, 99, 255, 0.1);
+            margin-bottom: 20px;
+            display: inline-block;
         }
-        .hero h1 {
+
+        .title-box::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            width: 2px;
+            height: 50px;
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .hero h1:not(.header-logo) {
             font-family: var(--font-display);
-            font-size: 3.5rem;
-            margin: 20px 0;
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            margin: 10px 0;
             line-height: 1.1;
         }
         .hero h1 span { color: var(--accent-3); }
@@ -81,296 +108,365 @@
             margin-bottom: 40px;
         }
 
-        /* Indicador de Scroll */
-        .scroll-down {
-            margin-top: auto;
-            color: var(--text-dim);
-            font-size: 0.9rem;
-            animation: bounce 2s infinite;
-        }
-
-        /* --- CARDS DE FUNCIONALIDADES --- */
+        /* --- GRID DE CARDS --- */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: 1fr;
+            gap: 25px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             padding: 20px;
+            justify-content: center;
         }
 
+        @media (min-width: 768px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* --- ANIMACIONES DE SCROLL --- */
         .feature-card {
             background: var(--card-bg);
             padding: 40px;
             border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.03);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
             position: relative;
-            overflow: hidden;
+            opacity: 0; /* Estado inicial invisible */
+            will-change: transform, opacity;
+        }
+
+        /* Clases que el JS añadirá al hacer scroll */
+        .feature-card.reveal-left { animation: slideInLeft 0.8s forwards; }
+        .feature-card.reveal-right { animation: slideInRight 0.8s forwards; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-60px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(60px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border-color: rgba(108,99,255,0.2);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-color: rgba(108,99,255,0.3);
         }
 
-        .feature-card .icon {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            display: inline-block;
+        .icon-svg { width: 50px; height: 50px; margin-bottom: 20px; display: block; }
+        .feature-card h3 { font-family: var(--font-display); font-size: 1.4rem; margin: 0 0 12px 0; color: #fff; }
+        .feature-card p { color: var(--text-dim); line-height: 1.6; margin: 0; font-size: 0.95rem; }
+
+        .card-accent { border-bottom: 3px solid var(--accent); }
+        .card-accent-2 { border-bottom: 3px solid var(--accent-2); }
+        .card-accent-3 { border-bottom: 3px solid var(--accent-3); }
+
+        /* --- TÉRMINOS CON CONEXIÓN --- */
+        .terms-section { 
+            background: radial-gradient(circle at bottom, rgba(108,99,255,0.1) 0%, var(--bg) 70%);
+            padding-bottom: 100px;
         }
 
-        .feature-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.5rem;
-            margin: 0 0 15px 0;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .feature-card p {
-            color: var(--text-dim);
-            line-height: 1.6;
-            margin: 0;
-            font-size: 0.95rem;
-        }
-
-        /* Colores de acento en las cards */
-        .card-feeds { border-bottom: 3px solid var(--accent); }
-        .card-comunidades { border-bottom: 3px solid var(--accent-2); }
-        .card-multimedia { border-bottom: 3px solid var(--accent-3); }
-
-        /* --- SECCIÓN FINAL: TÉRMINOS --- */
-        .terms-section {
-            background: var(--card-bg);
-            border-top: 1px solid rgba(255,255,255,0.05);
+        .terms-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 80px;
+            background: var(--accent-3);
+            transform: translateX(-50%);
         }
 
         .terms-box {
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
-            padding: 40px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.05);
+            padding: 45px;
+            background: rgba(16, 20, 29, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 40px;
+        }
+
+        .terms-box.unlocked {
+            border-color: var(--accent);
+            box-shadow: 0 0 40px rgba(108, 99, 255, 0.15), 0 20px 50px rgba(0,0,0,0.6);
+            transform: scale(1.02);
         }
 
         .terms-box h2 {
             font-family: var(--font-display);
-            margin-top: 0;
-            color: var(--text-main);
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #fff, var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
 
         .terms-text {
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-dim);
-            height: 150px;
+            height: 200px;
             overflow-y: auto;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.03);
+            padding: 25px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+            line-height: 1.7;
         }
 
-        .terms-text b { color: var(--accent-3); }
+        .term-item { display: flex; gap: 15px; margin-bottom: 18px; }
+        .term-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); margin-top: 8px;
+            box-shadow: 0 0 10px var(--accent); flex-shrink: 0;
+        }
 
         .check-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 30px;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 12px; margin-bottom: 35px; cursor: pointer;
+            padding: 15px; border-radius: 15px; transition: background 0.3s;
         }
+        .check-wrapper:hover { background: rgba(255,255,255,0.03); }
 
-        input[type="checkbox"] {
-            width: 18px; height: 18px;
-            accent-color: var(--accent);
-        }
+        #acceptCheck { width: 22px; height: 22px; cursor: pointer; accent-color: var(--accent-3); }
 
         .btn-final {
-            display: block;
-            width: 100%;
-            padding: 18px;
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-decoration: none;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            
-            /* Estado bloqueado por defecto */
-            background: #2d3748;
-            color: #718096;
-            pointer-events: none;
-            opacity: 0.6;
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; width: 100%; padding: 20px;
+            font-family: var(--font-display); font-weight: 800;
+            font-size: 1.1rem; text-decoration: none; border-radius: 18px;
+            background: #1a1f2e; color: #4a5568;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .btn-final.active {
             background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: white;
-            pointer-events: auto;
-            opacity: 1;
-            box-shadow: 0 4px 15px var(--accent-glow);
+            color: white; pointer-events: auto;
+            box-shadow: 0 15px 30px var(--accent-glow);
+            animation: pulse-glow 2s infinite;
         }
 
-        .btn-final.active:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(255,107,157,0.3);
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 15px 30px rgba(108,99,255,0.3); }
+            50% { box-shadow: 0 15px 45px rgba(108,99,255,0.6); }
+            100% { box-shadow: 0 15px 30px rgba(108,99,255,0.3); }
         }
 
-        /* Animaciones */
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
+        #installBanner {
+            display: none; position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 90%; max-width: 400px;
+            background: var(--card-bg); border: 1px solid var(--accent);
+            border-radius: 20px; padding: 15px; z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between;
         }
 
-        /* Scrollbar styling */
-        .terms-text::-webkit-scrollbar { width: 6px; }
-        .terms-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} }
     </style>
 </head>
 <body>
 
     <section class="hero">
-        <h1 class="header-logo">RedCW</h1>
+        <div class="title-box">
+            <h1 class="header-logo">RedCW</h1>
+        </div>
         <h1>Tu Red. <span>Tus Reglas.</span></h1>
         <p>El espacio definitivo para colegiales. Conecta, comparte y descubre lo que pasa en tu entorno sin censura institucional.</p>
-        
-        <div class="scroll-down">
-            Desliza para ver más<br>
-            &#8595;
-        </div>
     </section>
 
     <section id="features">
-        <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 50px;">Todo lo que puedes hacer</h2>
+        <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 50px;">Potencia tu Experiencia</h2>
         
         <div class="features-grid">
-            <div class="feature-card card-feeds">
-                <div class="icon">⚡</div>
-                <h3>Feeds y Noticias</h3>
-                <p>Mantente al día. Un flujo constante de publicaciones de la gente que te importa y noticias relevantes para tu día a día.</p>
+            <div class="feature-card card-accent">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+                <h3>Feeds en Vivo</h3>
+                <p>Noticias y actualizaciones en tiempo real de lo que sucede en tu campus y alrededores.</p>
             </div>
 
-            <div class="feature-card card-comunidades">
-                <div class="icon">👥</div>
-                <h3>Comunidades y Foros</h3>
-                <p>Encuentra tu grupo. Crea o únete a comunidades basadas en intereses, o debate en foros dedicados.</p>
+            <div class="feature-card card-accent-2">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+                <h3>Comunidades</h3>
+                <p>Únete a grupos con tus mismos intereses o crea el tuyo propio para debatir libremente.</p>
             </div>
 
-            <div class="feature-card card-multimedia">
-                <div class="icon">🎬</div>
-                <h3>Multimedia Total</h3>
-                <p>Exprésate. Sube tus mejores imágenes, comparte videos cortos o largos, y haz que tus publicaciones destaquen.</p>
+            <div class="feature-card card-accent-3">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent-3)" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                </svg>
+                <h3>Multimedia</h3>
+                <p>Sube imágenes y videos sin compresión agresiva. Haz que tu contenido destaque.</p>
+            </div>
+
+            <div class="feature-card card-accent">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <h3>Privacidad</h3>
+                <p>Tus datos son sagrados. Anonimato responsable y encriptación en todas tus interacciones.</p>
+            </div>
+
+            <div class="feature-card card-accent-2">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent-2)" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                </svg>
+                <h3>Notificaciones</h3>
+                <p>Entérate al instante cuando alguien interactúa contigo o hay eventos importantes.</p>
+            </div>
+
+            <div class="feature-card card-accent-3">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent-3)" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+                <h3>Web App</h3>
+                <p>Instala RedCW en tu pantalla de inicio y disfruta de una experiencia nativa y fluida.</p>
             </div>
         </div>
     </section>
 
     <section class="terms-section">
-        <div class="terms-box">
-            <h2>Casi listo...</h2>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Para mantener RedCW genial para todos, necesitamos que aceptes nuestras leyes.</p>
+        <div class="terms-box" id="termsBox">
+            <h2>Último paso</h2>
+            <p style="color: var(--text-dim); margin-bottom: 25px; font-size: 1.1rem;">
+                Sincroniza con nuestras leyes de comunidad.
+            </p>
             
             <div class="terms-text">
-                <b>1. Respeto ante todo:</b> No toleramos el ciberacoso, doxxing o amenazas. Somos una comunidad, no un campo de batalla.<br><br>
-                <b>2. Contenido Seguro:</b> Prohibido subir material ilegal, explícito (NSFW) o violencia gráfica. <br><br>
-                <b>3. Moderación y Anonimato:</b> Las funciones de anonimato son para libre expresión, no para atacar. Nos reservamos el derecho de banear IPs por mal uso.<br><br>
-                <b>4. Responsabilidad:</b> Eres dueño de lo que publicas. RedCW no se hace responsable de las opiniones de los usuarios.
+                <div class="term-item">
+                    <div class="term-dot"></div>
+                    <span><b>Respeto Radical:</b> Prohibido el acoso, doxxing o discursos de odio.</span>
+                </div>
+                <div class="term-item">
+                    <div class="term-dot" style="background: var(--accent-2);"></div>
+                    <span><b>Contenido Limpio:</b> Nada de material ilegal o NSFW.</span>
+                </div>
+                <div class="term-item">
+                    <div class="term-dot" style="background: var(--accent-3);"></div>
+                    <span><b>Anonimato Ético:</b> El anonimato es libertad, no un arma para atacar.</span>
+                </div>
+                <div class="term-item">
+                    <div class="term-dot" style="background: #fff;"></div>
+                    <span><b>Responsabilidad:</b> Eres dueño de lo que publicas.</span>
+                </div>
             </div>
 
             <label class="check-wrapper">
                 <input type="checkbox" id="acceptCheck">
-                <span style="font-size: 0.9rem;">Acepto las leyes de la comunidad RedCW</span>
+                <span style="font-size: 1rem; font-weight: 500;">Acepto las leyes de RedCW</span>
             </label>
 
-            <a href="./redcw/index.html#inicio" id="enterBtn" class="btn-final">ENTRAR A LA RED</a>
+            <a href="./redcw/index.html" id="enterBtn" class="btn-final">
+                <span>ENTRAR A LA RED</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
         </div>
     </section>
-    
-<div id="installBanner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card-bg); border: 1px solid var(--accent); border-radius: 20px; padding: 15px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.5); align-items: center; justify-content: space-between; gap: 15px;">
-    <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px;" alt="Logo RedCW">
-        <div>
-            <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
-            <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+
+    <div id="installBanner">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: var(--accent); border-radius: 8px;"></div>
+            <div>
+                <strong style="display: block; font-size: 0.9rem;">Instalar RedCW</strong>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Mejor experiencia</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
+            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
         </div>
     </div>
-    <div style="display: flex; gap: 8px;">
-        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
-        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-    </div>
-</div>
 
-<script>
-    // --- Lógica de Términos (Tu código original) ---
-    const checkbox = document.getElementById('acceptCheck');
-    const button = document.getElementById('enterBtn');
+    <script>
+        // Lógica de Términos y Checkbox
+        const checkbox = document.getElementById('acceptCheck');
+        const button = document.getElementById('enterBtn');
+        const box = document.getElementById('termsBox');
 
-    checkbox.addEventListener('change', function() {
-        if(this.checked) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
-        }
-    });
-
-    // --- Lógica de Instalación PWA ---
-    let deferredPrompt;
-    const installBanner = document.getElementById('installBanner');
-    const btnInstall = document.getElementById('btnInstall');
-    const btnCancel = document.getElementById('btnCancel');
-
-
-
-    // 2. Capturar el evento de instalación
-    window.addEventListener('beforeinstallprompt', (e) => {
-        // Evita que Chrome muestre su propio mini-infobar
-        e.preventDefault();
-        // Guarda el evento para usarlo luego
-        deferredPrompt = e;
-        // Muestra nuestro banner personalizado tras 2 segundos de entrar
-        setTimeout(() => {
-            installBanner.style.display = 'flex';
-        }, 2000);
-    });
-
-    // 3. Acción al hacer clic en Instalar
-    btnInstall.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt(); // Muestra el diálogo nativo
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`Usuario respondió a la instalación: ${outcome}`);
-            deferredPrompt = null; // Limpiamos el prompt
-            installBanner.style.display = 'none';
-        }
-    });
-
-    // 4. Cerrar el banner
-    btnCancel.addEventListener('click', () => {
-        installBanner.style.display = 'none';
-    });
-
-    // Ocultar si ya está instalada
-    window.addEventListener('appinstalled', () => {
-        installBanner.style.display = 'none';
-        deferredPrompt = null;
-    });
-</script>
-<script>
-        // 1. Registrar el Service Worker (¡Importante!)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js');
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                button.classList.add('active');
+                box.classList.add('unlocked');
+            } else {
+                button.classList.remove('active');
+                box.classList.remove('unlocked');
+            }
         });
-    }
-</script>
 
+        // Lógica de Animación al Scroll (Intersection Observer)
+        const observerOptions = {
+            threshold: 0.15 // Se activa cuando el 15% de la card es visible
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // Si es impar (1, 3, 5) viene de la izquierda, si es par (2, 4, 6) de la derecha
+                    const isEven = Array.from(entry.target.parentNode.children).indexOf(entry.target) % 2 !== 0;
+                    
+                    if (isEven) {
+                        entry.target.classList.add('reveal-right');
+                    } else {
+                        entry.target.classList.add('reveal-left');
+                    }
+                    observer.unobserve(entry.target); // Dejar de observar una vez animado
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Lógica PWA Completa
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => { 
+                document.getElementById('installBanner').style.display = 'flex'; 
+            }, 3000);
+        });
+
+        document.getElementById('btnInstall').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('installBanner').style.display = 'none';
+            }
+        });
+
+        document.getElementById('btnCancel').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => { 
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW error:", err)); 
+            });
+        }
+    </script>
 </body>
 </html>
