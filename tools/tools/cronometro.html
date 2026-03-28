@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RedCW — Cronómetro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--header-h:70px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden}
+header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 25px;position:fixed;top:0;z-index:1000}
+.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.5rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+.menu-toggle{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;padding:6px;border-radius:8px;transition:.2s}
+.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:850}
+.overlay.active{display:block}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid var(--border);padding:20px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.sidebar.active{transform:translateX(280px)}
+.nav-links{list-style:none}
+.nav-links a{display:flex;align-items:center;padding:14px 18px;color:var(--text-dim);text-decoration:none;border-radius:12px;margin-bottom:8px;transition:all .2s;font-size:.95rem;background:rgba(255,255,255,.02);border-left:4px solid transparent}
+.nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:20px;height:20px;margin-right:12px;flex-shrink:0;transition:transform .2s ease, filter .2s ease}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor)}
+.nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent)}
+.nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2)}
+.nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3)}
+.main-content{margin-top:var(--header-h);padding:40px 20px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - var(--header-h))}
+.page-title{font-family:var(--font-display);font-weight:800;font-size:1.6rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{color:var(--text-dim);font-size:.88rem;margin:0 0 20px}
+.tools-wrap{width:100%;max-width:800px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card-bg);border-radius:28px;padding:25px;border:1px solid var(--border);box-shadow:0 30px 60px rgba(0,0,0,.6);width:100%}
+.card-title{font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:18px;display:flex;align-items:center;gap:10px;color:var(--accent-3)}
+.card-title svg{color:var(--accent-3)}
+.viz-input{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:#fff;font-family:var(--font-main);font-size:.9rem;outline:none;transition:.2s}
+.viz-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2)}
+.btn-primary{padding:12px 24px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(108,99,255,.3)}
+.btn-primary:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-secondary{padding:12px 24px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:#fff;font-family:var(--font-main);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{padding:12px 24px;border-radius:12px;background:rgba(255,107,157,.1);border:1px solid rgba(255,107,157,.3);color:var(--accent-2);font-family:var(--font-main);font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:rgba(255,107,157,.2)}
+.btn-sm{padding:8px 16px;border-radius:10px;background:rgba(0,217,165,.1);border:1px solid rgba(0,217,165,.25);color:var(--accent-3);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:rgba(0,217,165,.2)}
+.chrono-display{text-align:center;font-family:var(--font-display);font-weight:800;font-size:4.5rem;letter-spacing:-3px;color:#fff;padding:20px 0;text-shadow:0 0 30px rgba(108,99,255,.3)}
+.chrono-display.millis{font-size:3.5rem}
+.timer-controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.timer-btn{padding:12px 28px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:#fff;font-family:var(--font-main);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.timer-btn:hover{background:rgba(255,255,255,.12)}
+.timer-btn.start{background:var(--accent-3);border-color:var(--accent-3);color:#05070a}
+.timer-btn.start:hover{background:#00f5b8}
+.lap-list{max-height:250px;overflow-y:auto;margin-top:20px;padding:15px;background:rgba(0,0,0,.2);border-radius:16px;border:1px solid var(--border)}
+.lap-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.9rem;transition:background .2s}
+.lap-item:hover{background:rgba(108,99,255,.05)}
+.lap-item:last-child{border-bottom:none}
+.lap-num{color:var(--accent-3);font-weight:700;font-family:var(--font-display);min-width:40px}
+.lap-time{color:#fff;font-family:monospace;font-size:1rem}
+.lap-diff{color:var(--text-dim);font-size:.8rem;margin-left:10px}
+.lap-best{color:var(--accent-3);font-size:.75rem;margin-left:8px;background:rgba(0,217,165,.1);padding:2px 8px;border-radius:10px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:12px;margin-top:20px}
+.stat-item{background:rgba(0,0,0,.3);border-radius:12px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,.05)}
+.stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-val{font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--accent-3)}
+.category-grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:20px}
+.category-btn{padding:12px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--border);color:var(--text-dim);font-size:.85rem;cursor:pointer;transition:all .2s;text-align:center;font-family:var(--font-main)}
+.category-btn:hover{border-color:var(--accent-3);color:var(--accent-3);background:rgba(0,217,165,.05)}
+.category-btn.active{border-color:var(--accent-3);color:var(--accent-3);background:rgba(0,217,165,.1);box-shadow:0 4px 15px rgba(0,217,165,.2)}
+.export-btn{margin-top:15px;text-align:center}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:.9rem}
+.empty-state svg{margin-bottom:15px;opacity:.5}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Cronometro</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="nav-links">
+    <a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a>
+    <a href="calculadora.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>Calculadora</a>
+    <a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Funciones</a>
+    <a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>Convertidor</a>
+    <a href="elementos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>Elementos</a>
+    <a href="estadistica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadistica</a>
+    <a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>Fisica</a>
+    <a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>Morse</a>
+    <a href="cronometro.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronometro</a>
+    <a href="pomodoro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a>
+    <a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contrasenas</a>
+    <a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Tablas</a>
+    <a href="notas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <h1 class="page-title">Cronometro Profesional</h1>
+  <p class="page-sub">Precision, analisis y control de tiempos.</p>
+  
+  <div class="tools-wrap">
+    
+    <!-- Selector de modo -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Modo de Cronometro
+      </div>
+      <div class="category-grid">
+        <button class="category-btn active" onclick="setMode('normal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Normal
+        </button>
+        <button class="category-btn" onclick="setMode('countdown')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+          Cuenta Regresiva
+        </button>
+        <button class="category-btn" onclick="setMode('interval')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:block;margin:0 auto 6px"><path d="M12 2v20M2 12h20"/><path d="m7 7 5 5 5-5"/><path d="m7 17 5-5 5 5"/></svg>
+          Intervalos
+        </button>
+      </div>
+    </div>
+
+    <!-- Cronometro Normal -->
+    <div class="card" id="normalMode">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Cronometro
+      </div>
+      <div class="chrono-display millis" id="chronoDisplay">00:00.000</div>
+      <div class="timer-controls">
+        <button class="timer-btn start" id="chronoStart" onclick="toggleChrono()">Iniciar</button>
+        <button class="timer-btn" onclick="markLap()">Vuelta</button>
+        <button class="timer-btn" onclick="resetChrono()">Resetear</button>
+      </div>
+      
+      <!-- Estadisticas -->
+      <div class="stats-grid" id="chronoStats" style="display:none">
+        <div class="stat-item">
+          <div class="stat-label">Vueltas</div>
+          <div class="stat-val" id="statLaps">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Mejor</div>
+          <div class="stat-val" id="statBest">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Promedio</div>
+          <div class="stat-val" id="statAvg">--</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Peor</div>
+          <div class="stat-val" id="statWorst">--</div>
+        </div>
+      </div>
+      
+      <!-- Lista de vueltas -->
+      <div class="lap-list" id="chronoLaps" style="display:none">
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div>Las vueltas apareceran aqui</div>
+        </div>
+      </div>
+      
+      <div class="export-btn">
+        <button class="btn-sm" onclick="exportLaps()">Exportar vueltas (CSV)</button>
+        <button class="btn-sm" onclick="copyToClipboard()" style="margin-left:10px">Copiar al portapapeles</button>
+      </div>
+    </div>
+
+    <!-- Cuenta Regresiva -->
+    <div class="card" id="countdownMode" style="display:none">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+        Cuenta Regresiva
+      </div>
+      
+      <div style="display:flex;justify-content:center;gap:15px;margin-bottom:20px">
+        <div style="text-align:center">
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Minutos</label>
+          <input class="viz-input" id="cdMin" type="number" min="0" max="999" value="5" style="width:80px;text-align:center;font-size:1.5rem;font-family:var(--font-display)"/>
+        </div>
+        <div style="text-align:center">
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Segundos</label>
+          <input class="viz-input" id="cdSec" type="number" min="0" max="59" value="0" style="width:80px;text-align:center;font-size:1.5rem;font-family:var(--font-display)"/>
+        </div>
+      </div>
+      
+      <div class="chrono-display" id="countdownDisplay">05:00</div>
+      <div class="timer-bar"><div class="timer-fill" id="countdownFill" style="width:100%"></div></div>
+      
+      <div class="timer-controls">
+        <button class="timer-btn start" id="cdStart" onclick="toggleCountdown()">Iniciar</button>
+        <button class="timer-btn" onclick="addTime(30)">+30s</button>
+        <button class="timer-btn" onclick="addTime(60)">+1m</button>
+        <button class="timer-btn" onclick="resetCountdown()">Resetear</button>
+      </div>
+    </div>
+
+    <!-- Intervalos -->
+    <div class="card" id="intervalMode" style="display:none">
+      <div class="card-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/><path d="m7 7 5 5 5-5"/><path d="m7 17 5-5 5 5"/></svg>
+        Entrenamiento por Intervalos
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-bottom:20px">
+        <div>
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Trabajo (seg)</label>
+          <input class="viz-input" id="intWork" type="number" value="30" min="1" style="text-align:center"/>
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Descanso (seg)</label>
+          <input class="viz-input" id="intRest" type="number" value="10" min="1" style="text-align:center"/>
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Rondas</label>
+          <input class="viz-input" id="intRounds" type="number" value="8" min="1" max="50" style="text-align:center"/>
+        </div>
+        <div>
+          <label style="font-size:.75rem;color:var(--text-dim);display:block;margin-bottom:6px">Preparacion (seg)</label>
+          <input class="viz-input" id="intPrep" type="number" value="5" min="0" style="text-align:center"/>
+        </div>
+      </div>
+      
+      <div style="text-align:center;margin:20px 0">
+        <div style="font-size:1.2rem;color:var(--text-dim);margin-bottom:10px" id="intPhase">Listo para iniciar</div>
+        <div class="chrono-display" id="intervalDisplay">00:00</div>
+        <div style="font-size:1rem;color:var(--accent-3);margin-top:10px" id="intRoundInfo">Ronda 0 de 8</div>
+      </div>
+      
+      <div class="timer-controls">
+        <button class="timer-btn start" id="intStart" onclick="toggleInterval()">Iniciar</button>
+        <button class="timer-btn" onclick="resetInterval()">Detener</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// Toggle de Menu
+const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+menuBtn.onclick=overlay.onclick=function(){sidebar.classList.toggle('active');overlay.classList.toggle('active')};
+
+// Variables globales
+let currentMode='normal';
+
+// ==================== MODO NORMAL ====================
+let chronoRunning=false,chronoStart=0,chronoElapsed=0,chronoInterval=null;
+let laps=[],lapStart=0;
+
+function formatTime(ms,showMs=true){
+  const min=Math.floor(ms/60000);
+  const sec=Math.floor((ms%60000)/1000);
+  const millis=Math.floor((ms%1000));
+  const base=String(min).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  return showMs?base+'.'+String(millis).padStart(3,'0'):base;
+}
+
+function formatShort(ms){
+  const sec=Math.floor(ms/1000);
+  const min=Math.floor(sec/60);
+  if(min>0)return min+'m '+(sec%60)+'s';
+  return sec+'s '+Math.floor((ms%1000)/10)+'ms';
+}
+
+function toggleChrono(){
+  const btn=document.getElementById('chronoStart');
+  if(!chronoRunning){
+    chronoRunning=true;
+    chronoStart=Date.now()-chronoElapsed;
+    lapStart=chronoStart;
+    chronoInterval=setInterval(function(){
+      chronoElapsed=Date.now()-chronoStart;
+      document.getElementById('chronoDisplay').textContent=formatTime(chronoElapsed);
+    },10);
+    btn.textContent='Pausar';
+    btn.className='timer-btn';
+  }else{
+    chronoRunning=false;
+    clearInterval(chronoInterval);
+    btn.textContent='Continuar';
+    btn.className='timer-btn start';
+  }
+}
+
+function markLap(){
+  if(!chronoRunning)return;
+  const now=Date.now();
+  const lapTime=now-lapStart;
+  const totalTime=now-chronoStart;
+  lapStart=now;
+  
+  const lap={number:laps.length+1,lapTime:lapTime,totalTime:totalTime};
+  laps.push(lap);
+  
+  updateLapDisplay();
+  updateStats();
+}
+
+function updateLapDisplay(){
+  const container=document.getElementById('chronoLaps');
+  if(laps.length===0){
+    container.style.display='none';
+    document.getElementById('chronoStats').style.display='none';
+    return;
+  }
+  
+  container.style.display='block';
+  document.getElementById('chronoStats').style.display='grid';
+  
+  let html='';
+  let bestLap=Infinity;
+  
+  laps.forEach(function(lap,i){
+    if(lap.lapTime<bestLap)bestLap=lap.lapTime;
+  });
+  
+  laps.slice().reverse().forEach(function(lap){
+    const isBest=lap.lapTime===bestLap;
+    const diff=i>0?('+'+formatShort(lap.lapTime-laps[laps.length-2].lapTime)):'';
+    
+    html+='<div class="lap-item">';
+    html+='<span class="lap-num">#'+lap.number+'</span>';
+    html+='<span>';
+    html+='<span class="lap-time">'+formatTime(lap.lapTime)+'</span>';
+    if(lap.number>1)html+='<span class="lap-diff">'+diff+'</span>';
+    if(isBest)html+='<span class="lap-best">MEJOR</span>';
+    html+='</span>';
+    html+='<span class="lap-time" style="color:var(--text-dim)">'+formatTime(lap.totalTime,false)+'</span>';
+    html+='</div>';
+  });
+  
+  container.innerHTML=html;
+}
+
+function updateStats(){
+  if(laps.length===0)return;
+  
+  const times=laps.map(function(l){return l.lapTime});
+  const best=Math.min.apply(null,times);
+  const worst=Math.max.apply(null,times);
+  const avg=times.reduce(function(a,b){return a+b},0)/times.length;
+  
+  document.getElementById('statLaps').textContent=laps.length;
+  document.getElementById('statBest').textContent=formatShort(best);
+  document.getElementById('statAvg').textContent=formatShort(avg);
+  document.getElementById('statWorst').textContent=formatShort(worst);
+}
+
+function resetChrono(){
+  chronoRunning=false;
+  clearInterval(chronoInterval);
+  chronoElapsed=0;
+  laps=[];
+  lapStart=0;
+  document.getElementById('chronoDisplay').textContent='00:00.000';
+  document.getElementById('chronoStart').textContent='Iniciar';
+  document.getElementById('chronoStart').className='timer-btn start';
+  document.getElementById('chronoLaps').style.display='none';
+  document.getElementById('chronoStats').style.display='none';
+}
+
+function exportLaps(){
+  if(laps.length===0){
+    alert('No hay vueltas para exportar');
+    return;
+  }
+  
+  let csv='Vuelta,Tiempo de Vuelta,Tiempo Total\n';
+  laps.forEach(function(lap){
+    csv+=lap.number+','+formatTime(lap.lapTime)+','+formatTime(lap.totalTime)+'\n';
+  });
+  
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='vueltas_cronometro_'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.csv';
+  a.click();
+}
+
+function copyToClipboard(){
+  if(laps.length===0){
+    alert('No hay vueltas para copiar');
+    return;
+  }
+  
+  let text='Vueltas de Cronometro:\n\n';
+  laps.forEach(function(lap){
+    text+='#'+lap.number+': '+formatTime(lap.lapTime)+' (Total: '+formatTime(lap.totalTime)+')\n';
+  });
+  
+  navigator.clipboard.writeText(text).then(function(){
+    alert('Vueltas copiadas al portapapeles');
+  });
+}
+
+// ==================== CUENTA REGRESIVA ====================
+let cdRunning=false,cdTotal=0,cdRemaining=0,cdInterval=null;
+
+function toggleCountdown(){
+  const btn=document.getElementById('cdStart');
+  if(!cdRunning){
+    if(cdRemaining===0){
+      const min=parseInt(document.getElementById('cdMin').value)||0;
+      const sec=parseInt(document.getElementById('cdSec').value)||0;
+      cdTotal=cdRemaining=min*60+sec;
+      if(cdTotal===0)return;
+    }
+    
+    cdRunning=true;
+    const endTime=Date.now()+cdRemaining*1000;
+    
+    cdInterval=setInterval(function(){
+      cdRemaining=Math.ceil((endTime-Date.now())/1000);
+      updateCountdownDisplay();
+      
+      if(cdRemaining<=0){
+        clearInterval(cdInterval);
+        cdRunning=false;
+        cdRemaining=0;
+        btn.textContent='Iniciar';
+        btn.className='timer-btn start';
+        alert('¡Tiempo terminado!');
+        updateCountdownDisplay();
+      }
+    },100);
+    
+    btn.textContent='Pausar';
+    btn.className='timer-btn';
+  }else{
+    cdRunning=false;
+    clearInterval(cdInterval);
+    btn.textContent='Continuar';
+    btn.className='timer-btn start';
+  }
+}
+
+function updateCountdownDisplay(){
+  const min=Math.floor(cdRemaining/60);
+  const sec=cdRemaining%60;
+  document.getElementById('countdownDisplay').textContent=String(min).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  
+  if(cdTotal>0){
+    const pct=(cdRemaining/cdTotal)*100;
+    document.getElementById('countdownFill').style.width=pct+'%';
+  }
+}
+
+function addTime(seconds){
+  cdRemaining+=seconds;
+  if(cdTotal>0)cdTotal+=seconds;
+  updateCountdownDisplay();
+}
+
+function resetCountdown(){
+  cdRunning=false;
+  clearInterval(cdInterval);
+  cdRemaining=0;
+  document.getElementById('cdStart').textContent='Iniciar';
+  document.getElementById('cdStart').className='timer-btn start';
+  updateCountdownDisplay();
+}
+
+// ==================== INTERVALOS ====================
+let intRunning=false,intInterval=null,intPhase='idle',intCurrentRound=0;
+let intWorkTime=0,intRestTime=0,intRounds=0,intPrepTime=0;
+
+function toggleInterval(){
+  const btn=document.getElementById('intStart');
+  if(!intRunning){
+    intWorkTime=parseInt(document.getElementById('intWork').value)||30;
+    intRestTime=parseInt(document.getElementById('intRest').value)||10;
+    intRounds=parseInt(document.getElementById('intRounds').value)||8;
+    intPrepTime=parseInt(document.getElementById('intPrep').value)||5;
+    
+    if(intPhase==='idle'){
+      intCurrentRound=0;
+      startPrep();
+    }else{
+      resumeInterval();
+    }
+    
+    intRunning=true;
+    btn.textContent='Pausar';
+    btn.className='timer-btn';
+  }else{
+    intRunning=false;
+    clearInterval(intInterval);
+    btn.textContent='Continuar';
+    btn.className='timer-btn start';
+  }
+}
+
+function startPrep(){
+  intPhase='prep';
+  document.getElementById('intPhase').textContent='Preparacion...';
+  document.getElementById('intPhase').style.color='var(--accent)';
+  runTimer(intPrepTime,startWork);
+}
+
+function startWork(){
+  intCurrentRound++;
+  intPhase='work';
+  document.getElementById('intPhase').textContent='¡TRABAJO!';
+  document.getElementById('intPhase').style.color='var(--accent-3)';
+  updateRoundInfo();
+  runTimer(intWorkTime,startRest);
+}
+
+function startRest(){
+  if(intCurrentRound>=intRounds){
+    finishInterval();
+    return;
+  }
+  intPhase='rest';
+  document.getElementById('intPhase').textContent='Descanso';
+  document.getElementById('intPhase').style.color='var(--text-dim)';
+  runTimer(intRestTime,startWork);
+}
+
+function runTimer(duration,nextPhase){
+  let remaining=duration;
+  updateIntervalDisplay(remaining);
+  
+  intInterval=setInterval(function(){
+    if(!intRunning)return;
+    remaining--;
+    updateIntervalDisplay(remaining);
+    
+    if(remaining<=0){
+      clearInterval(intInterval);
+      nextPhase();
+    }
+  },1000);
+}
+
+function updateIntervalDisplay(sec){
+  document.getElementById('intervalDisplay').textContent=String(sec).padStart(2,'0');
+}
+
+function updateRoundInfo(){
+  document.getElementById('intRoundInfo').textContent='Ronda '+intCurrentRound+' de '+intRounds;
+}
+
+function finishInterval(){
+  intRunning=false;
+  intPhase='done';
+  document.getElementById('intPhase').textContent='¡Entrenamiento completado!';
+  document.getElementById('intPhase').style.color='var(--accent-3)';
+  document.getElementById('intStart').textContent='Iniciar';
+  document.getElementById('intStart').className='timer-btn start';
+  alert('¡Entrenamiento completado!');
+}
+
+function resumeInterval(){
+  if(intPhase==='prep')startPrep();
+  else if(intPhase==='work')startWork();
+  else if(intPhase==='rest')startRest();
+}
+
+function resetInterval(){
+  intRunning=false;
+  clearInterval(intInterval);
+  intPhase='idle';
+  intCurrentRound=0;
+  document.getElementById('intPhase').textContent='Listo para iniciar';
+  document.getElementById('intPhase').style.color='var(--text-dim)';
+  document.getElementById('intervalDisplay').textContent='00:00';
+  document.getElementById('intRoundInfo').textContent='Ronda 0 de '+document.getElementById('intRounds').value;
+  document.getElementById('intStart').textContent='Iniciar';
+  document.getElementById('intStart').className='timer-btn start';
+}
+
+// ==================== CAMBIO DE MODO ====================
+function setMode(mode){
+  currentMode=mode;
+  
+  // Actualizar botones
+  document.querySelectorAll('.category-btn').forEach(function(btn){
+    btn.classList.remove('active');
+  });
+  event.target.closest('.category-btn').classList.add('active');
+  
+  // Mostrar modo correspondiente
+  document.getElementById('normalMode').style.display='none';
+  document.getElementById('countdownMode').style.display='none';
+  document.getElementById('intervalMode').style.display='none';
+  
+  if(mode==='normal')document.getElementById('normalMode').style.display='block';
+  else if(mode==='countdown')document.getElementById('countdownMode').style.display='block';
+  else if(mode==='interval')document.getElementById('intervalMode').style.display='block';
+}
+</script>
+</body>
+</html>
