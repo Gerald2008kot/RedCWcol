@@ -29,6 +29,10 @@ const ASSETS_TO_CACHE = [
   "/tools/tools/notas.html",
   "/tools/tools/pomodoro.html",
   "/tools/tools/tablas.html",
+  "/digitals/index.html",
+  "/digitals/digital/conexion.html",
+  "/digitals/digital/ip.html",
+  "/digitals/digital/set.html",
 ];
 
 // ── Install ─────────────────────────────────────────────────
