@@ -6,7 +6,7 @@
     <title>RedCW - Herramientas</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="/manifest.json">
 
     <style>
         :root {
@@ -459,61 +459,38 @@
             </div>
         </div>
         <div style="display: flex; gap: 8px;">
-            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Instalar</button>
-            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer; padding:0 5px;">&times;</button>
+            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
+            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
         </div>
     </div>
 
     <script>
-        // --- Lógica de Términos ---
-        const checkbox = document.getElementById('acceptCheck');
-        const button = document.getElementById('enterBtn');
-
-        checkbox.addEventListener('change', function() {
-            if(this.checked) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        });
-
-        // --- Lógica de Instalación PWA ---
+        // Lógica PWA Completa
         let deferredPrompt;
-        const installBanner = document.getElementById('installBanner');
-        const btnInstall = document.getElementById('btnInstall');
-        const btnCancel = document.getElementById('btnCancel');
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // Muestra el banner tras 3 segundos
-            setTimeout(() => {
-                installBanner.style.display = 'flex';
+            setTimeout(() => { 
+                document.getElementById('installBanner').style.display = 'flex'; 
             }, 3000);
         });
 
-        btnInstall.addEventListener('click', async () => {
+        document.getElementById('btnInstall').addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
-                installBanner.style.display = 'none';
+                document.getElementById('installBanner').style.display = 'none';
             }
         });
 
-        btnCancel.addEventListener('click', () => {
-            installBanner.style.display = 'none';
-        });
-
-        window.addEventListener('appinstalled', () => {
-            installBanner.style.display = 'none';
-            deferredPrompt = null;
+        document.getElementById('btnCancel').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
         });
 
         // Registrar Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Asegúrate de que sw.js existe en la raíz
                 navigator.serviceWorker.register('../sw.js').catch(err => console.log("SW error:", err));
             });
         }
