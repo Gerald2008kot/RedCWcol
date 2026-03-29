@@ -114,18 +114,6 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
 .empty-state svg{margin-bottom:15px;opacity:.5}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .section-divider{height:1px;background:var(--border);margin:40px 0}
-
-/* NUEVOS ESTILOS PARA FORMULAS AGRUPADAS */
-.formula-category{margin-bottom:30px}
-.formula-category-title{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--accent-2);margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px}
-.formula-category-count{background:var(--accent-2);color:var(--bg);font-size:.75rem;padding:4px 10px;border-radius:20px;font-weight:700}
-.formula-filters{display:flex;gap:10px;margin-bottom:25px;flex-wrap:wrap;padding:15px;background:rgba(0,0,0,.2);border-radius:12px;border:1px solid var(--border)}
-.formula-filters input{flex:1;min-width:200px}
-.element-extra-info{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center}
-.element-badge{font-size:.6rem;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.1);color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.element-badge.cation{background:rgba(255,107,157,.2);color:#FF6B9D}
-.element-badge.anion{background:rgba(0,217,165,.2);color:#00D9A5}
-.element-badge.electrons{background:rgba(108,99,255,.2);color:#6C63FF}
 </style>
 </head>
 <body>
@@ -211,19 +199,9 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         Mesa de Formulas Quimicas
       </div>
+      <p style="color:var(--text-dim);font-size:.9rem;margin-bottom:20px">Selecciona una formula para ver su composicion elemental.</p>
       
-      <!-- Filtros de fórmulas -->
-      <div class="formula-filters">
-        <input class="viz-input" id="formulaSearch" placeholder="Buscar fórmula por nombre, tipo o elemento..." style="flex:1"/>
-        <button class="btn-sm" onclick="filterFormulas('all')">Todas</button>
-        <button class="btn-sm" onclick="filterFormulas('oxidos')">Óxidos</button>
-        <button class="btn-sm" onclick="filterFormulas('acidos')">Ácidos</button>
-        <button class="btn-sm" onclick="filterFormulas('sales')">Sales</button>
-        <button class="btn-sm" onclick="filterFormulas('organicos')">Orgánicos</button>
-        <button class="btn-sm" onclick="filterFormulas('minerales')">Minerales</button>
-      </div>
-      
-      <div id="formulaContainer"></div>
+      <div class="formula-grid" id="formulaGrid"></div>
       
       <div class="formula-detail" id="formulaDetail">
         <div class="detail-header">
@@ -690,138 +668,6 @@ function selectFormula(f){
     list.appendChild(item);
   });
 }
-
-let currentFormulaFilter = 'all';
-
-function filterFormulas(type) {
-    currentFormulaFilter = type;
-    
-    // Actualizar botones activos
-    document.querySelectorAll('.formula-filters .btn-sm').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    renderFormulasByCategory();
-}
-
-function renderFormulasByCategory() {
-    const container = document.getElementById('formulaContainer');
-    const searchTerm = document.getElementById('formulaSearch').value.toLowerCase();
-    container.innerHTML = '';
-    
-    // Definir categorías
-    const categories = {
-        'oxidos': ['Oxido', 'óxido', 'peroxido', 'superoxido', 'Peroxido', 'Superoxido'],
-        'acidos': ['Acido', 'ácido', 'Hidruro', 'hidruro'],
-        'sales': ['Sal', 'sal ', 'Complejo', 'complejo', 'Fosfato', 'fosfato', 'Sulfato', 'sulfato', 'Nitrato', 'nitrato', 'Carbonato', 'carbonato', 'Cromato', 'cromato', 'Permanganato', 'permanganato', 'Vanadato', 'vanadato', 'Molibdato', 'molibdato', 'Tungstato', 'tungstato', 'Niobato', 'niobato', 'Tantalato', 'tantalato', 'Titanato', 'titanato', 'Zirconato', 'zirconato', 'Estannato', 'estannato', 'Aluminato', 'aluminato', 'Cromito', 'cromito', 'Manganito', 'manganito', 'Cobaltita', 'cobaltita', 'Niquelita', 'niquelita', 'Ferrita', 'ferrita', 'Granate', 'granate', 'Galato', 'galato', 'Scandato', 'scandato', 'Itriato', 'itriato', 'Gadolinato', 'gadolinato', 'Europiato', 'europiato', 'Perovskita', 'perovskita', 'Espinela', 'espinela', 'Crisoberilo', 'crisoberilo'],
-        'organicos': ['organico', 'orgánico', 'Organico', 'Orgánico', 'hidrocarburo', 'Hidrocarburo', 'alcohol', 'Alcohol', 'acido carboxilico', 'ácido carboxílico', 'carbohidrato', 'Carbohidrato', 'halocarbono', 'Halocarbono', 'Aldehido', 'aldehido', 'Cetona', 'cetona', 'Ester', 'ester', 'Eter', 'eter', 'Amina', 'amina', 'Amida', 'amida', 'compuesto organometalico', 'Compuesto organometalico', 'organometalico', 'organometálico'],
-        'minerales': ['mineral', 'Mineral', 'Silicato', 'silicato', 'Carbonato mineral', 'carbonato mineral', 'Sulfato mineral', 'sulfato mineral', 'Fosfato mineral', 'fosfato mineral', 'Oxido mineral', 'oxido mineral', 'Sulfuro mineral', 'sulfuro mineral', 'Wolframato mineral', 'wolframato mineral', 'Oxihidroxido', 'oxihidroxido', 'Mezcla mineral', 'mezcla mineral']
-    };
-    
-    // Filtrar fórmulas según tipo y búsqueda
-    let filteredFormulas = formulas;
-    
-    if (currentFormulaFilter !== 'all') {
-        const keywords = categories[currentFormulaFilter] || [];
-        filteredFormulas = formulas.filter(f => {
-            const typeMatch = keywords.some(k => f.type.toLowerCase().includes(k.toLowerCase()));
-            const nameMatch = keywords.some(k => f.name.toLowerCase().includes(k.toLowerCase()));
-            const descMatch = keywords.some(k => f.desc.toLowerCase().includes(k.toLowerCase()));
-            return typeMatch || nameMatch || descMatch;
-        });
-    }
-    
-    // Aplicar búsqueda de texto
-    if (searchTerm) {
-        filteredFormulas = filteredFormulas.filter(f => 
-            f.name.toLowerCase().includes(searchTerm) ||
-            f.chem.toLowerCase().includes(searchTerm) ||
-            f.type.toLowerCase().includes(searchTerm) ||
-            f.desc.toLowerCase().includes(searchTerm) ||
-            f.composition.some(c => c.sym.toLowerCase().includes(searchTerm))
-        );
-    }
-    
-    // Agrupar por categoría
-    const grouped = {};
-    filteredFormulas.forEach(f => {
-        const cat = getFormulaCategory(f);
-        if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(f);
-    });
-    
-    // Renderizar grupos
-    const categoryOrder = ['Óxidos', 'Ácidos y Hidruros', 'Sales Inorgánicas', 'Compuestos de Coordinación', 'Compuestos Organometálicos', 'Semiconductores y Cerámicas', 'Minerales', 'Compuestos Varios'];
-    
-    categoryOrder.forEach(cat => {
-        if (grouped[cat] && grouped[cat].length > 0) {
-            const section = document.createElement('div');
-            section.className = 'formula-category';
-            section.innerHTML = ` <div class="formula-category-title">
-                    ${cat}
-  <span class="formula-category-count">${grouped[cat].length}</span>
-   </div>
-<div class="formula-grid" id="grid-${cat.replace(/\s+/g, '-')}">
-</div> `;
-   container.appendChild(section);
-            
-            const grid = section.querySelector('.formula-grid');
-            grouped[cat].forEach(f => {
-                const card = document.createElement('div');
-                card.className = 'formula-card' + (selectedFormula && selectedFormula.name === f.name ? ' active' : '');
-                card.innerHTML = `
-                    <div class="formula-name">${f.name}</div>
-                    <div class="formula-chem">${f.chem}</div>
-                    <div class="formula-type">${f.type}</div>
-                    <div class="formula-composition">${f.composition.map(c => c.sym + (c.count > 1 ? c.count : '')).join(' + ')}</div> `;
-                card.onclick = function() { selectFormula(f); };
-                grid.appendChild(card);
-            });} });
-    
-    if (filteredFormulas.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <p>No se encontraron fórmulas que coincidan con los criterios.</p>
-            </div>
-        `;
-    }
-}
-
-function getFormulaCategory(formula) {
-    const type = formula.type.toLowerCase();
-    const name = formula.name.toLowerCase();
-    const desc = formula.desc.toLowerCase();
-    
-    if (type.includes('oxido') || type.includes('óxido') || type.includes('peroxido') || type.includes('superoxido') || name.includes('óxido') || name.includes('oxido')) return 'Óxidos';
-    if (type.includes('acido') || type.includes('ácido') || type.includes('hidruro') || type.includes('hidrógeno')) return 'Ácidos y Hidruros';
-    if (type.includes('complejo') || type.includes('compleja') || type.includes('complej')) return 'Compuestos de Coordinación';
-    if (type.includes('organometalico') || type.includes('organometálico') || type.includes('fármaco') || name.includes('ferroceno') || name.includes('cromo hexacarbonilo') || name.includes('tungsteno hexacarbonilo') || name.includes('platino') || name.includes('cisplatino')) return 'Compuestos Organometálicos';
-    if (type.includes('semiconductor') || type.includes('ceramica') || type.includes('nitruro') || type.includes('carburo') || type.includes('siliciuro') || type.includes('arseniuro') || type.includes('fosfuro') || type.includes('antimoniuro') || type.includes('telururo') || type.includes('sulfuro') || type.includes('selenuro') || type.includes('granate') || type.includes('ferrita') || type.includes('titanato') || type.includes('zirconato') || type.includes('niobato') || type.includes('tantalato') || type.includes('molibdato') || type.includes('tungstato') || type.includes('vanadato') || type.includes('aluminato') || type.includes('cromito') || type.includes('manganito') || type.includes('cobaltita') || type.includes('niquelita') || type.includes('galato') || type.includes('scandato') || type.includes('itriato') || type.includes('gadolinato') || type.includes('europiato') || type.includes('estannato') || type.includes('hafnato') || type.includes('cerato') || type.includes('perovskita') || type.includes('espinela')) return 'Semiconductores y Cerámicas';
-    if (type.includes('mineral') || type.includes('silicato') || name.includes('pirita') || name.includes('galena') || name.includes('esfalerita') || name.includes('calcopirita') || name.includes('cinabrio') || name.includes('molibdenita') || name.includes('wolframita') || name.includes('scheelita') || name.includes('cromita') || name.includes('magnetita') || name.includes('hematites') || name.includes('goethita') || name.includes('lepidocrocita') || name.includes('bauxita') || name.includes('corindon') || name.includes('magnesita') || name.includes('calcita') || name.includes('aragonito') || name.includes('dolomita') || name.includes('azurita') || name.includes('malaquita') || name.includes('yeso') || name.includes('anhidrita') || name.includes('barita') || name.includes('celestina') || name.includes('anglesita') || name.includes('apatito') || name.includes('monacita') || name.includes('xenotima') || name.includes('turquesa') || name.includes('crisoberilo') || name.includes('esfena')) return 'Minerales';
-    if (type.includes('sal') || type.includes('ionico') || type.includes('toxica') || type.includes('explosivo') || type.includes('oxidante') || type.includes('pigmento') || type.includes('base')) return 'Sales Inorgánicas';
-    
-    return 'Compuestos Varios';
-}
-
-// Evento de búsqueda
-document.getElementById('formulaSearch').oninput = function() {
-    renderFormulasByCategory();
-};
-
-// Reemplazar la función renderFormulas original
-function renderFormulas() {
-    renderFormulasByCategory();
-}
-
-// Inicializar con el botón "Todas" activo
-document.addEventListener('DOMContentLoaded', function() {
-    const allBtn = document.querySelector('.formula-filters .btn-sm');
-    if (allBtn) allBtn.classList.add('active');
-    renderFormulasByCategory();
-});
-
 
 // Inicializar
 renderElements(elements);
