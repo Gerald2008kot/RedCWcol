@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>RedCW — Set de Herramientas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --accent:      #6C63FF;
+  --accent-2:    #FF6B9D;
+  --accent-3:    #00D9A5;
+  --bg:          #05070a;
+  --card-bg:     #10141d;
+  --text-main:   #ffffff;
+  --text-dim:    #94a3b8;
+  --font-display:'Outfit', sans-serif;
+  --font-main:   'Inter', sans-serif;
+  --header-h:    70px;
+}
+
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  height: var(--header-h);
+  width: 100%;
+  background: rgba(16,20,29,.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 25px;
+  position: fixed; top: 0; z-index: 1000;
+}
+.header-logo {
+  font-family: var(--font-display);
+  font-weight: 800; font-size: 1.4rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-decoration: none;
+}
+.menu-toggle {
+  background: none; border: none; color: white;
+  cursor: pointer; display: flex; align-items: center; padding: 4px;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 280px;
+  background: var(--card-bg);
+  border-right: 1px solid rgba(255,255,255,.05);
+  padding: 16px;
+  position: fixed;
+  top: var(--header-h); bottom: 0; left: -280px;
+  z-index: 900;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  overflow-y: auto;
+}
+.sidebar.active { transform: translateX(280px); }
+
+.nav-links { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; }
+.nav-links a {
+  display: flex; align-items: center;
+  padding: 12px 16px; color: var(--text-dim);
+  text-decoration: none; border-radius: 12px;
+  transition: all .2s; font-size: .9rem;
+  background: rgba(255,255,255,.02);
+  border-left: 3px solid transparent;
+}
+.nav-links a .nav-icon { stroke: currentColor; fill: none; stroke-width: 2; }
+.nav-links a:nth-child(1) .nav-icon { color: #94a3b8; }
+.nav-links a:nth-child(2) .nav-icon { color: var(--accent-2); }
+.nav-links a:nth-child(3) .nav-icon { color: var(--accent); }
+.nav-links a:nth-child(4) .nav-icon { color: var(--accent-3); }
+
+.nav-links a:hover, .nav-links a.active {
+  background: rgba(108,99,255,.1); color: white;
+  border-left-color: var(--accent);
+}
+.nav-icon { width: 18px; height: 18px; margin-right: 12px; flex-shrink: 0; transition: transform .2s, filter .2s; }
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon { transform: scale(1.15); filter: drop-shadow(0 0 4px currentColor); }
+
+.nav-section-label {
+  font-size: .68rem; font-weight: 700; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 14px 16px 6px; opacity: .6;
+}
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; z-index: 850; backdrop-filter: blur(2px); }
+.overlay.active { display: block; }
+
+/* ── MAIN CONTENT & CARDS ── */
+.main-content { margin-top: var(--header-h); padding: 28px 16px 40px; }
+.tools-section {
+  max-width: 900px; margin: 0 auto; 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
+  gap: 20px; 
+}
+
+.card {
+  background: var(--card-bg); border: 1px solid rgba(255,255,255,.05);
+  border-radius: 20px; padding: 22px; box-shadow: 0 8px 28px rgba(0,0,0,.35);
+  display: flex; flex-direction: column;
+}
+.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.card-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+.card-title { font-family: var(--font-display); font-weight: 700; font-size: .95rem; }
+.card-sub { font-size: .75rem; color: var(--text-dim); margin-top: 1px; }
+
+/* ── COMPONENTES COMUNES ── */
+.input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.inp {
+  flex: 1; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px; padding: 10px 13px; color: white;
+  font-family: 'Inter', monospace; font-size: .88rem; outline: none; transition: border-color .2s;
+}
+.inp:focus { border-color: var(--accent); }
+.btn-go {
+  padding: 10px 16px; border-radius: 11px; background: rgba(108,99,255,.15);
+  border: 1px solid rgba(108,99,255,.35); color: var(--accent);
+  font-weight: 700; font-size: .85rem; cursor: pointer; transition: all .2s;
+  font-family: var(--font-display); white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.btn-go:hover { background: rgba(108,99,255,.3); }
+
+.output-box {
+  margin-top: 4px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px; padding: 14px; font-family: 'Inter', monospace;
+  font-size: .82rem; color: var(--text-dim); min-height: 48px; line-height: 1.6;
+  word-break: break-all; transition: border-color .2s; flex: 1;
+}
+.output-box.loaded { border-color: rgba(0,217,165,.25); color: white; }
+.output-box.error-state { border-color: rgba(239,68,68,.3); color: #ef4444; }
+.result-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: .82rem; }
+.result-row:last-child { border-bottom: none; }
+.result-key { color: var(--text-dim); }
+.result-val { color: white; font-weight: 500; text-align: right; }
+.result-val.green { color: var(--accent-3); }
+.result-val.purple { color: var(--accent); }
+
+.tab-pills { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-pill {
+  padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08); color: var(--text-dim); font-size: .78rem;
+  cursor: pointer; transition: all .2s;
+}
+.tab-pill.active { background: rgba(108,99,255,.15); border-color: rgba(108,99,255,.4); color: var(--accent); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Herramientas</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+
+<aside class="sidebar" id="sidebar">
+    <div class="nav-section-label">Menú Principal</div>
+    <nav class="nav-links">
+        <a href="../index.html">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Inicio
+        </a>
+        <a href="ip.html">
+            <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg> Mi IP
+        </a>
+        <a href="set.html" class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg> Herramientas
+        </a>
+        <a href="conexion.html">
+            <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> Latencia
+        </a>
+    </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<main class="main-content">
+  <div class="tools-section">
+    
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(255,107,157,.1);color:var(--accent-2)">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <div><div class="card-title">Consultar IP</div><div class="card-sub">Obtén datos de cualquier IPv4/IPv6</div></div>
+      </div>
+      <div class="input-row">
+        <input class="inp" id="queryIpInput" placeholder="Ej: 8.8.8.8"/>
+        <button class="btn-go" id="queryIpBtn">Buscar</button>
+      </div>
+      <div class="output-box" id="queryIpOutput">Ingresa una IP para rastrearla.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(0,217,165,.1);color:var(--accent-3)">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
+        <div><div class="card-title">DNS Lookup</div><div class="card-sub">Consulta registros de un dominio</div></div>
+      </div>
+      <div class="input-row">
+        <input class="inp" id="dnsInput" placeholder="Ej: google.com"/>
+        <button class="btn-go" id="dnsBtn">Consultar</button>
+      </div>
+      <div class="output-box" id="dnsOutput" style="white-space: pre-wrap; font-size: .75rem;">Ingresa un dominio.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(250,204,21,.1);color:#facc15">
+            <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+        </div>
+        <div><div class="card-title">Calc. de Subredes</div><div class="card-sub">CIDR → rango, máscara, broadcast</div></div>
+      </div>
+      <div class="input-row">
+        <input class="inp" id="subnetInput" placeholder="Ej: 192.168.1.0/24"/>
+        <button class="btn-go" id="subnetBtn" style="border-color:rgba(250,204,21,.3);color:#facc15;background:rgba(250,204,21,.1)">Calcular</button>
+      </div>
+      <div class="output-box" id="subnetOutput">Ingresa una red en formato CIDR.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(108,99,255,.1);color:var(--accent)">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div><div class="card-title">Epoch Time</div><div class="card-sub">Conversor de Timestamp Unix</div></div>
+      </div>
+      <div class="input-row">
+        <input class="inp" id="epochInput" placeholder="Ej: 1711663200" type="number"/>
+        <button class="btn-go" id="epochBtn">Convertir</button>
+      </div>
+      <div class="output-box" id="epochOutput">
+        <div style="color:var(--text-dim);margin-bottom:8px">Epoch Actual:</div>
+        <div id="liveEpoch" style="font-size:1.5rem;font-weight:700;color:var(--accent-3);font-family:var(--font-display)">---</div>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(255,255,255,.1);color:#fff">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div><div class="card-title">Codificador / Decodificador</div><div class="card-sub">Base64, URL, HTML, Hex</div></div>
+      </div>
+      <div class="tab-pills" id="encodeTabs">
+        <button class="tab-pill active" data-mode="b64enc">Base64 ↑</button>
+        <button class="tab-pill" data-mode="b64dec">Base64 ↓</button>
+        <button class="tab-pill" data-mode="urlenc">URL enc</button>
+        <button class="tab-pill" data-mode="urldec">URL dec</button>
+        <button class="tab-pill" data-mode="hex">→ Hex</button>
+        <button class="tab-pill" data-mode="unhex">Hex →</button>
+        <button class="tab-pill" data-mode="html">→ HTML</button>
+      </div>
+      <textarea class="inp" id="encodeInput" rows="2" placeholder="Escribe aquí..." style="width:100%;resize:none;margin-bottom:8px;"></textarea>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-go" onclick="encodeAction()" style="flex:1">Convertir</button>
+        <button class="btn-go" onclick="swapEncode()" style="background:rgba(255,107,157,.1);border-color:rgba(255,107,157,.3);color:var(--accent-2)">
+            <svg width="14" height="14" viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            Swap
+        </button>
+        <button class="btn-go" onclick="copyEncode()" style="background:rgba(0,217,165,.1);border-color:rgba(0,217,165,.3);color:var(--accent-3)">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+        </button>
+      </div>
+      <div class="output-box" id="encodeOutput">—</div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// UI LOGIC
+const menuBtn = document.getElementById('menuBtn'),
+      sidebar = document.getElementById('sidebar'),
+      overlay = document.getElementById('overlay');
+
+menuBtn.onclick = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); };
+
+// ══ 1. CONSULTAR IP ══
+document.getElementById('queryIpBtn').onclick = async () => {
+  const ip = document.getElementById('queryIpInput').value.trim();
+  const out = document.getElementById('queryIpOutput');
+  if(!ip) return;
+  
+  out.className = 'output-box'; out.textContent = 'Consultando...';
+  try {
+    const res = await fetch(`https://api.ipquery.io/${ip}?format=json`);
+    const d = await res.json();
+    if(d.error) throw new Error("IP inválida");
+    out.className = 'output-box loaded';
+    out.innerHTML = `
+      <div class="result-row"><span class="result-key">IP</span><span class="result-val purple">${d.ip}</span></div>
+      <div class="result-row"><span class="result-key">Ubicación</span><span class="result-val">${d.location?.city || '-'}, ${d.location?.country || '-'}</span></div>
+      <div class="result-row"><span class="result-key">ISP</span><span class="result-val">${d.isp?.isp || '-'}</span></div>
+      <div class="result-row"><span class="result-key">Riesgo</span><span class="result-val ${d.risk?.risk_score < 50 ? 'green' : 'red'}">${d.risk?.risk_score || 0}/100</span></div>
+    `;
+  } catch(e) {
+    out.className = 'output-box error-state'; out.textContent = 'Error al consultar IP.';
+  }
+};
+
+// ══ 2. DNS LOOKUP ══
+document.getElementById('dnsBtn').onclick = async () => {
+  let domain = document.getElementById('dnsInput').value.trim();
+  const out = document.getElementById('dnsOutput');
+  if(!domain) return;
+  domain = domain.replace(/^https?:\/\//, '').split('/')[0];
+  
+  out.className = 'output-box'; out.textContent = 'Resolviendo...';
+  try {
+    const res = await fetch(`https://dns.google/resolve?name=${domain}&type=ANY`);
+    const d = await res.json();
+    if(!d.Answer) { out.className = 'output-box error-state'; out.textContent = 'No se encontraron registros.'; return; }
+    
+    out.className = 'output-box loaded';
+    out.innerHTML = d.Answer.map(r => {
+      const typeMap = {1:'A', 2:'NS', 5:'CNAME', 15:'MX', 16:'TXT', 28:'AAAA'};
+      const tName = typeMap[r.type] || `TYPE${r.type}`;
+      return `<div class="result-row"><span class="result-key">${tName}</span><span class="result-val" style="font-size:0.75rem;max-width:200px;text-align:right">${r.data}</span></div>`;
+    }).join('');
+  } catch(e) {
+    out.className = 'output-box error-state'; out.textContent = 'Error en la consulta DNS.';
+  }
+};
+
+// ══ 3. SUBREDES ══
+document.getElementById('subnetBtn').onclick = () => {
+  const raw = document.getElementById('subnetInput').value.trim();
+  const out = document.getElementById('subnetOutput');
+  const match = raw.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})$/);
+  
+  if (!match) { out.className='output-box error-state'; out.textContent='Usa CIDR: 192.168.1.0/24'; return; }
+  const parts = match[1].split('.').map(Number);
+  const prefix = parseInt(match[2]);
+  if (prefix < 0 || prefix > 32 || parts.some(p => p > 255)) { out.className='output-box error-state'; out.textContent='Datos inválidos'; return; }
+  
+  const ipDec = (parts[0]<<24 | parts[1]<<16 | parts[2]<<8 | parts[3]) >>> 0;
+  const maskDec = prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
+  const netDec = (ipDec & maskDec) >>> 0;
+  const bcDec = (netDec | (~maskDec >>> 0)) >>> 0;
+  const d = n => [(n>>>24)&255, (n>>>16)&255, (n>>>8)&255, n&255].join('.');
+  const hosts = prefix >= 31 ? (prefix===32 ? 1 : 2) : Math.pow(2, 32 - prefix) - 2;
+  
+  out.className = 'output-box loaded';
+  out.innerHTML = `
+    <div class="result-row"><span class="result-key">Red</span><span class="result-val green">${d(netDec)}</span></div>
+    <div class="result-row"><span class="result-key">Máscara</span><span class="result-val">${d(maskDec)}</span></div>
+    <div class="result-row"><span class="result-key">Broadcast</span><span class="result-val">${d(bcDec)}</span></div>
+    <div class="result-row"><span class="result-key">Hosts</span><span class="result-val purple">${hosts.toLocaleString()}</span></div>
+  `;
+};
+
+// ══ 4. EPOCH TIME ══
+setInterval(() => { document.getElementById('liveEpoch').textContent = Math.floor(Date.now() / 1000); }, 1000);
+
+document.getElementById('epochBtn').onclick = () => {
+  const val = document.getElementById('epochInput').value.trim();
+  const out = document.getElementById('epochOutput');
+  if(!val) return;
+  const date = new Date(parseInt(val) * 1000);
+  if(isNaN(date.getTime())) { out.className = 'output-box error-state'; out.innerHTML = 'Timestamp inválido'; return; }
+  out.className = 'output-box loaded';
+  out.innerHTML = `
+    <div class="result-row"><span class="result-key">GMT</span><span class="result-val">${date.toUTCString()}</span></div>
+    <div class="result-row"><span class="result-key">Local</span><span class="result-val green">${date.toLocaleString()}</span></div>
+  `;
+};
+
+// ══ 5. CODIFICADOR ══
+let encodeMode = 'b64enc';
+document.querySelectorAll('.tab-pill').forEach(pill => {
+  pill.onclick = () => {
+    document.querySelectorAll('.tab-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    encodeMode = pill.dataset.mode;
+    encodeAction();
+  };
+});
+
+function encodeAction() {
+  const inp = document.getElementById('encodeInput').value;
+  const out = document.getElementById('encodeOutput');
+  if(!inp) { out.textContent = '—'; out.style.color = 'var(--text-dim)'; return; }
+  try {
+    switch(encodeMode) {
+      case 'b64enc': out.textContent = btoa(unescape(encodeURIComponent(inp))); break;
+      case 'b64dec': out.textContent = decodeURIComponent(escape(atob(inp))); break;
+      case 'urlenc': out.textContent = encodeURIComponent(inp); break;
+      case 'urldec': out.textContent = decodeURIComponent(inp); break;
+      case 'hex':    out.textContent = Array.from(new TextEncoder().encode(inp)).map(b=>b.toString(16).padStart(2,'0')).join(''); break;
+      case 'unhex':  out.textContent = new TextDecoder().decode(new Uint8Array(inp.match(/.{1,2}/g).map(b=>parseInt(b,16)))); break;
+      case 'html':   out.textContent = inp.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); break;
+    }
+    out.style.color = 'var(--accent-3)';
+  } catch(e) {
+    out.textContent = 'Entrada inválida.';
+    out.style.color = '#ef4444';
+  }
+}
+window.encodeAction = encodeAction;
+window.swapEncode = () => { document.getElementById('encodeInput').value = document.getElementById('encodeOutput').textContent; encodeAction(); };
+window.copyEncode = () => { navigator.clipboard.writeText(document.getElementById('encodeOutput').textContent); };
+document.getElementById('encodeInput').addEventListener('input', encodeAction);
+
+// Enter triggers
+['queryIpInput', 'dnsInput', 'subnetInput', 'epochInput'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if(e.key === 'Enter') document.getElementById(id.replace('Input', 'Btn')).click();
+  });
+});
+</script>
+</body>
+</html>
