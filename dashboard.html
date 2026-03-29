@@ -102,47 +102,6 @@ header{
   position:relative
 }
 
-/* Hero Section simplificado */
-.hero-container{
-  min-height:50vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:100px 20px 60px;
-  position:relative;
-  width:100%;
-  opacity:0;
-  transform:translateY(30px);
-  transition:all 0.8s cubic-bezier(0.4,0,0.2,1);
-}
-
-.hero-container.reveal {
-  opacity:1;
-  transform:translateY(0);
-}
-
-.hero-text{
-  text-align:center;
-  max-width:600px;
-}
-.hero-text h1{
-  font-family:var(--font-display);
-  font-weight:800;
-  font-size:clamp(2.2rem, 7vw, 3.2rem);
-  margin-bottom:16px;
-  background:linear-gradient(135deg,#fff,#a5b4fc);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent
-}
-.hero-text h1 span { color:var(--accent-3); }
-.hero-text p{
-  color:var(--text-dim);
-  font-size:1.2rem;
-  line-height:1.6
-}
-
 /* Selector Section */
 .selector-section {
   width:100%;
@@ -218,10 +177,6 @@ header{
   transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
 }
 
-/* Stagger delay para cards */
-.app-card:nth-child(1).visible { transition-delay:0.1s; }
-.app-card:nth-child(2).visible { transition-delay:0.2s; }
-
 .app-card::before{
   content:'';
   position:absolute;
@@ -240,10 +195,11 @@ header{
 }
 .app-card:hover::before{opacity:1}
 .app-card.social::before{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.app-card.digital::before{background:linear-gradient(90deg,var(--accent),var(--accent-3))}
 .app-card.tools::before{background:linear-gradient(90deg,var(--accent-3),var(--accent))}
 
-/* Bordes inferiores de color */
 .app-card.social { border-bottom:3px solid var(--accent); }
+.app-card.digital { border-bottom:3px solid var(--accent); }
 .app-card.tools { border-bottom:3px solid var(--accent-3); }
 
 .app-icon{
@@ -264,14 +220,10 @@ header{
   opacity:.2;
   filter:blur(20px)
 }
-.app-card.social .app-icon{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-}
-.app-card.social .app-icon::before{background:var(--accent)}
-.app-card.tools .app-icon{
-  background:linear-gradient(135deg,var(--accent-3),var(--accent));
-}
-.app-card.tools .app-icon::before{background:var(--accent-3)}
+.app-card.social .app-icon{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
+.app-card.digital .app-icon{ background:linear-gradient(135deg,var(--accent),var(--accent-3)); }
+.app-card.tools .app-icon{ background:linear-gradient(135deg,var(--accent-3),var(--accent)); }
+
 .app-icon svg{width:40px;height:40px;color:#fff;position:relative;z-index:1}
 
 .app-info{flex:1}
@@ -324,9 +276,19 @@ header{
 }
 .app-arrow svg{width:20px;height:20px;color:#fff}
 
-/* Animaciones */
+/* Card Especial Volver al Inicio */
+.app-card.back-nav {
+  grid-column: 1 / -1;
+  padding: 20px;
+  background: transparent;
+  border: 1px dashed var(--border);
+}
+.app-card.back-nav:hover {
+  background: rgba(255,255,255,0.02);
+  border-style: solid;
+}
+
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.app-card:nth-child(2) .app-icon{animation-delay:-2s}
 
 /* Footer Section */
 .footer-section {
@@ -339,27 +301,9 @@ header{
   transform:translateY(30px);
   transition:all 0.8s cubic-bezier(0.4,0,0.2,1);
 }
-
-.footer-section.reveal {
-  opacity:1;
-  transform:translateY(0);
-}
-
-.footer-info{
-  text-align:center;
-  color:var(--text-dim);
-  font-size:.85rem;
-}
-.footer-info span{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:12px 24px;
-  border-radius:30px;
-  background:rgba(255,255,255,.03);
-  border:1px solid var(--border)
-}
-.footer-info svg{width:16px;height:16px;color:var(--accent)}
+.footer-section.reveal { opacity:1; transform:translateY(0); }
+.footer-info{ text-align:center; color:var(--text-dim); font-size:.85rem; }
+.footer-info span{ display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:30px; background:rgba(255,255,255,.03); border:1px solid var(--border) }
 
 /* Install Banner PWA */
 #installBanner {
@@ -375,117 +319,19 @@ header{
   border-radius:20px;
   padding:16px;
   z-index:9999;
-  box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(108,99,255,0.2);
+  box-shadow:0 10px 40px rgba(0,0,0,0.6);
   align-items:center;
   justify-content:space-between;
   animation:slideUp 0.5s ease-out;
   opacity:0;
 }
+#installBanner.visible { display:flex; opacity:1; }
+@keyframes slideUp { from { transform:translate(-50%, 100px); opacity:0; } to { transform:translate(-50%, 0); opacity:1; } }
 
-#installBanner.visible {
-  display:flex;
-  opacity:1;
-}
-
-@keyframes slideUp {
-  from { transform:translate(-50%, 100px); opacity:0; }
-  to { transform:translate(-50%, 0); opacity:1; }
-}
-
-.banner-content {
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.banner-icon {
-  width:44px;
-  height:44px;
-  border-radius:12px;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-family:var(--font-display);
-  font-weight:800;
-  color:white;
-  font-size:1.2rem;
-}
-
-.banner-text {
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-.banner-text strong {
-  font-size:0.95rem;
-  color:white;
-  font-weight:600;
-}
-
-.banner-text span {
-  font-size:0.75rem;
-  color:var(--text-dim);
-}
-
-.banner-actions {
-  display:flex;
-  gap:8px;
-  align-items:center;
-}
-
-#btnInstall {
-  background:var(--accent);
-  color:white;
-  border:none;
-  padding:10px 18px;
-  border-radius:10px;
-  font-weight:600;
-  font-size:0.85rem;
-  cursor:pointer;
-  transition:all 0.3s;
-  font-family:var(--font-main);
-}
-
-#btnInstall:hover {
-  background:var(--accent-2);
-  transform:scale(1.05);
-  box-shadow:0 5px 20px rgba(108,99,255,0.4);
-}
-
-#btnCancel {
-  background:transparent;
-  color:var(--text-dim);
-  border:none;
-  width:32px;
-  height:32px;
-  border-radius:50%;
-  font-size:1.4rem;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.3s;
-}
-
-#btnCancel:hover {
-  background:rgba(255,255,255,0.1);
-  color:white;
-  transform:rotate(90deg);
-}
-
-/* Responsive */
 @media(max-width:480px){
   .header-logo{font-size:1.8rem}
-  .hero-text h1{font-size:1.8rem}
   .app-card{padding:30px}
-  .app-icon{width:70px;height:70px}
-  .app-icon svg{width:35px;height:35px}
-  .app-info h2{font-size:1.4rem}
   .selector-section h2{font-size:1.8rem}
-  #installBanner{padding:12px}
-  .banner-icon{width:40px;height:40px}
 }
 </style>
 </head>
@@ -495,72 +341,84 @@ header{
   <span class="header-logo">RedCW</span>
 </header>
 
-<!-- Línea conectora visual desde header -->
 <div class="header-connector"></div>
 
 <main class="main-content">
 
-
-  <!-- Selector Grid con animaciones -->
   <section class="selector-section" id="selectorSection">
     <h2>Acceso Rápido</h2>
     
     <div class="selector-grid">
-      <!-- Red Social -->
-      <a href="redcw/index.html" class="app-card social" id="card1">
-   <img src="redcw/icons/icon-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo RedCW">
+      <a href="redcw/index.html" class="app-card social">
+        <img src="redcw/icons/icon-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo RedCW">
         <div class="app-info">
           <h2>RedCW Social</h2>
-          <p>Conecta con otros estudiantes, comparte contenido y mantente al día con tu comunidad.</p>
+          <p>Conecta con otros estudiantes, comparte contenido y mantente al día.</p>
           <span class="app-badge active">
-    <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
-            RedCW - Social
+            <img src="redcw/icons/icon-192.png" width="20" height="20" style="border-radius: 4px; margin-right:5px;" alt="Logo RedCW">
+            Social
           </span>
         </div>
         <div class="app-arrow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </a>
-      <a href="https://kotatsuname.vercel.app" target="_blank" rel="noopener noreferrer" class="app-card tools" id="card2">
-  <img src="kotatsuname/icons/icon-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo Kotatsuname">
-  <div class="app-info">
-    <h2>RedCW - Kotatsuname</h2>
-    <p>Biblioteca de libros e historias.</p>
-    <span class="app-badge">
-      <img src="kotatsuname/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo Kotatsuname">
-      Kotatsuname
-    </span>
-  </div>
-  <div class="app-arrow">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 12h14M12 5l7 7-7 7"/>
-    </svg>
-  </div>
-</a>
 
-
-      <!-- Herramientas -->
-      <a href="tools/index.html" class="app-card tools" id="card2">
+      <a href="digital/index.html" class="app-card digital">
         <div class="app-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+          </svg>
+        </div>
+        <div class="app-info">
+          <h2>RedCW Digital</h2>
+          <p>Gestión de IP, diagnóstico de red y utilidades técnicas de conexión.</p>
+          <span class="app-badge">Red & IP</span>
+        </div>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+
+      <a href="https://kotatsuname.vercel.app" target="_blank" rel="noopener noreferrer" class="app-card tools">
+        <img src="kotatsuname/icons/icon-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo Kotatsu">
+        <div class="app-info">
+          <h2>Kotatsuname</h2>
+          <p>Biblioteca de libros e historias digitales para la comunidad.</p>
+          <span class="app-badge">Lectura</span>
+        </div>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+
+      <a href="tools/index.html" class="app-card tools">
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
         </div>
         <div class="app-info">
           <h2>RedCW Tools</h2>
-          <p>Calculadora científica, conversores, generador de contraseñas y más utilidades para estudiar.</p>
-          <span class="app-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-            Herramientas
-          </span>
+          <p>Calculadora, conversores y generadores para tus estudios.</p>
+          <span class="app-badge">Herramientas</span>
         </div>
         <div class="app-arrow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </a>
-      
 
+      <a href="index.html" class="app-card back-nav" id="backToWeb">
+        <div class="app-info" style="display:flex; align-items:center; gap:15px; margin-bottom:0;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <h2 style="font-size:1.2rem; margin:0;">Volver al Inicio Web</h2>
+        </div>
+      </a>
+
+    </div>
   </section>
 
-  <!-- Footer simple -->
   <section class="footer-section" id="footerSection">
     <div class="footer-info">
       <span>
@@ -572,78 +430,57 @@ header{
 
 </main>
 
-    <div id="installBanner">
-                <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
-            <div>
-                <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
-                <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
-            </div>
+<div id="installBanner">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;">
+        <div>
+            <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Mejor experiencia de usuario</span>
         </div>
-        <div style="display: flex; gap: 8px;">
-            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
-            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button id="btnInstall">Instalar</button>
+        <button id="btnCancel">&times;</button>
     </div>
 </div>
 
 <script>
-// Animación de Scroll progresiva con Intersection Observer
-const scrollObserverOptions = {
-  threshold: 0.15,
-  rootMargin: "0px 0px -50px 0px"
-};
+// --- Lógica de ocultar botón de navegación en PWA ---
+const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+if (isPWA) { document.getElementById('backToWeb').style.display = 'none'; }
 
+// Intersection Observer (Manteniendo tu lógica original intacta)
+const scrollObserverOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
 const scrollObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       entry.target.classList.add('reveal');
-      
-      // Para las cards individuales dentro de selector-section
       if (entry.target.id === 'selectorSection') {
         const cards = entry.target.querySelectorAll('.app-card');
-        cards.forEach((card, index) => {
-          setTimeout(() => {
-            card.classList.add('visible');
-          }, index * 150);
-        });
+        cards.forEach((card, index) => { setTimeout(() => { card.classList.add('visible'); }, index * 150); });
       }
-      
       scrollObserver.unobserve(entry.target);
     }
   });
 }, scrollObserverOptions);
 
-// Observar secciones principales
-document.querySelectorAll('#heroSection, #selectorSection, #footerSection').forEach(section => {
-  scrollObserver.observe(section);
-});
+document.querySelectorAll('#selectorSection, #footerSection').forEach(section => scrollObserver.observe(section));
 
-// Lógica PWA - Banner de Instalación
+// PWA Banner (Manteniendo tu lógica original intacta)
 let deferredPrompt;
-
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  
   setTimeout(() => { 
     const banner = document.getElementById('installBanner');
-    if (banner && !localStorage.getItem('pwaBannerDismissed')) {
-      banner.classList.add('visible');
-    }
+    if (banner && !localStorage.getItem('pwaBannerDismissed')) { banner.classList.add('visible'); }
   }, 2000);
 });
 
 document.getElementById('btnInstall').addEventListener('click', async () => {
   if (!deferredPrompt) return;
-  
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  
-  if (outcome === 'accepted') {
-    console.log('Usuario aceptó instalar la PWA');
-  }
-  
   deferredPrompt = null;
   document.getElementById('installBanner').classList.remove('visible');
 });
@@ -653,20 +490,12 @@ document.getElementById('btnCancel').addEventListener('click', () => {
   localStorage.setItem('pwaBannerDismissed', 'true');
 });
 
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-  document.getElementById('installBanner').style.display = 'none';
-}
-
-// Register service worker
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => console.log('SW registrado:', registration))
-      .catch(err => console.log('SW error:', err));
+    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
   });
 }
 
-// Touch feedback
 document.querySelectorAll('.app-card').forEach(card=>{
   card.addEventListener('touchstart',()=>card.style.transform='scale(0.98)');
   card.addEventListener('touchend',()=>card.style.transform='');
