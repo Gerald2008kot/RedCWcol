@@ -472,7 +472,7 @@
     
     <div id="installBanner">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
+            <img src="../redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
             <div>
                 <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
                 <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
@@ -534,7 +534,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 // Asegúrate de que sw.js existe en la raíz
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW error:", err));
+                navigator.serviceWorker.register('../sw.js').catch(err => console.log("SW error:", err));
             });
         }
     </script>
