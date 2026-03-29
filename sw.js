@@ -5,6 +5,7 @@ const CACHE_NAME = "redcw-v1";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
+  "/dashboard.html",
   "/manifest.json",
   "/redcw/index.html",
   "/redcw/css/app.css",
@@ -13,8 +14,21 @@ const ASSETS_TO_CACHE = [
   "/redcw/js/app.js",
   "/redcw/js/pages.js",
   "/redcw/js/auth.js",
-  "/redcw/icons/icon-192.png", // Ruta corregida
-  "/redcw/icons/icon-512.png"  // Ruta corregida
+  "/redcw/icons/icon-192.png",
+  "/redcw/icons/icon-512.png",
+  "/tools/index.html",
+  "/tools/tools/calculadora.html",
+  "/tools/tools/contrasenas.html",
+  "/tools/tools/convertidor.html",
+  "/tools/tools/cronometro.html",
+  "/tools/tools/elementos.html",
+  "/tools/tools/estadistica.html",
+  "/tools/tools/fisica.html",
+  "/tools/tools/funciones",
+  "/tools/tools/morse.html",
+  "/tools/tools/notas.html",
+  "/tools/tools/pomodoro.html",
+  "/tools/tools/tablas.html",
 ];
 
 // ── Install ─────────────────────────────────────────────────
