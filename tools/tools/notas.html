@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RedCW — Notas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--header-h:60px;--danger:#ff4757;--warning:#ffa502}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html{font-size:16px}
+@media(max-width:480px){html{font-size:14px}}
+body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden;line-height:1.5}
+header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:fixed;top:0;z-index:1000}
+.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;white-space:nowrap}
+.menu-toggle{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;transition:.2s}
+.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.menu-toggle svg{width:24px;height:24px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:850;backdrop-filter:blur(3px);opacity:0;transition:opacity .3s}
+.overlay.active{display:block;opacity:1}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid var(--border);padding:16px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sidebar.active{transform:translateX(280px)}
+.nav-links{list-style:none}
+.nav-links a{display:flex;align-items:center;padding:12px 14px;color:var(--text-dim);text-decoration:none;border-radius:10px;margin-bottom:6px;transition:all .2s;font-size:.9rem;background:rgba(255,255,255,.02);border-left:3px solid transparent}
+.nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:18px;height:18px;margin-right:10px;flex-shrink:0;transition:transform .2s ease}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor)}
+.nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent)}
+.nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2)}
+.nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3)}
+.main-content{margin-top:var(--header-h);padding:20px 16px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - var(--header-h));width:100%;max-width:100vw;overflow-x:hidden}
+.page-title{font-family:var(--font-display);font-weight:800;font-size:1.4rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2}
+.page-sub{color:var(--text-dim);font-size:.85rem;margin:0 0 16px;text-align:center;max-width:600px;line-height:1.4}
+.tools-wrap{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card-bg);border-radius:20px;padding:20px 16px;border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,.5);width:100%}
+@media(min-width:768px){.card{padding:25px;border-radius:28px;box-shadow:0 30px 60px rgba(0,0,0,.6)}}
+.card-title{font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--accent-3);flex-wrap:wrap}
+.card-title svg{width:20px;height:20px;color:var(--accent-3);flex-shrink:0}
+.viz-input{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:#fff;font-family:var(--font-main);font-size:.9rem;outline:none;transition:.2s;-webkit-appearance:none}
+.viz-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2)}
+.viz-input::placeholder{color:var(--text-dim);opacity:.6}
+.btn-primary{width:100%;padding:12px 20px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#fff;font-family:var(--font-display);font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px rgba(108,99,255,.3);-webkit-tap-highlight-color:transparent}
+.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.btn-primary:active{transform:translateY(0)}
+@media(min-width:768px){.btn-primary{width:auto}}
+.btn-secondary{padding:10px 20px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:#fff;font-family:var(--font-main);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{padding:8px 14px;border-radius:8px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:var(--danger);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;width:100%}
+.btn-danger:hover{background:rgba(255,71,87,.2)}
+@media(min-width:768px){.btn-danger{width:auto}}
+.btn-sm{padding:8px 14px;border-radius:8px;background:rgba(0,217,165,.1);border:1px solid rgba(0,217,165,.25);color:var(--accent-3);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.btn-sm:hover{background:rgba(0,217,165,.2)}
+.btn-sm.active{background:var(--accent-3);color:var(--bg)}
+.notes-layout{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.notes-layout{grid-template-columns:280px 1fr;gap:20px}}
+.sidebar-notes{background:rgba(0,0,0,.2);border-radius:16px;padding:16px;border:1px solid var(--border);order:2}
+@media(min-width:900px){.sidebar-notes{order:1;border-radius:20px;padding:20px}}
+.note-list{max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media(min-width:900px){.note-list{max-height:400px}}
+.note-item{padding:12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative;touch-action:manipulation}
+.note-item:hover{border-color:var(--accent);background:rgba(108,99,255,.05)}
+.note-item.active{border-color:var(--accent-3);background:rgba(0,217,165,.1)}
+.note-item-title{font-weight:600;font-size:.85rem;color:#fff;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px}
+.note-item-date{font-size:.7rem;color:var(--text-dim)}
+.note-item-delete{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:6px;background:rgba(255,71,87,.1);border:none;color:var(--danger);cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:1;transition:all .2s;-webkit-tap-highlight-color:transparent}
+@media(min-width:768px){.note-item-delete{opacity:0}.note-item:hover .note-item-delete{opacity:1}}
+.note-item-delete:hover{background:rgba(255,71,87,.2);transform:scale(1.1)}
+.note-item-delete svg{width:14px;height:14px}
+.note-editor{display:flex;flex-direction:column;gap:12px;order:1}
+@media(min-width:900px){.note-editor{order:2;gap:15px}}
+.note-header{display:flex;flex-direction:column;gap:10px}
+@media(min-width:600px){.note-header{flex-direction:row;align-items:center}}
+.note-title-input{width:100%;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:#fff;font-family:var(--font-display);font-size:1rem;font-weight:700;outline:none;transition:.2s}
+.note-title-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,.2)}
+.note-title-input::placeholder{color:var(--text-dim);opacity:.6}
+.color-picker{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start}
+@media(min-width:600px){.color-picker{justify-content:flex-end}}
+.color-option{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:all .2s;flex-shrink:0}
+.color-option:hover{transform:scale(1.1)}
+.color-option.active{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.note-toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:10px;background:rgba(0,0,0,.3);border-radius:10px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.toolbar-btn{min-width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.toolbar-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(108,99,255,.1)}
+.toolbar-btn:active{transform:scale(.95)}
+.toolbar-btn.active{border-color:var(--accent-3);color:var(--accent-3);background:rgba(0,217,165,.1)}
+.toolbar-btn svg{width:16px;height:16px}
+.note-area{width:100%;min-height:250px;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:14px;color:#fff;font-family:var(--font-main);font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:.2s;-webkit-appearance:none}
+@media(min-width:768px){.note-area{min-height:350px;font-size:.95rem;padding:16px}}
+.note-area:focus{border-color:var(--accent-2);box-shadow:0 0 0 3px rgba(255,107,157,.1)}
+.note-area::placeholder{color:var(--text-dim);opacity:.5}
+.note-meta{display:flex;flex-direction:column;gap:8px;font-size:.75rem;color:var(--text-dim);margin-top:8px}
+@media(min-width:600px){.note-meta{flex-direction:row;justify-content:space-between;align-items:center}}
+.tools-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}
+@media(min-width:600px){.tools-grid{grid-template-columns:repeat(2,1fr);gap:15px}}
+@media(min-width:1024px){.tools-grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}}
+.tool-card{padding:16px;background:rgba(0,0,0,.3);border-radius:14px;border:1px solid var(--border);transition:all .2s}
+@media(min-width:768px){.tool-card{padding:20px;border-radius:16px}}
+.tool-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tool-title{font-family:var(--font-display);font-weight:700;color:var(--accent-3);margin-bottom:10px;display:flex;align-items:center;gap:6px;font-size:.95rem}
+.tool-title svg{width:18px;height:18px}
+.tool-content{font-size:.85rem;color:var(--text-dim)}
+.guide-section{margin-top:16px;padding:16px;background:rgba(108,99,255,.05);border-radius:14px;border:1px solid var(--border)}
+@media(min-width:768px){.guide-section{margin-top:20px;padding:20px;border-radius:16px}}
+.guide-title{color:var(--accent);font-weight:700;margin-bottom:10px;font-size:1rem}
+.guide-list{list-style:none;font-size:.85rem;color:var(--text-dim)}
+.guide-list li{padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;line-height:1.4}
+.guide-list li:last-child{border-bottom:none;padding-bottom:0}
+.guide-list svg{color:var(--accent-3);width:16px;height:16px;flex-shrink:0;margin-top:2px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
+.empty-state svg{width:48px;height:48px;margin-bottom:15px;opacity:.5}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(5px);padding:20px;opacity:0;transition:opacity .3s}
+.modal.active{display:flex;opacity:1}
+.modal-content{background:var(--card-bg);border-radius:20px;padding:24px 20px;width:100%;max-width:360px;border:1px solid var(--border);text-align:center;transform:scale(.9);transition:transform .3s}
+.modal.active .modal-content{transform:scale(1)}
+.modal-title{font-family:var(--font-display);font-size:1.2rem;margin-bottom:12px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:10px}
+.modal-title svg{width:40px;height:40px}
+.modal-text{color:var(--text-dim);margin-bottom:20px;font-size:.9rem;line-height:1.5}
+.modal-buttons{display:flex;flex-direction:column;gap:10px}
+@media(min-width:480px){.modal-buttons{flex-direction:row;justify-content:center}}
+.calc-display{background:rgba(0,0,0,.5);border-radius:10px;padding:14px;margin-bottom:12px;text-align:right;font-family:var(--font-display);font-size:1.3rem;color:#fff;border:1px solid var(--border);overflow-x:auto;white-space:nowrap;word-wrap:normal}
+@media(min-width:480px){.calc-display{font-size:1.5rem;padding:16px}}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+@media(min-width:480px){.calc-grid{gap:8px}}
+.calc-btn{padding:14px 8px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--border);color:#fff;font-size:1rem;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(min-width:480px){.calc-btn{padding:16px;font-size:1.1rem}}
+.calc-btn:hover{background:rgba(108,99,255,.1);border-color:var(--accent)}
+.calc-btn:active{transform:scale(.95)}
+.calc-btn.operator{background:rgba(255,107,157,.1);border-color:rgba(255,107,157,.3);color:var(--accent-2)}
+.calc-btn.equals{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;font-weight:700}
+.converter-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+@media(min-width:600px){.converter-row{flex-direction:row;align-items:center;gap:10px}}
+.converter-row span{color:var(--text-dim);font-size:.9rem;text-align:center}
+@media(min-width:600px){.converter-row span{width:auto}}
+.converter-row .viz-input{min-width:0}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;background:rgba(0,217,165,.1);border:1px solid rgba(0,217,165,.2);color:var(--accent-3);font-size:.75rem;font-weight:600;white-space:nowrap}
+.status-badge.saving{background:rgba(255,193,7,.1);border-color:rgba(255,193,7,.2);color:var(--warning)}
+.status-badge svg{width:12px;height:12px}
+.char-count{font-size:.75rem;color:var(--text-dim);white-space:nowrap}
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(min-width:480px){.tab-buttons{gap:8px;margin-bottom:20px;padding-bottom:15px}}
+.tab-btn{padding:10px 16px;border-radius:8px;background:transparent;border:none;color:var(--text-dim);font-family:var(--font-main);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;position:relative;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+@media(min-width:480px){.tab-btn{padding:10px 20px;font-size:.9rem}}
+.tab-btn:hover{color:#fff}
+.tab-btn.active{color:var(--accent-3)}
+.tab-btn.active::after{content:'';position:absolute;bottom:-13px;left:10%;right:10%;height:3px;background:var(--accent-3);border-radius:3px}
+@media(min-width:480px){.tab-btn.active::after{bottom:-16px;left:0;right:0}}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.quick-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.action-chip{padding:8px 14px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-dim);font-size:.8rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.action-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(108,99,255,.1)}
+.action-chip:active{transform:scale(.95)}
+.search-box{position:relative;margin-bottom:12px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-dim;width:18px;height:18px}
+.search-input{padding-left:38px}
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.filter-row .btn-sm{flex-shrink:0}
+.element-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px}
+@media(min-width:480px){.element-grid{grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:10px;max-height:500px;padding-right:10px}}
+.element-card{padding:10px 6px;text-align:center;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--border);transition:all .2s;cursor:pointer;position:relative;overflow:hidden;touch-action:manipulation}
+@media(min-width:480px){.element-card{padding:12px 8px;border-radius:14px}}
+.element-card:hover{border-color:var(--accent);background:rgba(108,99,255,.1);transform:translateY(-2px)}
+.element-card.active{border-color:var(--accent-3);background:rgba(0,217,165,.1);box-shadow:0 4px 15px rgba(0,217,165,.2)}
+.element-num{font-size:.6rem;color:var(--text-dim);font-weight:600}
+@media(min-width:480px){.element-num{font-size:.65rem}}
+.element-symbol{font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--accent);margin:3px 0}
+@media(min-width:480px){.element-symbol{font-size:1.6rem;margin:4px 0}}
+.element-name{font-size:.65rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(min-width:480px){.element-name{font-size:.7rem}}
+.element-card.active .element-symbol{color:var(--accent-3)}
+.category-legend{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;font-size:.75rem}
+@media(min-width:768px){.category-legend{gap:15px;font-size:.8rem}}
+.legend-item{display:flex;align-items:center;gap:4px}
+@media(min-width:768px){.legend-item{gap:6px}}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+@media(min-width:768px){.legend-dot{width:12px;height:12px;border-radius:3px}}
+.element-detail{display:none;margin-top:16px;padding:16px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:16px}
+@media(min-width:768px){.element-detail{margin-top:20px;padding:24px;border-radius:20px}}
+.element-detail.active{display:block;animation:fadeIn .3s ease}
+.detail-header{display:flex;flex-direction:column;align-items:center;gap:15px;margin-bottom:16px;text-align:center}
+@media(min-width:600px){.detail-header{flex-direction:row;align-items:center;gap:20px;text-align:left}}
+.detail-symbol{width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:#fff;box-shadow:0 10px 30px rgba(108,99,255,.3);flex-shrink:0}
+@media(min-width:600px){.detail-symbol{width:100px;height:100px;border-radius:20px;font-size:3rem}}
+.detail-title{flex:1}
+.detail-name{font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:4px}
+@media(min-width:600px){.detail-name{font-size:2rem}}
+.detail-num{color:var(--accent-3);font-size:1rem;font-weight:600}
+@media(min-width:600px){.detail-num{font-size:1.1rem}}
+.detail-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+@media(min-width:480px){.detail-grid{grid-template-columns:repeat(2,1fr);gap:12px}}
+@media(min-width:768px){.detail-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}}
+.detail-item{background:rgba(255,255,255,.03);padding:12px;border-radius:10px;border:1px solid var(--border)}
+@media(min-width:768px){.detail-item{padding:16px;border-radius:12px}}
+.detail-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+@media(min-width:768px){.detail-label{font-size:.75rem;margin-bottom:6px}}
+.detail-value{font-size:1rem;color:#fff;font-weight:600}
+@media(min-width:768px){.detail-value{font-size:1.1rem}}
+.detail-desc{margin-top:16px;padding:16px;background:rgba(108,99,255,.05);border-radius:12px;border-left:4px solid var(--accent);line-height:1.6;color:var(--text-dim);font-size:.85rem}
+@media(min-width:768px){.detail-desc{margin-top:20px;padding:20px;line-height:1.7;font-size:.9rem}}
+.formula-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}
+@media(min-width:600px){.formula-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.formula-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px}}
+.formula-card{padding:16px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .2s;touch-action:manipulation}
+@media(min-width:768px){.formula-card{padding:20px;border-radius:16px}}
+.formula-card:hover{border-color:var(--accent-2);background:rgba(255,107,157,.05);transform:translateY(-2px)}
+.formula-card.active{border-color:var(--accent-2);background:rgba(255,107,157,.1)}
+.formula-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:6px}
+@media(min-width:768px){.formula-name{font-size:1.2rem;margin-bottom:8px}}
+.formula-chem{font-size:1.3rem;color:var(--accent-2);font-weight:700;font-family:var(--font-display);margin-bottom:6px}
+@media(min-width:768px){.formula-chem{font-size:1.5rem;margin-bottom:8px}}
+.formula-type{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+.formula-composition{margin-top:8px;font-size:.8rem;color:var(--text-dim);word-break:break-all}
+@media(min-width:768px){.formula-composition{margin-top:10px;font-size:.85rem}}
+.formula-detail{display:none;margin-top:16px;padding:16px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:16px}
+@media(min-width:768px){.formula-detail{margin-top:20px;padding:24px;border-radius:20px}}
+.formula-detail.active{display:block;animation:fadeIn .3s ease}
+.composition-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+@media(min-width:768px){.composition-list{gap:10px;margin-top:15px}}
+.composition-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid var(--border)}
+@media(min-width:768px){.composition-item{padding:12px 16px;border-radius:10px}}
+.comp-symbol{width:36px;height:36px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:#fff;font-size:1rem;flex-shrink:0}
+@media(min-width:768px){.comp-symbol{width:40px;height:40px;border-radius:10px;font-size:1.2rem}}
+.comp-info{flex:1;min-width:0}
+.comp-name{font-weight:600;color:#fff;font-size:.9rem}
+@media(min-width:768px){.comp-name{font-size:1rem}}
+.comp-count{color:var(--accent-3);font-size:.85rem}
+@media(min-width:768px){.comp-count{font-size:.9rem}}
+.comp-desc{font-size:.75rem;color:var(--text-dim);margin-top:2px;line-height:1.3}
+@media(min-width:768px){.comp-desc{font-size:.8rem}}
+.section-divider{height:1px;background:var(--border);margin:24px 0}
+@media(min-width:768px){.section-divider{margin:40px 0}}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.25)}
+</style>
+
+</head>
+<body>
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Notas</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="nav-links">
+    <a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a>
+    <a href="calculadora.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>Calculadora</a>
+    <a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Funciones</a>
+    <a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>Convertidor</a>
+    <a href="elementos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>Elementos</a>
+    <a href="estadistica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadistica</a>
+    <a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>Fisica</a>
+    <a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>Morse</a>
+    <a href="cronometro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronometro</a>
+    <a href="pomodoro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a>
+    <a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contrasenas</a>
+    <a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Tablas</a>
+    <a href="notas.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <h1 class="page-title">Bloc de Notas Avanzado</h1>
+  <p class="page-sub">Gestiona tus notas con herramientas integradas y guardado automatico.</p>
+  
+  <div class="tools-wrap">
+    
+    <!-- Tabs -->
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab('notes')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Notas
+      </button>
+      <button class="tab-btn" onclick="switchTab('tools')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Herramientas
+      </button>
+      <button class="tab-btn" onclick="switchTab('guides')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Guias
+      </button>
+    </div>
+
+    <!-- Notas -->
+    <div class="tab-content active" id="tab-notes">
+      <div class="notes-layout">
+        <div class="sidebar-notes">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+            <span style="font-family:var(--font-display);font-weight:700;color:var(--accent-3)">Mis Notas</span>
+            <button class="btn-sm" onclick="createNewNote()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nueva
+            </button>
+          </div>
+          <div class="search-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" class="viz-input search-input" id="searchNotes" placeholder="Buscar notas..." oninput="searchNotes(this.value)">
+          </div>
+          <div class="note-list" id="noteList"></div>
+          <div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--border)">
+            <button class="btn-danger" onclick="confirmDeleteAll()" style="width:100%">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Borrar todo
+            </button>
+          </div>
+        </div>
+        
+        <div class="note-editor" id="noteEditor">
+          <div class="note-header">
+            <input type="text" class="note-title-input" id="noteTitle" placeholder="Titulo de la nota..." oninput="saveCurrentNote()">
+            <div class="color-picker" id="colorPicker">
+              <div class="color-option active" style="background:#6C63FF" data-color="default" onclick="setNoteColor('default')"></div>
+              <div class="color-option" style="background:#FF6B9D" data-color="pink" onclick="setNoteColor('pink')"></div>
+              <div class="color-option" style="background:#00D9A5" data-color="green" onclick="setNoteColor('green')"></div>
+              <div class="color-option" style="background:#FFA502" data-color="orange" onclick="setNoteColor('orange')"></div>
+              <div class="color-option" style="background:#FF4757" data-color="red" onclick="setNoteColor('red')"></div>
+            </div>
+          </div>
+          
+          <div class="note-toolbar">
+            <button class="toolbar-btn" onclick="formatText('bold')" title="Negrita">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('italic')" title="Cursiva">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('underline')" title="Subrayado">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+            </button>
+            <button class="toolbar-btn" onclick="insertDate()" title="Insertar fecha">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </button>
+            <button class="toolbar-btn" onclick="insertList()" title="Lista">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+            <button class="toolbar-btn" onclick="exportNote()" title="Exportar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+          </div>
+          
+          <textarea class="note-area" id="noteContent" placeholder="Escribe tu nota aqui..." oninput="saveCurrentNote()"></textarea>
+          
+          <div class="note-meta">
+            <span id="lastSaved">No guardado</span>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span class="char-count" id="charCount">0 caracteres</span>
+              <span class="status-badge" id="saveStatus">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Guardado
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Herramientas -->
+    <div class="tab-content" id="tab-tools">
+      <div class="card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Herramientas Rapidas
+        </div>
+        
+        <div class="tools-grid">
+          <!-- Calculadora -->
+          <div class="tool-card">
+            <div class="tool-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="14"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+              Calculadora
+            </div>
+            <div class="calc-display" id="calcDisplay">0</div>
+            <div class="calc-grid">
+              <button class="calc-btn" onclick="calcInput('C')">C</button>
+              <button class="calc-btn" onclick="calcInput('/')">/</button>
+              <button class="calc-btn" onclick="calcInput('*')">×</button>
+              <button class="calc-btn" onclick="calcInput('DEL')">←</button>
+              <button class="calc-btn" onclick="calcInput('7')">7</button>
+              <button class="calc-btn" onclick="calcInput('8')">8</button>
+              <button class="calc-btn" onclick="calcInput('9')">9</button>
+              <button class="calc-btn operator" onclick="calcInput('-')">-</button>
+              <button class="calc-btn" onclick="calcInput('4')">4</button>
+              <button class="calc-btn" onclick="calcInput('5')">5</button>
+              <button class="calc-btn" onclick="calcInput('6')">6</button>
+              <button class="calc-btn operator" onclick="calcInput('+')">+</button>
+              <button class="calc-btn" onclick="calcInput('1')">1</button>
+              <button class="calc-btn" onclick="calcInput('2')">2</button>
+              <button class="calc-btn" onclick="calcInput('3')">3</button>
+              <button class="calc-btn equals" onclick="calcInput('=')" style="grid-row:span 2">=</button>
+              <button class="calc-btn" onclick="calcInput('0')" style="grid-column:span 2">0</button>
+              <button class="calc-btn" onclick="calcInput('.')">.</button>
+            </div>
+          </div>
+
+          <!-- Conversor de unidades -->
+          <div class="tool-card">
+            <div class="tool-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M18 3l3 3-3 3"/><line x1="21" y1="6" x2="11" y2="6"/></svg>
+              Conversor
+            </div>
+            <div style="margin-bottom:15px">
+              <label style="font-size:.8rem;color:var(--text-dim);display:block;margin-bottom:6px">Longitud</label>
+              <div class="converter-row">
+                <input type="number" class="viz-input" id="convFrom" placeholder="0" oninput="convert('length')">
+                <select class="viz-input" id="unitFrom" onchange="convert('length')" style="width:100px">
+                  <option value="m">m</option>
+                  <option value="km">km</option>
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+                <span>=</span>
+                <input type="text" class="viz-input" id="convTo" readonly placeholder="0" style="background:rgba(0,0,0,.5)">
+                <select class="viz-input" id="unitTo" onchange="convert('length')" style="width:100px">
+                  <option value="m">m</option>
+                  <option value="km" selected>km</option>
+                  <option value="cm">cm</option>
+                  <option value="mm">mm</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:.8rem;color:var(--text-dim);display:block;margin-bottom:6px">Temperatura</label>
+              <div class="converter-row">
+                <input type="number" class="viz-input" id="tempFrom" placeholder="0" oninput="convertTemp()">
+                <select class="viz-input" id="tempUnitFrom" onchange="convertTemp()" style="width:100px">
+                  <option value="C">°C</option>
+                  <option value="F">°F</option>
+                  <option value="K">K</option>
+                </select>
+                <span>=</span>
+                <input type="text" class="viz-input" id="tempTo" readonly placeholder="0" style="background:rgba(0,0,0,.5)">
+                <select class="viz-input" id="tempUnitTo" onchange="convertTemp()" style="width:100px">
+                  <option value="C">°C</option>
+                  <option value="F" selected>°F</option>
+                  <option value="K">K</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geometria -->
+          <div class="tool-card">
+            <div class="tool-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+              Geometria
+            </div>
+            <div class="quick-actions">
+              <button class="action-chip" onclick="geoCalc('circle')">Circulo</button>
+              <button class="action-chip" onclick="geoCalc('rect')">Rectangulo</button>
+              <button class="action-chip" onclick="geoCalc('triangle')">Triangulo</button>
+              <button class="action-chip" onclick="geoCalc('sphere')">Esfera</button>
+              <button class="action-chip" onclick="geoCalc('cylinder')">Cilindro</button>
+              <button class="action-chip" onclick="geoCalc('pitagoras')">Pitagoras</button>
+            </div>
+            <div id="geoForm"></div>
+            <div id="geoResult" style="margin-top:15px;padding:15px;background:rgba(0,217,165,.1);border-radius:10px;border:1px solid rgba(0,217,165,.2);display:none">
+              <div style="color:var(--accent-3);font-weight:700" id="geoResultText"></div>
+            </div>
+          </div>
+
+          <!-- Generador de contraseñas -->
+          <div class="tool-card">
+            <div class="tool-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Generador
+            </div>
+            <div style="display:flex;gap:10px;margin-bottom:15px">
+              <input type="text" class="viz-input" id="genOutput" readonly style="font-family:monospace;letter-spacing:2px">
+              <button class="btn-sm" onclick="generatePassword()">Generar</button>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--text-dim)">
+                <input type="checkbox" id="genUpper" checked> Mayusculas
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--text-dim)">
+                <input type="checkbox" id="genNumbers" checked> Numeros
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--text-dim)">
+                <input type="checkbox" id="genSymbols"> Simbolos
+              </label>
+            </div>
+            <div style="margin-top:10px">
+              <label style="font-size:.8rem;color:var(--text-dim)">Longitud: <span id="genLenVal">12</span></label>
+              <input type="range" min="6" max="32" value="12" id="genLength" oninput="document.getElementById('genLenVal').textContent=this.value" style="width:100%;margin-top:5px">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guias -->
+    <div class="tab-content" id="tab-guides">
+      <div class="card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Guias y Atajos
+        </div>
+        
+        <div class="guide-section">
+          <div class="guide-title">Atajos de Teclado</div>
+          <ul class="guide-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>Ctrl + B</strong> - Negrita en la nota</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>Ctrl + I</strong> - Cursiva</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>Ctrl + S</strong> - Guardar manualmente</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>Ctrl + N</strong> - Nueva nota</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="guide-section" style="margin-top:20px">
+          <div class="guide-title">Markdown Basico</div>
+          <ul class="guide-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong># Titulo</strong> - Encabezado nivel 1</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>## Subtitulo</strong> - Encabezado nivel 2</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>- item</strong> - Lista con viñetas</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>**texto**</strong> - Texto en negrita</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span><strong>*texto*</strong> - Texto en cursiva</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="guide-section" style="margin-top:20px">
+          <div class="guide-title">Consejos de Productividad</div>
+          <ul class="guide-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>Usa el <strong>metodo Pomodoro</strong>: 25 min de trabajo, 5 de descanso</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>Organiza tus notas con <strong>colores</strong> por categorias</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>Revisa y <strong>archiva</strong> notas antiguas regularmente</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <span>Usa las <strong>herramientas integradas</strong> para calculos rapidos</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal de confirmacion -->
+<div class="modal" id="deleteModal">
+  <div class="modal-content">
+    <div class="modal-title">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" style="margin-bottom:10px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <br>Borrar todas las notas
+    </div>
+    <div class="modal-text">Esta accion no se puede deshacer. ¿Estas seguro de que quieres eliminar todas tus notas permanentemente?</div>
+    <div class="modal-buttons">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-danger" onclick="deleteAllNotes()" style="padding:12px 24px">Si, borrar todo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// IndexedDB Setup
+const DB_NAME='RedCW_NotasDB';
+const DB_VERSION=1;
+const STORE_NAME='notas';
+let db;
+let currentNoteId=null;
+let saveTimeout;
+
+const request=indexedDB.open(DB_NAME,DB_VERSION);
+request.onerror=(e)=>console.error('Error abriendo IndexedDB:',e);
+request.onsuccess=(e)=>{db=e.target.result;loadNotesList()};
+request.onupgradeneeded=(e)=>{
+  db=e.target.result;
+  if(!db.objectStoreNames.contains(STORE_NAME)){
+    const store=db.createObjectStore(STORE_NAME,{keyPath:'id',autoIncrement:true});
+    store.createIndex('title','title',{unique:false});
+    store.createIndex('updated','updated',{unique:false});
+  }
+};
+
+// Menu toggle
+const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+menuBtn.onclick=overlay.onclick=function(){sidebar.classList.toggle('active');overlay.classList.toggle('active')};
+
+// Tab switching
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// Notas functions
+function createNewNote(){
+  currentNoteId=null;
+  document.getElementById('noteTitle').value='';
+  document.getElementById('noteContent').value='';
+  document.getElementById('lastSaved').textContent='Nueva nota';
+  document.getElementById('charCount').textContent='0 caracteres';
+  document.querySelectorAll('.color-option').forEach(c=>c.classList.remove('active'));
+  document.querySelector('[data-color="default"]').classList.add('active');
+  document.getElementById('noteTitle').focus();
+  renderNotesList();
+}
+
+function saveCurrentNote(){
+  const title=document.getElementById('noteTitle').value||'Sin titulo';
+  const content=document.getElementById('noteContent').value;
+  const color=document.querySelector('.color-option.active')?.dataset.color||'default';
+  const now=new Date().toISOString();
+  
+  document.getElementById('charCount').textContent=content.length+' caracteres';
+  document.getElementById('saveStatus').classList.add('saving');
+  document.getElementById('saveStatus').innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Guardando...';
+  
+  clearTimeout(saveTimeout);
+  saveTimeout=setTimeout(()=>{
+    const note={
+      title:title,
+      content:content,
+      color:color,
+      updated:now,
+      created:currentNoteId?undefined:now
+    };
+    
+    const tx=db.transaction([STORE_NAME],'readwrite');
+    const store=tx.objectStore(STORE_NAME);
+    
+    if(currentNoteId){
+      note.id=currentNoteId;
+      store.put(note);
+    }else{
+      const req=store.add(note);
+      req.onsuccess=(e)=>{
+        currentNoteId=e.target.result;
+        renderNotesList();
+      };
+    }
+    
+    tx.oncomplete=()=>{
+      document.getElementById('lastSaved').textContent='Guardado: '+new Date().toLocaleTimeString();
+      document.getElementById('saveStatus').classList.remove('saving');
+      document.getElementById('saveStatus').innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Guardado';
+      if(!currentNoteId) renderNotesList();
+    };
+  },800);
+}
+
+function loadNotesList(){
+  renderNotesList();
+  if(currentNoteId===null){
+    document.getElementById('lastSaved').textContent='Crea una nueva nota para comenzar';
+  }
+}
+
+function renderNotesList(searchTerm=''){
+  const tx=db.transaction([STORE_NAME],'readonly');
+  const store=tx.objectStore(STORE_NAME);
+  const index=store.index('updated');
+  const req=index.openCursor(null,'prev');
+  const list=document.getElementById('noteList');
+  list.innerHTML='';
+  let hasNotes=false;
+  
+  req.onsuccess=(e)=>{
+    const cursor=e.target.result;
+    if(cursor){
+      const note=cursor.value;
+      if(!searchTerm||note.title.toLowerCase().includes(searchTerm.toLowerCase())||note.content.toLowerCase().includes(searchTerm.toLowerCase())){
+        hasNotes=true;
+        const item=document.createElement('div');
+        item.className='note-item'+(note.id===currentNoteId?' active':'');
+        item.innerHTML=`
+          <div class="note-item-title">${escapeHtml(note.title)}</div>
+          <div class="note-item-date">${new Date(note.updated).toLocaleDateString()} ${new Date(note.updated).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+          <button class="note-item-delete" onclick="deleteNote(${note.id},event)" title="Eliminar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        `;
+        item.onclick=(e)=>{if(!e.target.closest('.note-item-delete'))loadNote(note.id)};
+        list.appendChild(item);
+      }
+      cursor.continue();
+    }else if(!hasNotes){
+      list.innerHTML='<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><div style="margin-top:10px">No hay notas aun</div></div>';
+    }
+  };
+}
+
+function loadNote(id){
+  const tx=db.transaction([STORE_NAME],'readonly');
+  const store=tx.objectStore(STORE_NAME);
+  const req=store.get(id);
+  
+  req.onsuccess=(e)=>{
+    const note=e.target.result;
+    if(note){
+      currentNoteId=note.id;
+      document.getElementById('noteTitle').value=note.title;
+      document.getElementById('noteContent').value=note.content;
+      document.getElementById('lastSaved').textContent='Guardado: '+new Date(note.updated).toLocaleString();
+      document.getElementById('charCount').textContent=note.content.length+' caracteres';
+      
+      document.querySelectorAll('.color-option').forEach(c=>c.classList.remove('active'));
+      const colorBtn=document.querySelector(`[data-color="${note.color||'default'}"]`);
+      if(colorBtn) colorBtn.classList.add('active');
+      
+      renderNotesList(document.getElementById('searchNotes').value);
+    }
+  };
+}
+
+function deleteNote(id,event){
+  event.stopPropagation();
+  if(!confirm('¿Eliminar esta nota permanentemente?'))return;
+  
+  const tx=db.transaction([STORE_NAME],'readwrite');
+  const store=tx.objectStore(STORE_NAME);
+  store.delete(id);
+  
+  tx.oncomplete=()=>{
+    if(currentNoteId===id){
+      createNewNote();
+    }else{
+      renderNotesList(document.getElementById('searchNotes').value);
+    }
+  };
+}
+
+function confirmDeleteAll(){
+  document.getElementById('deleteModal').classList.add('active');
+}
+
+function closeModal(){
+  document.getElementById('deleteModal').classList.remove('active');
+}
+
+function deleteAllNotes(){
+  const tx=db.transaction([STORE_NAME],'readwrite');
+  const store=tx.objectStore(STORE_NAME);
+  store.clear();
+  
+  tx.oncomplete=()=>{
+    closeModal();
+    createNewNote();
+    renderNotesList();
+  };
+}
+
+function searchNotes(term){
+  renderNotesList(term);
+}
+
+function setNoteColor(color){
+  document.querySelectorAll('.color-option').forEach(c=>c.classList.remove('active'));
+  document.querySelector(`[data-color="${color}"]`).classList.add('active');
+  saveCurrentNote();
+}
+
+function formatText(type){
+  const textarea=document.getElementById('noteContent');
+  const start=textarea.selectionStart;
+  const end=textarea.selectionEnd;
+  const text=textarea.value;
+  const selected=text.substring(start,end);
+  
+  let formatted='';
+  switch(type){
+    case 'bold':formatted='**'+selected+'**';break;
+    case 'italic':formatted='*'+selected+'*';break;
+    case 'underline':formatted='_'+selected+'_';break;
+  }
+  
+  textarea.value=text.substring(0,start)+formatted+text.substring(end);
+  textarea.focus();
+  textarea.setSelectionRange(start+formatted.length,start+formatted.length);
+  saveCurrentNote();
+}
+
+function insertDate(){
+  const textarea=document.getElementById('noteContent');
+  const date=new Date().toLocaleString();
+  const pos=textarea.selectionStart;
+  textarea.value=textarea.value.substring(0,pos)+date+textarea.value.substring(pos);
+  saveCurrentNote();
+}
+
+function insertList(){
+  const textarea=document.getElementById('noteContent');
+  const pos=textarea.selectionStart;
+  textarea.value=textarea.value.substring(0,pos)+'\n- Item\n- Item\n- Item'+textarea.value.substring(pos);
+  saveCurrentNote();
+}
+
+function exportNote(){
+  const title=document.getElementById('noteTitle').value||'nota';
+  const content=document.getElementById('noteContent').value;
+  const blob=new Blob([content],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=title+'.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text){
+  const div=document.createElement('div');
+  div.textContent=text;
+  return div.innerHTML;
+}
+
+// Calculadora
+let calcExpression='';
+function calcInput(val){
+  const display=document.getElementById('calcDisplay');
+  if(val==='C'){
+    calcExpression='';
+    display.textContent='0';
+  }else if(val==='DEL'){
+    calcExpression=calcExpression.slice(0,-1);
+    display.textContent=calcExpression||'0';
+  }else if(val==='='){
+    try{
+      calcExpression=eval(calcExpression.replace(/×/g,'*')).toString();
+      display.textContent=calcExpression;
+    }catch{
+      display.textContent='Error';
+      calcExpression='';
+    }
+  }else{
+    calcExpression+=val;
+    display.textContent=calcExpression;
+  }
+}
+
+// Conversor
+function convert(type){
+  const from=parseFloat(document.getElementById('convFrom').value)||0;
+  const unitFrom=document.getElementById('unitFrom').value;
+  const unitTo=document.getElementById('unitTo').value;
+  
+  const units={m:1,km:1000,cm:0.01,mm:0.001,ft:0.3048,in:0.0254};
+  const result=from*units[unitFrom]/units[unitTo];
+  document.getElementById('convTo').value=parseFloat(result.toPrecision(6));
+}
+
+function convertTemp(){
+  const from=parseFloat(document.getElementById('tempFrom').value)||0;
+  const unitFrom=document.getElementById('tempUnitFrom').value;
+  const unitTo=document.getElementById('tempUnitTo').value;
+  
+  let celsius;
+  if(unitFrom==='C')celsius=from;
+  else if(unitFrom==='F')celsius=(from-32)*5/9;
+  else celsius=from-273.15;
+  
+  let result;
+  if(unitTo==='C')result=celsius;
+  else if(unitTo==='F')result=celsius*9/5+32;
+  else result=celsius+273.15;
+  
+  document.getElementById('tempTo').value=parseFloat(result.toPrecision(6));
+}
+
+// Geometria
+const geoForms={
+  circle:{label:'Area del Circulo — A = πr²',inputs:[{id:'gr',label:'Radio (r)'}],calc:f=>Math.PI*f.gr**2,unit:'u²'},
+  rect:{label:'Area del Rectangulo — A = b×h',inputs:[{id:'gb',label:'Base'},{id:'gh',label:'Altura'}],calc:f=>f.gb*f.gh,unit:'u²'},
+  triangle:{label:'Area del Triangulo — A = ½bh',inputs:[{id:'gb',label:'Base'},{id:'gh',label:'Altura'}],calc:f=>0.5*f.gb*f.gh,unit:'u²'},
+  sphere:{label:'Vol. Esfera — V = 4/3·πr³',inputs:[{id:'gr',label:'Radio (r)'}],calc:f=>(4/3)*Math.PI*f.gr**3,unit:'u³'},
+  cylinder:{label:'Vol. Cilindro — V = πr²h',inputs:[{id:'gr',label:'Radio'},{id:'gh',label:'Altura'}],calc:f=>Math.PI*f.gr**2*f.gh,unit:'u³'},
+  pitagoras:{label:'Pitagoras — c = √(a²+b²)',inputs:[{id:'ga',label:'Cateto a'},{id:'gb2',label:'Cateto b'}],calc:f=>Math.sqrt(f.ga**2+f.gb2**2),unit:'u'},
+};
+
+function geoCalc(key){
+  const geo=geoForms[key];
+  const form=document.getElementById('geoForm');
+  form.innerHTML=`<div style="font-size:.85rem;color:var(--accent-3);margin-bottom:12px;font-weight:600">${geo.label}</div>`;
+  geo.inputs.forEach(inp=>{
+    form.innerHTML+=`<div style="margin-bottom:10px"><label style="font-size:.8rem;color:var(--text-dim);display:block;margin-bottom:4px">${inp.label}</label><input class="viz-input" id="${inp.id}" type="number" placeholder="0" style="padding:10px"/></div>`;
+  });
+  form.innerHTML+=`<button class="btn-primary" onclick="calculateGeo('${key}')" style="margin-top:5px">Calcular</button>`;
+  document.getElementById('geoResult').style.display='none';
+}
+
+function calculateGeo(key){
+  const geo=geoForms[key];
+  const vals={};
+  geo.inputs.forEach(i=>{
+    vals[i.id]=parseFloat(document.getElementById(i.id).value)||0;
+  });
+  const res=geo.calc(vals);
+  document.getElementById('geoResult').style.display='block';
+  document.getElementById('geoResultText').textContent=`Resultado: ${parseFloat(res.toPrecision(6))} ${geo.unit}`;
+}
+
+// Generador de contraseñas
+function generatePassword(){
+  const length=parseInt(document.getElementById('genLength').value);
+  const upper=document.getElementById('genUpper').checked;
+  const numbers=document.getElementById('genNumbers').checked;
+  const symbols=document.getElementById('genSymbols').checked;
+  
+  let chars='abcdefghijklmnopqrstuvwxyz';
+  if(upper)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(numbers)chars+='0123456789';
+  if(symbols)chars+='!@#$%^&*()_+-=[]{}|;:,.<>?';
+  
+  let pass='';
+  for(let i=0;i<length;i++){
+    pass+=chars.charAt(Math.floor(Math.random()*chars.length));
+  }
+  document.getElementById('genOutput').value=pass;
+}
+
+// Atajos de teclado
+document.addEventListener('keydown',(e)=>{
+  if(e.ctrlKey||e.metaKey){
+    switch(e.key.toLowerCase()){
+      case 's':
+        e.preventDefault();
+        if(currentNoteId)saveCurrentNote();
+        break;
+      case 'n':
+        e.preventDefault();
+        createNewNote();
+        break;
+      case 'b':
+        e.preventDefault();
+        formatText('bold');
+        break;
+      case 'i':
+        e.preventDefault();
+        formatText('italic');
+        break;
+    }
+  }
+});
+
+// Inicializar
+generatePassword();
+</script>
+</body>
+</html>
