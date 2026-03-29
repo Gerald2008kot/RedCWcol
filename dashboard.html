@@ -556,19 +556,19 @@ header{
 
 </main>
 
-<!-- Banner de Instalación PWA -->
-<div id="installBanner">
-  <div class="banner-content">
-    <div class="banner-icon">R</div>
-    <div class="banner-text">
-      <strong>Instalar RedCW</strong>
-      <span>Acceso rápido y mejor experiencia</span>
+    <div id="installBanner">
+                <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
+            <div>
+                <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
+            <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
     </div>
-  </div>
-  <div class="banner-actions">
-    <button id="btnInstall">Instalar</button>
-    <button id="btnCancel">&times;</button>
-  </div>
 </div>
 
 <script>
