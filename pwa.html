@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalar RedCW</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    
+    <style>
+        :root {
+            --accent:       #6C63FF;
+            --accent-2:     #FF6B9D;
+            --accent-3:     #00D9A5;
+            --accent-glow:  rgba(108,99,255,.25);
+            --bg: #05070a;
+            --card-bg: #10141d;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --font-display: 'Outfit', sans-serif;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .install-container {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 32px;
+            padding: 50px 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .install-container::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-3));
+            border-radius: 34px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .app-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 24px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(108, 99, 255, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .app-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff, var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            margin-bottom: 35px;
+            line-height: 1.6;
+        }
+
+        .features-list {
+            text-align: left;
+            margin-bottom: 35px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        .feature-item:last-child { margin-bottom: 0; }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .feature-icon.accent { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .feature-icon.accent-2 { background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); }
+        .feature-icon.accent-3 { background: var(--accent-3); box-shadow: 0 0 10px var(--accent-3); }
+
+        .feature-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .install-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .install-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(108, 99, 255, 0.5);
+        }
+
+        .install-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .install-btn.installed {
+            background: linear-gradient(135deg, var(--accent-3), #00b386);
+            box-shadow: 0 10px 30px rgba(0, 217, 165, 0.3);
+        }
+
+        .install-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .platform-note {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .ios-instructions {
+            display: none;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .ios-instructions.show { display: block; }
+
+        .ios-instructions h3 {
+            font-family: var(--font-display);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ios-instructions h3 svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--accent-3);
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .ios-instructions ol {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            padding-left: 20px;
+            line-height: 1.8;
+            margin: 0;
+        }
+
+        .ios-instructions li { margin-bottom: 6px; }
+
+        .ios-instructions strong { color: var(--text-main); }
+
+        @media (max-width: 480px) {
+            .install-container { padding: 40px 25px; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="install-container">
+        <div class="app-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+        </div>
+        
+        <h1>RedCW</h1>
+        <p class="subtitle">Instala la aplicación para acceder rápidamente desde tu pantalla de inicio y disfrutar de la experiencia completa</p>
+        
+        <div class="features-list">
+            <div class="feature-item">
+                <div class="feature-icon accent">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Acceso directo sin navegador</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon accent-2">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Funciona sin conexión a internet</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon accent-3">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Notificaciones push integradas</span>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon accent">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Experiencia de pantalla completa</span>
+            </div>
+        </div>
+
+        <button id="installBtn" class="install-btn">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span>Instalar Aplicación</span>
+        </button>
+
+        <div id="iosInstructions" class="ios-instructions">
+            <h3>
+                <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                Para instalar en iOS:
+            </h3>
+            <ol>
+                <li>Toca el botón <strong>Compartir</strong> en la barra de Safari</li>
+                <li>Selecciona <strong>"Agregar a la pantalla de inicio"</strong></li>
+                <li>Toca <strong>"Agregar"</strong> en la esquina superior derecha</li>
+            </ol>
+        </div>
+
+        <p class="platform-note">Disponible para Android, iOS y escritorio</p>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        const iosInstructions = document.getElementById('iosInstructions');
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                              window.navigator.standalone === true;
+
+        if (isStandalone) {
+            installBtn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>App Instalada</span>';
+            installBtn.classList.add('installed');
+            installBtn.disabled = true;
+        } else if (isIOS) {
+            installBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg><span>Ver Instrucciones</span>';
+            installBtn.onclick = () => {
+                iosInstructions.classList.toggle('show');
+                const isOpen = iosInstructions.classList.contains('show');
+                installBtn.innerHTML = isOpen 
+                    ? '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Ocultar Instrucciones</span>'
+                    : '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg><span>Ver Instrucciones</span>';
+            };
+        } else {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+
+            installBtn.onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installBtn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>Instalando...</span>';
+                        installBtn.disabled = true;
+                    }
+                    deferredPrompt = null;
+                } else {
+                    installBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Usa el menú del navegador</span>';
+                    setTimeout(() => {
+                        installBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>Instalar Aplicación</span>';
+                    }, 3000);
+                }
+            };
+        }
+
+        window.addEventListener('appinstalled', () => {
+            installBtn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span>App Instalada</span>';
+            installBtn.classList.add('installed');
+            installBtn.disabled = true;
+            deferredPrompt = null;
+        });
+    </script>
+
+</body>
+</html>
