@@ -1,404 +1,305 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RedCW - Calculadora Científica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --accent: #6C63FF;
-            --accent-2: #FF6B9D;
-            --accent-3: #00D9A5;
-            --bg: #05070a;
-            --card-bg: #10141d;
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
-            --font-display: 'Outfit', sans-serif;
-            --font-main: 'Inter', sans-serif;
-            --header-h: 70px;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>RedCW — Calculadora Científica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--font-mono:'Fira Code',monospace;--header-h:60px;--danger:#ff4757;--warning:#ffa502;--success:#00D9A5}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html{font-size:16px}
+@media(max-width:480px){html{font-size:14px}}
+body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden;line-height:1.5}
+header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:fixed;top:0;z-index:1000}
+.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.2rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;white-space:nowrap}
+.menu-toggle{background:none;border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;transition:.2s}
+.menu-toggle:hover{background:rgba(255,255,255,.08)}
+.menu-toggle svg{width:24px;height:24px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:850;backdrop-filter:blur(3px);opacity:0;transition:opacity .3s}
+.overlay.active{display:block;opacity:1}
+.sidebar{width:280px;background:var(--card-bg);border-right:1px solid var(--border);padding:16px;position:fixed;top:var(--header-h);bottom:0;left:-280px;z-index:900;transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sidebar.active{transform:translateX(280px)}
+.nav-links{list-style:none}
+.nav-links a{display:flex;align-items:center;padding:12px 14px;color:var(--text-dim);text-decoration:none;border-radius:10px;margin-bottom:6px;transition:all .2s;font-size:.9rem;background:rgba(255,255,255,.02);border-left:3px solid transparent}
+.nav-links a:hover,.nav-links a.active{background:rgba(108,99,255,.1);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:18px;height:18px;margin-right:10px;flex-shrink:0;transition:transform .2s ease}
+.nav-links a:hover .nav-icon, .nav-links a.active .nav-icon{transform:scale(1.1);filter:drop-shadow(0 0 5px currentColor)}
+.nav-links a:nth-child(3n+1) .nav-icon{color:var(--accent)}
+.nav-links a:nth-child(3n+2) .nav-icon{color:var(--accent-2)}
+.nav-links a:nth-child(3n+3) .nav-icon{color:var(--accent-3)}
+.main-content{margin-top:var(--header-h);padding:20px 16px;display:flex;flex-direction:column;align-items:center;min-height:calc(100vh - var(--header-h));width:100%;max-width:100vw;overflow-x:hidden}
+.page-title{font-family:var(--font-display);font-weight:800;font-size:1.4rem;margin:0 0 4px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center}
+.page-sub{color:var(--text-dim);font-size:.85rem;margin:0 0 16px;text-align:center}
+.tools-wrap{width:100%;max-width:900px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card-bg);border-radius:20px;padding:20px 16px;border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,.5);width:100%}
+@media(min-width:768px){.card{padding:24px;border-radius:24px}}
+.card-title{font-family:var(--font-display);font-weight:700;font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--accent-3)}
+.card-title svg{width:22px;height:22px;color:var(--accent-3);flex-shrink:0}
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Calculadora específico */
+.calc-display{font-family:var(--font-mono);background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;text-align:right;position:relative;overflow:hidden}
+.calc-display::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--accent-3));opacity:.5}
+.calc-expr{font-size:.85rem;color:var(--accent-3);min-height:1.4rem;letter-spacing:1px;word-break:break-all;margin-bottom:8px;opacity:.8}
+.calc-result{font-size:2.2rem;font-weight:700;color:var(--text-main);word-break:break-all;min-height:2.5rem}
+@media(min-width:768px){.calc-result{font-size:2.8rem}}
+.calc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:480px){.calc-grid{gap:8px}}
+.cb{border:none;background:rgba(255,255,255,.04);color:var(--text-main);padding:16px 4px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden}
+.cb:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+.cb:active{transform:translateY(0) scale(.95)}
+.cb.op{color:var(--accent-3);background:rgba(0,217,165,.05)}
+.cb.op:hover{background:rgba(0,217,165,.15)}
+.cb.fn{color:var(--accent);background:rgba(108,99,255,.05);font-size:.85rem}
+.cb.fn:hover{background:rgba(108,99,255,.15)}
+.cb.clr{color:var(--accent-2);background:rgba(255,107,157,.05)}
+.cb.clr:hover{background:rgba(255,107,157,.15)}
+.cb.eq{background:linear-gradient(135deg,var(--accent),var(--accent-2));grid-column:span 2;color:#fff;font-weight:700;box-shadow:0 4px 15px rgba(108,99,255,.3)}
+.cb.eq:hover{filter:brightness(1.1);transform:translateY(-2px)}
+.cb.zero{grid-column:span 2}
+@media(max-width:480px){.cb{padding:14px 2px;font-size:.9rem}.cb.fn{font-size:.75rem}}
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+/* Modo científico toggle */
+.mode-toggle{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.mode-btn{padding:10px 16px;border-radius:8px;background:transparent;border:none;color:var(--text-dim);font-family:var(--font-main);font-weight:600;font-size:.85rem;cursor:pointer;transition:all .2s;position:relative;white-space:nowrap;flex:1}
+.mode-btn:hover{color:#fff}
+.mode-btn.active{color:var(--accent-3)}
+.mode-btn.active::after{content:'';position:absolute;bottom:-13px;left:10%;right:10%;height:3px;background:var(--accent-3);border-radius:3px}
 
-        /* --- HEADER --- */
-        header {
-            height: var(--header-h);
-            width: 100%;
-            background: rgba(16, 20, 29, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .header-logo {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 1.5rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-decoration: none;
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        /* --- SIDEBAR (MODO OVERLAY) --- */
-        .sidebar {
-            width: 280px;
-            background: var(--card-bg);
-            border-right: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            position: fixed;
-            top: var(--header-h);
-            bottom: 0;
-            left: -280px; /* Escondido por defecto */
-            z-index: 900;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar.active {
-            transform: translateX(280px);
-        }
-
-        .nav-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto;
-        }
-
-        .nav-links a {
-            display: flex;
-            align-items: center;
-            padding: 14px 18px;
-            color: var(--text-dim);
-            text-decoration: none;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-            background: rgba(255,255,255,0.02);
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: white;
-            border-left: 4px solid var(--accent);
-        }
-
-        /* --- CONTENIDO --- */
-        .main-content {
-            flex: 1;
-            margin-top: var(--header-h);
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .calc-card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 420px;
-            border-radius: 28px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-        }
-
-        .calc-display {
-            background: rgba(0,0,0,0.4);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            text-align: right;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-
-        .calc-expr {
-            font-size: 0.85rem;
-            color: var(--accent-3);
-            min-height: 1.2rem;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        .calc-result {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-top: 5px;
-            font-family: var(--font-display);
-        }
-
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
-        }
-
-        .cb {
-            border: none;
-            background: rgba(255,255,255,0.04);
-            color: white;
-            padding: 18px 5px;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .cb:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
-        .cb.op { color: var(--accent-3); }
-        .cb.fn { color: var(--accent); font-size: 0.8rem; }
-        .cb.clr { color: var(--accent-2); }
-        .cb.eq { 
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            grid-column: span 2;
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-        }
-
-        /* Overlay para cerrar menu */
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            z-index: 850;
-        }
-        .overlay.active { display: block; }
-
-    </style>
+/* Historial */
+.history-section{margin-top:20px;border-top:1px solid var(--border);padding-top:16px}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.history-title{font-size:.9rem;color:var(--text-dim);font-weight:600}
+.clear-btn{padding:6px 12px;border-radius:6px;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:var(--danger);font-size:.75rem;cursor:pointer;transition:all .2s}
+.clear-btn:hover{background:rgba(255,71,87,.2)}
+.history-list{display:flex;flex-direction:column;gap:8px;max-height:150px;overflow-y:auto}
+.history-item{padding:12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s}
+.history-item:hover{border-color:var(--accent);background:rgba(108,99,255,.05)}
+.history-expr{font-family:var(--font-mono);font-size:.8rem;color:var(--text-dim);flex:1;text-align:left}
+.history-res{font-family:var(--font-mono);font-size:1rem;color:var(--accent-3);font-weight:600;margin:0 10px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+</style>
 </head>
 <body>
-
-    <header>
-        <a href="../index.html" class="header-logo">RedCW - Calculadora</a>
-        <button class="menu-toggle" id="menuBtn">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-    </header>
-
-    <div class="overlay" id="overlay"></div>
-
+<header>
+  <a href="../index.html" class="header-logo">RedCW — Calculadora</a>
+  <button class="menu-toggle" id="menuBtn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</header>
+<div class="overlay" id="overlay"></div>
 <nav class="sidebar" id="sidebar">
-    <div class="nav-links">
-        <a href="../index.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Inicio RedCW
-        </a>
-
-        <a href="calculadora.html" class="active">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
-            Calculadora
-        </a>
-
-        <a href="funciones.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            Funciones
-        </a>
-
-        <a href="convertidor.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>
-            Convertidor
-        </a>
-
-        <a href="elementos.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
-            Elementos
-        </a>
-
-        <a href="estadistica.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Estadística
-        </a>
-
-        <a href="fisica.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>
-            Física
-        </a>
-
-        <a href="morse.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/><circle cx="5" cy="12" r="1" fill="currentColor"/></svg>
-            Morse
-        </a>
-
-        <a href="cronometro.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Cronómetro
-        </a>
-
-        <a href="pomodoro.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
-            Pomodoro
-        </a>
-
-        <a href="contrasenas.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Contraseñas
-        </a>
-
-        <a href="tablas.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            Tablas
-        </a>
-
-        <a href="notas.html">
-            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Notas
-        </a>
-    </div>
+  <div class="nav-links">
+    <a href="../index.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Inicio RedCW</a>
+    <a href="calculadora.html" class="active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>Calculadora</a>
+    <a href="funciones.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Funciones</a>
+    <a href="convertidor.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07 19.07 4.93"/></svg>Convertidor</a>
+    <a href="elementos.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>Elementos</a>
+    <a href="estadistica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Estadistica</a>
+    <a href="fisica.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>Fisica</a>
+    <a href="morse.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><line x1="18" y1="10" x2="22" y2="10"/><line x1="18" y1="14" x2="22" y2="14"/></svg>Morse</a>
+    <a href="cronometro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Cronometro</a>
+    <a href="pomodoro.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>Pomodoro</a>
+    <a href="contrasenas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Contrasenas</a>
+    <a href="tablas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Tablas</a>
+    <a href="notas.html"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Notas</a>
+  </div>
 </nav>
 
-<style>
-    /* Estilos específicos para los iconos del Sidebar */
-    .nav-icon {
-        width: 20px;
-        height: 20px;
-        margin-right: 12px;
-        flex-shrink: 0;
-        transition: transform 0.2s ease, filter 0.2s ease;
-    }
+<main class="main-content">
+  <h1 class="page-title">Calculadora Científica</h1>
+  <p class="page-sub">Calculadora avanzada con funciones trigonométricas y más.</p>
+  
+  <div class="tools-wrap">
+    <div class="card">
+      <div class="card-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+        Calculadora
+      </div>
+      
+      <div class="mode-toggle">
+        <button class="mode-btn active" onclick="setMode('deg')">DEG</button>
+        <button class="mode-btn" onclick="setMode('rad')">RAD</button>
+      </div>
 
-    .nav-links a:hover .nav-icon, 
-    .nav-links a.active .nav-icon {
-        transform: scale(1.1);
-        filter: drop-shadow(0 0 5px currentColor);
-    }
+      <div class="calc-display">
+        <div class="calc-expr" id="calcExpr"></div>
+        <div class="calc-result" id="calcResult">0</div>
+      </div>
 
-    /* Colores alternados para los iconos para dar vida al menú */
-    .nav-links a:nth-child(3n+1) .nav-icon { color: var(--accent); }
-    .nav-links a:nth-child(3n+2) .nav-icon { color: var(--accent-2); }
-    .nav-links a:nth-child(3n+3) .nav-icon { color: var(--accent-3); }
-</style>
+      <div class="calc-grid">
+        <button class="cb fn" data-v="Math.sin(">sin</button>
+        <button class="cb fn" data-v="Math.cos(">cos</button>
+        <button class="cb fn" data-v="Math.tan(">tan</button>
+        <button class="cb fn" data-v="Math.log10(">log</button>
+        <button class="cb fn" data-v="Math.log(">ln</button>
+        
+        <button class="cb fn" data-v="Math.sqrt(">√</button>
+        <button class="cb fn" data-v="Math.PI">π</button>
+        <button class="cb fn" data-v="Math.E">e</button>
+        <button class="cb fn" data-v="(">(</button>
+        <button class="cb fn" data-v=")">)</button>
 
-    <main class="main-content">
-        <div class="calc-card">
-            <div class="calc-display">
-                <div class="calc-expr" id="calcExpr"></div>
-                <div class="calc-result" id="calcResult">0</div>
-            </div>
+        <button class="cb clr" onclick="clearAll()">AC</button>
+        <button class="cb clr" onclick="deleteLast()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+        </button>
+        <button class="cb op" data-v="%">%</button>
+        <button class="cb op" data-v="/">÷</button>
+        <button class="cb op" data-v="*">×</button>
 
-            <div class="calc-grid">
-                <button class="cb fn" data-v="Math.sin(">sin</button>
-                <button class="cb fn" data-v="Math.cos(">cos</button>
-                <button class="cb fn" data-v="Math.tan(">tan</button>
-                <button class="cb fn" data-v="Math.log10(">log</button>
-                <button class="cb fn" data-v="Math.log(">ln</button>
-                
-                <button class="cb fn" data-v="Math.sqrt(">√</button>
-                <button class="cb fn" data-v="Math.PI">π</button>
-                <button class="cb fn" data-v="Math.E">e</button>
-                <button class="cb fn" data-v="(">(</button>
-                <button class="cb fn" data-v=")">)</button>
+        <button class="cb" data-v="7">7</button>
+        <button class="cb" data-v="8">8</button>
+        <button class="cb" data-v="9">9</button>
+        <button class="cb op" data-v="-">−</button>
+        <button class="cb fn" data-v="**2">x²</button>
 
-                <button class="cb clr" id="btnAC">AC</button>
-                <button class="cb clr" id="btnDel">⌫</button>
-                <button class="cb op" data-v="%">%</button>
-                <button class="cb op" data-v="/">÷</button>
-                <button class="cb op" data-v="*">×</button>
+        <button class="cb" data-v="4">4</button>
+        <button class="cb" data-v="5">5</button>
+        <button class="cb" data-v="6">6</button>
+        <button class="cb op" data-v="+">+</button>
+        <button class="cb fn" data-v="Math.pow(">xⁿ</button>
 
-                <button class="cb" data-v="7">7</button>
-                <button class="cb" data-v="8">8</button>
-                <button class="cb" data-v="9">9</button>
-                <button class="cb op" data-v="-">−</button>
-                <button class="cb fn" data-v="**2">x²</button>
+        <button class="cb" data-v="1">1</button>
+        <button class="cb" data-v="2">2</button>
+        <button class="cb" data-v="3">3</button>
+        <button class="cb" data-v=".">.</button>
+        <button class="cb fn" onclick="factorial()">n!</button>
 
-                <button class="cb" data-v="4">4</button>
-                <button class="cb" data-v="5">5</button>
-                <button class="cb" data-v="6">6</button>
-                <button class="cb op" data-v="+">+</button>
-                <button class="cb fn" data-v="Math.pow(">xⁿ</button>
+        <button class="cb zero" data-v="0">0</button>
+        <button class="cb eq" onclick="calculate()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/></svg>
+        </button>
+        <button class="cb fn" data-v="Math.abs(">|x|</button>
+      </div>
 
-                <button class="cb" data-v="1">1</button>
-                <button class="cb" data-v="2">2</button>
-                <button class="cb" data-v="3">3</button>
-                <button class="cb" data-v=".">.</button>
-                <button class="cb fn" data-v="Math.factorial(">n!</button>
-
-                <button class="cb" data-v="0" style="grid-column: span 2;">0</button>
-                <button class="cb eq" id="btnEq">=</button>
-                <button class="cb fn" data-v="Math.abs(">|x|</button>
-            </div>
+      <div class="history-section" id="historySection" style="display:none">
+        <div class="history-header">
+          <span class="history-title">Historial</span>
+          <button class="clear-btn" onclick="clearHistory()">Borrar</button>
         </div>
-    </main>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </div>
+  </div>
+</main>
 
-    <script>
-        // Lógica del Menú
-        const menuBtn = document.getElementById('menuBtn');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
+<script>
+// Menu toggle
+const menuBtn=document.getElementById('menuBtn'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+menuBtn.onclick=overlay.onclick=function(){sidebar.classList.toggle('active');overlay.classList.toggle('active')};
 
-        function toggleMenu() {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        }
+let expr='';
+let mode='deg';
+let history=JSON.parse(localStorage.getItem('calcHistory')||'[]');
 
-        menuBtn.onclick = toggleMenu;
-        overlay.onclick = toggleMenu;
+Math.factorial=n=>(n<=1)?1:n*Math.factorial(n-1);
 
-        // Lógica Calculadora
-        let expr = '';
-        const dExpr = document.getElementById('calcExpr');
-        const dRes = document.getElementById('calcResult');
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
 
-        Math.factorial = n => (n <= 1) ? 1 : n * Math.factorial(n - 1);
+function toRad(deg){return deg*Math.PI/180;}
+function toDeg(rad){return rad*180/Math.PI;}
 
-        document.querySelectorAll('.cb[data-v]').forEach(btn => {
-            btn.onclick = () => {
-                expr += btn.dataset.v;
-                dExpr.textContent = expr.replace(/Math\./g, '').replace(/\*\*/g, '^');
-            };
-        });
+function updateDisplay(){
+  document.getElementById('calcExpr').textContent=expr.replace(/Math\./g,'').replace(/\*\*/g,'^').replace(/Math\.PI/g,'π').replace(/Math\.E/g,'e');
+}
 
-        document.getElementById('btnAC').onclick = () => {
-            expr = ''; dExpr.textContent = ''; dRes.textContent = '0';
-        };
+document.querySelectorAll('.cb[data-v]').forEach(btn=>{
+  btn.onclick=()=>{
+    let v=btn.dataset.v;
+    if(mode==='deg'&&v.includes('Math.sin('))v='Math.sin(toRad(';
+    if(mode==='deg'&&v.includes('Math.cos('))v='Math.cos(toRad(';
+    if(mode==='deg'&&v.includes('Math.tan('))v='Math.tan(toRad(';
+    expr+=v;
+    updateDisplay();
+  };
+});
 
-        document.getElementById('btnDel').onclick = () => {
-            expr = expr.slice(0, -1);
-            dExpr.textContent = expr.replace(/Math\./g, '').replace(/\*\*/g, '^');
-        };
+function clearAll(){
+  expr='';
+  document.getElementById('calcExpr').textContent='';
+  document.getElementById('calcResult').textContent='0';
+}
 
-        document.getElementById('btnEq').onclick = () => {
-            try {
-                let res = eval(expr);
-                dRes.textContent = Number.isInteger(res) ? res : res.toFixed(4);
-                expr = res.toString();
-            } catch {
-                dRes.textContent = "Error";
-            }
-        };
-    </script>
+function deleteLast(){
+  expr=expr.slice(0,-1);
+  updateDisplay();
+}
+
+function factorial(){
+  try{
+    const n=eval(expr);
+    if(n<0||!Number.isInteger(n)){document.getElementById('calcResult').textContent='Error';return;}
+    expr=Math.factorial(n).toString();
+    document.getElementById('calcResult').textContent=expr;
+    addToHistory('n!',expr);
+  }catch{
+    document.getElementById('calcResult').textContent='Error';
+  }
+}
+
+function calculate(){
+  if(!expr)return;
+  try{
+    let res=eval(expr);
+    const displayExpr=expr.replace(/Math\./g,'').replace(/\*\*/g,'^');
+    expr=res.toString();
+    document.getElementById('calcResult').textContent=Number.isInteger(res)?res:parseFloat(res.toFixed(6));
+    addToHistory(displayExpr,res);
+  }catch(e){
+    document.getElementById('calcResult').textContent='Error';
+  }
+}
+
+function addToHistory(e,r){
+  const time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  history.unshift({expr:e,res:r,time});
+  if(history.length>10)history=history.slice(0,10);
+  localStorage.setItem('calcHistory',JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory(){
+  const section=document.getElementById('historySection');
+  const list=document.getElementById('historyList');
+  if(history.length===0){section.style.display='none';return;}
+  section.style.display='block';
+  list.innerHTML=history.map(h=>`
+    <div class="history-item" onclick="useHistory('${h.res}')">
+      <span class="history-expr">${h.expr} =</span>
+      <span class="history-res">${h.res}</span>
+    </div>
+  `).join('');
+}
+
+function useHistory(val){
+  expr=val.toString();
+  updateDisplay();
+}
+
+function clearHistory(){
+  history=[];
+  localStorage.removeItem('calcHistory');
+  renderHistory();
+}
+
+// Keyboard support
+document.addEventListener('keydown',e=>{
+  const key=e.key;
+  if(/[0-9\.\+\-\*\/\(\)\%]/.test(key)){expr+=key;updateDisplay();}
+  if(key==='Enter'){e.preventDefault();calculate();}
+  if(key==='Backspace'){deleteLast();}
+  if(key==='Escape'){clearAll();}
+});
+
+renderHistory();
+</script>
 </body>
 </html>
