@@ -11,72 +11,481 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-:root{--accent:#6C63FF;--accent-2:#FF6B9D;--accent-3:#00D9A5;--bg:#05070a;--card-bg:#10141d;--text-main:#fff;--text-dim:#94a3b8;--border:rgba(255,255,255,.06);--font-display:'Outfit',sans-serif;--font-main:'Inter',sans-serif;--header-h:60px}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+:root{
+  --accent:#6C63FF;
+  --accent-2:#FF6B9D;
+  --accent-3:#00D9A5;
+  --accent-glow:rgba(108,99,255,.25);
+  --bg:#05070a;
+  --card-bg:#10141d;
+  --text-main:#fff;
+  --text-dim:#94a3b8;
+  --border:rgba(255,255,255,.06);
+  --font-display:'Outfit',sans-serif;
+  --font-main:'Inter',sans-serif;
+  --header-h:70px
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;scroll-behavior:smooth}
 html{font-size:16px}
 @media(max-width:480px){html{font-size:14px}}
-body{background:var(--bg);color:var(--text-main);font-family:var(--font-main);min-height:100vh;overflow-x:hidden;line-height:1.5;display:flex;flex-direction:column}
+body{
+  background:var(--bg);
+  color:var(--text-main);
+  font-family:var(--font-main);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.5;
+  position:relative;
+}
 
-/* Header minimalista */
-header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:0 16px;position:fixed;top:0;z-index:1000}
-.header-logo{font-family:var(--font-display);font-weight:800;font-size:1.4rem;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+/* --- LÍNEA DE CONEXIÓN GLOBAL --- */
+body::before {
+  content:'';
+  position:absolute;
+  top:var(--header-h);
+  left:50%;
+  width:2px;
+  height:calc(100% - var(--header-h));
+  background:linear-gradient(to bottom, var(--accent), var(--accent-2), var(--accent-3), transparent);
+  z-index:-1;
+  opacity:0.5;
+  transform:translateX(-50%);
+}
+
+/* Header minimalista agrandado */
+header{
+  height:var(--header-h);
+  width:100%;
+  background:rgba(16,20,29,.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 16px;
+  position:fixed;
+  top:0;
+  z-index:1000
+}
+.header-logo{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:2.2rem;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-decoration:none;
+  letter-spacing:-2px;
+}
+
+/* Línea conectora desde header */
+.header-connector {
+  position:fixed;
+  top:var(--header-h);
+  left:50%;
+  width:2px;
+  height:80px;
+  background:linear-gradient(to bottom, var(--accent), transparent);
+  transform:translateX(-50%);
+  z-index:100;
+  opacity:0.8;
+}
 
 /* Main content */
-.main-content{margin-top:var(--header-h);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative}
-.main-content::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(108,99,255,.15) 0%,transparent 70%);pointer-events:none;z-index:-1}
+.main-content{
+  margin-top:var(--header-h);
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:0 20px;
+  position:relative
+}
 
-/* Hero text */
-.hero-text{text-align:center;margin-bottom:40px;max-width:500px}
-.hero-text h1{font-family:var(--font-display);font-weight:800;font-size:2rem;margin-bottom:12px;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-text p{color:var(--text-dim);font-size:1rem;line-height:1.6}
+/* Hero Section simplificado */
+.hero-container{
+  min-height:50vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:100px 20px 60px;
+  position:relative;
+  width:100%;
+  opacity:0;
+  transform:translateY(30px);
+  transition:all 0.8s cubic-bezier(0.4,0,0.2,1);
+}
 
-/* Selector cards */
-.selector-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;width:100%;max-width:800px}
-@media(max-width:640px){.selector-grid{grid-template-columns:1fr;max-width:400px}}
+.hero-container.reveal {
+  opacity:1;
+  transform:translateY(0);
+}
 
-.app-card{background:var(--card-bg);border-radius:24px;padding:32px;border:1px solid var(--border);position:relative;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);cursor:pointer;text-decoration:none;display:flex;flex-direction:column;align-items:center;text-align:center;gap:20px}
-.app-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2));opacity:0;transition:opacity .3s}
-.app-card:hover{transform:translateY(-8px);border-color:rgba(108,99,255,.3);box-shadow:0 30px 60px rgba(0,0,0,.4)}
+.hero-text{
+  text-align:center;
+  max-width:600px;
+}
+.hero-text h1{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:clamp(2.2rem, 7vw, 3.2rem);
+  margin-bottom:16px;
+  background:linear-gradient(135deg,#fff,#a5b4fc);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent
+}
+.hero-text h1 span { color:var(--accent-3); }
+.hero-text p{
+  color:var(--text-dim);
+  font-size:1.2rem;
+  line-height:1.6
+}
+
+/* Selector Section */
+.selector-section {
+  width:100%;
+  max-width:1100px;
+  padding:60px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  position:relative;
+  opacity:0;
+  transform:translateY(40px);
+  transition:all 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.selector-section.reveal {
+  opacity:1;
+  transform:translateY(0);
+}
+
+.selector-section h2 {
+  font-family:var(--font-display);
+  font-size:2.2rem;
+  margin-bottom:50px;
+  text-align:center;
+  background:linear-gradient(135deg,#fff,var(--text-dim));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  opacity:0;
+  transform:translateY(20px);
+  transition:all 0.6s cubic-bezier(0.4,0,0.2,1) 0.2s;
+}
+
+.selector-section.reveal h2 {
+  opacity:1;
+  transform:translateY(0);
+}
+
+.selector-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:30px;
+  width:100%;
+}
+
+@media(max-width:768px){
+  .selector-grid{grid-template-columns:1fr;max-width:500px}
+}
+
+/* Cards con animaciones de scroll */
+.app-card{
+  background:var(--card-bg);
+  border-radius:24px;
+  padding:40px;
+  border:1px solid rgba(255,255,255,0.03);
+  position:relative;
+  overflow:hidden;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  cursor:pointer;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:20px;
+  opacity:0;
+  transform:translateY(30px);
+  will-change:transform, opacity;
+}
+
+.app-card.visible {
+  opacity:1;
+  transform:translateY(0);
+  transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Stagger delay para cards */
+.app-card:nth-child(1).visible { transition-delay:0.1s; }
+.app-card:nth-child(2).visible { transition-delay:0.2s; }
+
+.app-card::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  opacity:0;
+  transition:opacity .3s
+}
+.app-card:hover{
+  transform:translateY(-10px) scale(1.02);
+  border-color:rgba(108,99,255,.3);
+  box-shadow:0 30px 60px rgba(0,0,0,.4)
+}
 .app-card:hover::before{opacity:1}
 .app-card.social::before{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
 .app-card.tools::before{background:linear-gradient(90deg,var(--accent-3),var(--accent))}
 
-.app-icon{width:80px;height:80px;border-radius:20px;display:flex;align-items:center;justify-content:center;position:relative}
-.app-icon::before{content:'';position:absolute;inset:0;border-radius:20px;opacity:.2;filter:blur(20px)}
-.app-card.social .app-icon{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+/* Bordes inferiores de color */
+.app-card.social { border-bottom:3px solid var(--accent); }
+.app-card.tools { border-bottom:3px solid var(--accent-3); }
+
+.app-icon{
+  width:80px;
+  height:80px;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  animation:float 4s ease-in-out infinite;
+}
+.app-icon::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:20px;
+  opacity:.2;
+  filter:blur(20px)
+}
+.app-card.social .app-icon{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+}
 .app-card.social .app-icon::before{background:var(--accent)}
-.app-card.tools .app-icon{background:linear-gradient(135deg,var(--accent-3),var(--accent))}
+.app-card.tools .app-icon{
+  background:linear-gradient(135deg,var(--accent-3),var(--accent));
+}
 .app-card.tools .app-icon::before{background:var(--accent-3)}
 .app-icon svg{width:40px;height:40px;color:#fff;position:relative;z-index:1}
 
 .app-info{flex:1}
-.app-info h2{font-family:var(--font-display);font-weight:700;font-size:1.5rem;margin-bottom:8px;color:#fff}
-.app-info p{font-size:.9rem;color:var(--text-dim);line-height:1.5;margin-bottom:16px}
-.app-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--border);font-size:.75rem;color:var(--text-dim)}
-.app-badge.active{background:rgba(0,217,165,.1);border-color:var(--accent-3);color:var(--accent-3)}
-.app-badge svg{width:12px;height:12px}
+.app-info h2{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:1.6rem;
+  margin-bottom:12px;
+  color:#fff
+}
+.app-info p{
+  font-size:1rem;
+  color:var(--text-dim);
+  line-height:1.6;
+  margin-bottom:20px
+}
+.app-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 14px;
+  border-radius:20px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  font-size:.8rem;
+  color:var(--text-dim)
+}
+.app-badge.active{
+  background:rgba(0,217,165,.1);
+  border-color:var(--accent-3);
+  color:var(--accent-3)
+}
+.app-badge svg{width:14px;height:14px}
 
-.app-arrow{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all .3s}
-.app-card:hover .app-arrow{background:var(--accent);border-color:var(--accent);transform:scale(1.1)}
+.app-arrow{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .3s
+}
+.app-card:hover .app-arrow{
+  background:var(--accent);
+  border-color:var(--accent);
+  transform:scale(1.1)
+}
 .app-arrow svg{width:20px;height:20px;color:#fff}
-
-/* Footer info */
-.footer-info{margin-top:40px;text-align:center;color:var(--text-dim);font-size:.85rem}
-.footer-info span{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:30px;background:rgba(255,255,255,.03);border:1px solid var(--border)}
-.footer-info svg{width:16px;height:16px;color:var(--accent)}
 
 /* Animaciones */
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.app-icon{animation:float 4s ease-in-out infinite}
 .app-card:nth-child(2) .app-icon{animation-delay:-2s}
+
+/* Footer Section */
+.footer-section {
+  width:100%;
+  padding:60px 20px 120px;
+  display:flex;
+  justify-content:center;
+  position:relative;
+  opacity:0;
+  transform:translateY(30px);
+  transition:all 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.footer-section.reveal {
+  opacity:1;
+  transform:translateY(0);
+}
+
+.footer-info{
+  text-align:center;
+  color:var(--text-dim);
+  font-size:.85rem;
+}
+.footer-info span{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 24px;
+  border-radius:30px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border)
+}
+.footer-info svg{width:16px;height:16px;color:var(--accent)}
+
+/* Install Banner PWA */
+#installBanner {
+  display:none;
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:90%;
+  max-width:400px;
+  background:var(--card-bg);
+  border:1px solid var(--accent);
+  border-radius:20px;
+  padding:16px;
+  z-index:9999;
+  box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(108,99,255,0.2);
+  align-items:center;
+  justify-content:space-between;
+  animation:slideUp 0.5s ease-out;
+  opacity:0;
+}
+
+#installBanner.visible {
+  display:flex;
+  opacity:1;
+}
+
+@keyframes slideUp {
+  from { transform:translate(-50%, 100px); opacity:0; }
+  to { transform:translate(-50%, 0); opacity:1; }
+}
+
+.banner-content {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.banner-icon {
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-display);
+  font-weight:800;
+  color:white;
+  font-size:1.2rem;
+}
+
+.banner-text {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.banner-text strong {
+  font-size:0.95rem;
+  color:white;
+  font-weight:600;
+}
+
+.banner-text span {
+  font-size:0.75rem;
+  color:var(--text-dim);
+}
+
+.banner-actions {
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+#btnInstall {
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:10px;
+  font-weight:600;
+  font-size:0.85rem;
+  cursor:pointer;
+  transition:all 0.3s;
+  font-family:var(--font-main);
+}
+
+#btnInstall:hover {
+  background:var(--accent-2);
+  transform:scale(1.05);
+  box-shadow:0 5px 20px rgba(108,99,255,0.4);
+}
+
+#btnCancel {
+  background:transparent;
+  color:var(--text-dim);
+  border:none;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  font-size:1.4rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.3s;
+}
+
+#btnCancel:hover {
+  background:rgba(255,255,255,0.1);
+  color:white;
+  transform:rotate(90deg);
+}
 
 /* Responsive */
 @media(max-width:480px){
-  .hero-text h1{font-size:1.6rem}
-  .app-card{padding:24px}
-  .app-icon{width:64px;height:64px}
-  .app-icon svg{width:32px;height:32px}
-  .app-info h2{font-size:1.3rem}
+  .header-logo{font-size:1.8rem}
+  .hero-text h1{font-size:1.8rem}
+  .app-card{padding:30px}
+  .app-icon{width:70px;height:70px}
+  .app-icon svg{width:35px;height:35px}
+  .app-info h2{font-size:1.4rem}
+  .selector-section h2{font-size:1.8rem}
+  #installBanner{padding:12px}
+  .banner-icon{width:40px;height:40px}
 }
 </style>
 </head>
@@ -86,105 +495,162 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
   <span class="header-logo">RedCW</span>
 </header>
 
+<!-- Línea conectora visual desde header -->
+<div class="header-connector"></div>
+
 <main class="main-content">
-  <div class="hero-text">
-    <h1>Elige tu espacio</h1>
-    <p>Accede a la red social estudiantil o a las herramientas de estudio. Todo en un solo lugar.</p>
-  </div>
 
-  <div class="selector-grid">
-    <!-- Red Social -->
-    <a href="redcw/index.html" class="app-card social">
-      <div class="app-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      </div>
-      <div class="app-info">
-        <h2>RedCW Social</h2>
-        <p>Conecta con otros estudiantes, comparte contenido y mantente al día con tu comunidad.</p>
-        <span class="app-badge active">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          Red Social
-        </span>
-      </div>
-      <div class="app-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </div>
-    </a>
 
-    <!-- Herramientas -->
-    <a href="tools/index.html" class="app-card tools">
-      <div class="app-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
-      </div>
-      <div class="app-info">
-        <h2>RedCW Tools</h2>
-        <p>Calculadora científica, conversores, generador de contraseñas y más utilidades para estudiar.</p>
-        <span class="app-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-          Herramientas
-        </span>
-      </div>
-      <div class="app-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </div>
-    </a>
-  </div>
-
-  <div class="footer-info">
-    <span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      Sesión segura • Datos encriptados
-    </span>
-  </div>
-  
-      <div id="installBanner">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
-        <div>
-          <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
-          <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+  <!-- Selector Grid con animaciones -->
+  <section class="selector-section" id="selectorSection">
+    <h2>Acceso Rápido</h2>
+    
+    <div class="selector-grid">
+      <!-- Red Social -->
+      <a href="redcw/index.html" class="app-card social" id="card1">
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
-        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-      </div>
+        <div class="app-info">
+          <h2>RedCW Social</h2>
+          <p>Conecta con otros estudiantes, comparte contenido y mantente al día con tu comunidad.</p>
+          <span class="app-badge active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Red Social
+          </span>
+        </div>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
+
+      <!-- Herramientas -->
+      <a href="tools/index.html" class="app-card tools" id="card2">
+        <div class="app-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+        </div>
+        <div class="app-info">
+          <h2>RedCW Tools</h2>
+          <p>Calculadora científica, conversores, generador de contraseñas y más utilidades para estudiar.</p>
+          <span class="app-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            Herramientas
+          </span>
+        </div>
+        <div class="app-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </a>
     </div>
+  </section>
+
+  <!-- Footer simple -->
+  <section class="footer-section" id="footerSection">
+    <div class="footer-info">
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Sesión segura • Datos encriptados
+      </span>
+    </div>
+  </section>
+
 </main>
 
+<!-- Banner de Instalación PWA -->
+<div id="installBanner">
+  <div class="banner-content">
+    <div class="banner-icon">R</div>
+    <div class="banner-text">
+      <strong>Instalar RedCW</strong>
+      <span>Acceso rápido y mejor experiencia</span>
+    </div>
+  </div>
+  <div class="banner-actions">
+    <button id="btnInstall">Instalar</button>
+    <button id="btnCancel">&times;</button>
+  </div>
+</div>
+
 <script>
+// Animación de Scroll progresiva con Intersection Observer
+const scrollObserverOptions = {
+  threshold: 0.15,
+  rootMargin: "0px 0px -50px 0px"
+};
 
-        // Lógica PWA Completa
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            setTimeout(() => { 
-                document.getElementById('installBanner').style.display = 'flex'; 
-            }, 3000);
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('reveal');
+      
+      // Para las cards individuales dentro de selector-section
+      if (entry.target.id === 'selectorSection') {
+        const cards = entry.target.querySelectorAll('.app-card');
+        cards.forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add('visible');
+          }, index * 150);
         });
+      }
+      
+      scrollObserver.unobserve(entry.target);
+    }
+  });
+}, scrollObserverOptions);
 
-        document.getElementById('btnInstall').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                document.getElementById('installBanner').style.display = 'none';
-            }
-        });
+// Observar secciones principales
+document.querySelectorAll('#heroSection, #selectorSection, #footerSection').forEach(section => {
+  scrollObserver.observe(section);
+});
 
-        document.getElementById('btnCancel').addEventListener('click', () => {
-            document.getElementById('installBanner').style.display = 'none';
-        });
+// Lógica PWA - Banner de Instalación
+let deferredPrompt;
 
-// Register service worker for PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  setTimeout(() => { 
+    const banner = document.getElementById('installBanner');
+    if (banner && !localStorage.getItem('pwaBannerDismissed')) {
+      banner.classList.add('visible');
+    }
+  }, 2000);
+});
+
+document.getElementById('btnInstall').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    console.log('Usuario aceptó instalar la PWA');
+  }
+  
+  deferredPrompt = null;
+  document.getElementById('installBanner').classList.remove('visible');
+});
+
+document.getElementById('btnCancel').addEventListener('click', () => {
+  document.getElementById('installBanner').classList.remove('visible');
+  localStorage.setItem('pwaBannerDismissed', 'true');
+});
+
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  document.getElementById('installBanner').style.display = 'none';
+}
+
+// Register service worker
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js').catch(err=>console.log('SW error:',err));
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => console.log('SW registrado:', registration))
+      .catch(err => console.log('SW error:', err));
   });
 }
 
-// Add touch feedback
+// Touch feedback
 document.querySelectorAll('.app-card').forEach(card=>{
   card.addEventListener('touchstart',()=>card.style.transform='scale(0.98)');
   card.addEventListener('touchend',()=>card.style.transform='');
