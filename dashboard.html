@@ -136,9 +136,47 @@ header{height:var(--header-h);width:100%;background:rgba(16,20,29,.85);backdrop-
       Sesión segura • Datos encriptados
     </span>
   </div>
+  
+      <div id="installBanner">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="redcw/icons/icon-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;" alt="Logo RedCW">
+        <div>
+          <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
+          <span style="font-size: 0.75rem; color: var(--text-dim);">Acceso rápido y mejor experiencia</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="btnInstall" style="background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">Instalar</button>
+        <button id="btnCancel" style="background: transparent; color: var(--text-dim); border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+    </div>
 </main>
 
 <script>
+
+        // Lógica PWA Completa
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            setTimeout(() => { 
+                document.getElementById('installBanner').style.display = 'flex'; 
+            }, 3000);
+        });
+
+        document.getElementById('btnInstall').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('installBanner').style.display = 'none';
+            }
+        });
+
+        document.getElementById('btnCancel').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
+        });
+
 // Register service worker for PWA
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
