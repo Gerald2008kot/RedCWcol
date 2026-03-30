@@ -19,6 +19,8 @@
             --text-dim: #94a3b8;
             --font-display: 'Outfit', sans-serif;
             --font-main: 'Inter', sans-serif;
+            --success: #00D9A5;
+            --error: #FF4757;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,37 +39,44 @@
             position: relative;
         }
 
-        /* Resplandor de fondo */
+        /* Resplandor de fondo dinámico */
         body::before {
             content: '';
             position: absolute;
             width: 100%;
-            max-width: 600px;
-            height: 600px;
+            max-width: 800px;
+            height: 800px;
             background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: -2;
             pointer-events: none;
+            animation: pulseGlow 4s ease-in-out infinite;
         }
 
         .install-container {
-            background: rgba(16, 20, 29, 0.85);
+            background: rgba(16, 20, 29, 0.9);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 32px;
             padding: clamp(30px, 5vw, 50px) clamp(20px, 4vw, 40px);
             max-width: 480px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(108,99,255,0.1);
             position: relative;
             animation: slideUpFade 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             opacity: 0;
             transform: translateY(30px);
             margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .install-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px rgba(0,0,0,0.6), 0 0 30px rgba(108,99,255,0.15);
         }
 
         /* Ocultar extras por defecto */
@@ -85,6 +94,13 @@
             animation: gradientShift 6s ease infinite;
         }
 
+        /* Estado instalado - borde verde */
+        .install-container.installed::before {
+            background: linear-gradient(135deg, var(--success), var(--accent-3));
+            opacity: 0.8;
+            animation: none;
+        }
+
         .app-icon {
             width: clamp(80px, 15vw, 100px);
             height: clamp(80px, 15vw, 100px);
@@ -94,6 +110,15 @@
             box-shadow: 0 15px 35px rgba(108, 99, 255, 0.3);
             animation: fadeIn 0.8s ease-out 0.2s both, float 4s ease-in-out infinite 0.8s;
             background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        .app-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            animation: shimmer 3s infinite;
         }
 
         .app-icon img {
@@ -101,6 +126,31 @@
             height: 100%;
             object-fit: cover;
             border-radius: 22%;
+        }
+
+        /* Badge de instalado */
+        .installed-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--success);
+            color: var(--bg);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0,217,165,0.4);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .install-container.installed .installed-badge {
+            opacity: 1;
+            transform: scale(1);
         }
 
         h1 {
@@ -136,6 +186,11 @@
             color: var(--text-main);
             padding: 10px;
             font-size: clamp(0.85rem, 2.2vw, 0.95rem);
+            transition: transform 0.2s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
         }
 
         .feature-icon {
@@ -171,6 +226,56 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .install-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(108,99,255,0.4);
+        }
+
+        .install-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .install-btn:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        /* Estados del botón */
+        .install-btn.installing {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        }
+
+        .install-btn.installed {
+            background: linear-gradient(135deg, var(--success), var(--accent-3));
+        }
+
+        .install-btn.open {
+            background: linear-gradient(135deg, #2d3436, #636e72);
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Barra de progreso */
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.5);
+            width: 0%;
+            transition: width 0.1s linear;
         }
 
         .ios-instructions {
@@ -181,15 +286,38 @@
             margin-top: 15px;
             text-align: left;
             font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideDown 0.3s ease;
         }
 
         .ios-instructions.show { display: block; }
+
+        .status-message {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+        }
 
         /* Animaciones */
         @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulseGlow { 0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); } }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes checkmark { 0% { transform: scale(0); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        .check-animation {
+            animation: checkmark 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
         @media (max-width: 480px) {
             .install-container { padding: 30px 20px; }
@@ -198,9 +326,11 @@
 </head>
 <body>
 
-    <div class="install-container" id="card-main">
+    <!-- RedCW Principal -->
+    <div class="install-container" id="card-main" data-app-id="redcw" data-manifest="/manifest.json">
         <div class="app-icon">
             <img src="redcw/icons/icon-192.png" alt="RedCW">
+            <div class="installed-badge">✓</div>
         </div>
         <h1>RedCW</h1>
         <p class="subtitle">Accede a la red escolar desde tu pantalla de inicio con la mejor experiencia.</p>
@@ -220,93 +350,293 @@
             </div>
         </div>
 
-        <button class="install-btn" id="btnMainInstall">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            <span>Instalar RedCW</span>
+        <button class="install-btn" id="btnMainInstall" onclick="handleInstall('card-main')">
+            <span class="btn-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </span>
+            <span class="btn-text">Instalar RedCW</span>
+            <div class="progress-bar"></div>
         </button>
 
         <div id="iosMain" class="ios-instructions">
             <p><strong>iOS:</strong> Toca el icono de compartir <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.</p>
         </div>
+        
+        <div class="status-message" id="status-main"></div>
     </div>
 
-    <div class="install-container extra-card" id="card-extra-redcw">
-        <div class="app-icon">
-            <img src="redcw/icons/icon-192.png" alt="RedCW Extra">
-        </div>
-        <h1>RedCW Social</h1>
-        <p class="subtitle">Acceso directo a la plataforma social de RedCW.</p>
-        <button class="install-btn" onclick="installApp('redcw/manifest.json', 'redcw/sw.js')">
-            <span>Instalar Social</span>
-        </button>
-    </div>
-
-    <div class="install-container extra-card" id="card-kotatsuname">
+    <!-- Kotatsuname -->
+    <div class="install-container extra-card" id="card-kotatsuname" data-app-id="kotatsuname" data-manifest="kotatsuname/manifest.json">
         <div class="app-icon">
             <img src="kotatsuname/icons/icon-192.png" alt="Kotatsuname">
+            <div class="installed-badge">✓</div>
         </div>
         <h1>Kotatsuname</h1>
         <p class="subtitle">Tu biblioteca digital siempre disponible.</p>
-        <button class="install-btn" onclick="installApp('kotatsuname/manifest.json', 'kotatsuname/sw.js')">
-            <span>Instalar Kotatsu</span>
+        
+        <button class="install-btn" onclick="handleInstall('card-kotatsuname')">
+            <span class="btn-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </span>
+            <span class="btn-text">Instalar Kotatsu</span>
+            <div class="progress-bar"></div>
         </button>
+        
+        <div class="ios-instructions" id="ios-kotatsuname">
+            <p><strong>iOS:</strong> Toca el icono de compartir y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.</p>
+        </div>
+        
+        <div class="status-message" id="status-kotatsuname"></div>
     </div>
 
-    <div class="install-container extra-card" id="card-template">
+    <!-- RedCW Social -->
+    <div class="install-container extra-card" id="card-redcw-social" data-app-id="redcw-social" data-manifest="redcw/manifest.json">
         <div class="app-icon">
-            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-dim);">?</div>
+            <img src="redcw/icons/icon-192.png" alt="RedCW Social">
+            <div class="installed-badge">✓</div>
+        </div>
+        <h1>RedCW Social</h1>
+        <p class="subtitle">Acceso directo a la plataforma social de RedCW.</p>
+        
+        <button class="install-btn" onclick="handleInstall('card-redcw-social')">
+            <span class="btn-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </span>
+            <span class="btn-text">Instalar Social</span>
+            <div class="progress-bar"></div>
+        </button>
+        
+        <div class="ios-instructions" id="ios-redcw-social">
+            <p><strong>iOS:</strong> Toca el icono de compartir y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.</p>
+        </div>
+        
+        <div class="status-message" id="status-redcw-social"></div>
+    </div>
+
+    <!-- Template vacío -->
+    <div class="install-container extra-card" id="card-template" data-app-id="template" data-manifest="">
+        <div class="app-icon">
+            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size: 2rem;">?</div>
+            <div class="installed-badge">✓</div>
         </div>
         <h1>Nueva App</h1>
         <p class="subtitle">Descripción lista para completar.</p>
-        <button class="install-btn">
-            <span>Instalar</span>
+        
+        <button class="install-btn" onclick="handleInstall('card-template')" disabled>
+            <span class="btn-text">Próximamente</span>
         </button>
+        
+        <div class="status-message" id="status-template"></div>
     </div>
 
     <script>
-        let deferredPrompt;
+        // Almacenar prompts de instalación por app
+        const installPrompts = {};
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const mainBtn = document.getElementById('btnMainInstall');
-        const iosMain = document.getElementById('iosMain');
-
-        // Escuchar el evento de instalación para la raíz
+        
+        // Escuchar eventos beforeinstallprompt para cada app
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        // Lógica del botón principal (Raíz)
-        mainBtn.addEventListener('click', async () => {
-            if (isIOS) {
-                iosMain.classList.toggle('show');
-                return;
-            }
-
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    mainBtn.querySelector('span').innerText = 'Instalando...';
-                }
-                deferredPrompt = null;
+            // Almacenar el prompt para uso posterior
+            const path = window.location.pathname;
+            if (path.includes('kotatsuname')) {
+                installPrompts['kotatsuname'] = e;
+            } else if (path.includes('redcw') && path.includes('social')) {
+                installPrompts['redcw-social'] = e;
             } else {
-                mainBtn.querySelector('span').innerText = 'Ya puedes instalarla desde el menú';
+                installPrompts['redcw'] = e;
             }
         });
 
-        // Función para los extras (Manejo de rutas específicas)
-        async function installApp(manifestPath, swPath) {
-            console.log(`Instalando desde: ${manifestPath}`);
-            // Aquí puedes añadir lógica personalizada para registrar SW específicos si lo deseas
+        // Verificar si las apps están instaladas al cargar
+        async function checkInstalledApps() {
+            if ('getInstalledRelatedApps' in navigator) {
+                try {
+                    const installedApps = await navigator.getInstalledRelatedApps();
+                    
+                    // Verificar cada tarjeta
+                    document.querySelectorAll('.install-container').forEach(card => {
+                        const appId = card.dataset.appId;
+                        const manifest = card.dataset.manifest;
+                        
+                        // Buscar si esta app específica está instalada
+                        const isInstalled = installedApps.some(app => {
+                            // Verificar por ID o URL del manifest
+                            return app.id === appId || 
+                                   (manifest && app.url && app.url.includes(manifest)) ||
+                                   app.url === window.location.origin + '/' + appId;
+                        });
+                        
+                        if (isInstalled) {
+                            markAsInstalled(card.id);
+                        }
+                    });
+                } catch (error) {
+                    console.log('Error verificando apps instaladas:', error);
+                }
+            }
         }
 
-        // Registro del Service Worker de la raíz
+        // Marcar tarjeta como instalada
+        function markAsInstalled(cardId) {
+            const card = document.getElementById(cardId);
+            const btn = card.querySelector('.install-btn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnIcon = btn.querySelector('.btn-icon');
+            
+            card.classList.add('installed');
+            btn.classList.add('installed', 'open');
+            btn.disabled = false;
+            
+            if (btnIcon) {
+                btnIcon.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12" class="check-animation"/></svg>';
+            }
+            btnText.textContent = 'Abrir App';
+            
+            // Añadir handler para abrir
+            btn.onclick = () => openApp(cardId);
+            
+            showStatus(cardId, 'App instalada en tu dispositivo');
+        }
+
+        // Manejar instalación
+        async function handleInstall(cardId) {
+            const card = document.getElementById(cardId);
+            const btn = card.querySelector('.install-btn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnIcon = btn.querySelector('.btn-icon');
+            const progressBar = btn.querySelector('.progress-bar');
+            const appId = card.dataset.appId;
+            
+            // Si ya está instalada, abrir
+            if (card.classList.contains('installed')) {
+                openApp(cardId);
+                return;
+            }
+            
+            // iOS
+            if (isIOS) {
+                const iosInstructions = card.querySelector('.ios-instructions');
+                iosInstructions.classList.toggle('show');
+                return;
+            }
+            
+            // Android/Chrome - Iniciar instalación
+            const prompt = installPrompts[appId] || installPrompts['redcw']; // fallback
+            
+            if (prompt) {
+                // Estado: Instalando
+                btn.classList.add('installing');
+                btn.disabled = true;
+                if (btnIcon) btnIcon.innerHTML = '<div class="spinner"></div>';
+                btnText.textContent = 'Instalando...';
+                
+                // Simular progreso (6-7 segundos)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 1.5;
+                    if (progressBar) progressBar.style.width = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(progressInterval);
+                    }
+                }, 100);
+                
+                // Mostrar prompt real
+                prompt.prompt();
+                const { outcome } = await prompt.userChoice;
+                
+                clearInterval(progressInterval);
+                if (progressBar) progressBar.style.width = '100%';
+                
+                if (outcome === 'accepted') {
+                    // Éxito
+                    setTimeout(() => {
+                        markAsInstalled(cardId);
+                        showStatus(cardId, 'Instalación completada exitosamente');
+                    }, 500);
+                } else {
+                    // Cancelado
+                    btn.classList.remove('installing');
+                    btn.disabled = false;
+                    if (btnIcon) {
+                        btnIcon.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>';
+                    }
+                    btnText.textContent = 'Instalar ' + getAppName(cardId);
+                    if (progressBar) progressBar.style.width = '0%';
+                    showStatus(cardId, 'Instalación cancelada', 'error');
+                }
+                
+                // Limpiar prompt usado
+                delete installPrompts[appId];
+            } else {
+                // No hay prompt disponible
+                showStatus(cardId, 'Usa el menú del navegador para instalar', 'warning');
+                btnText.textContent = 'Ver en menú';
+            }
+        }
+
+        // Abrir app instalada
+        function openApp(cardId) {
+            const card = document.getElementById(cardId);
+            const appId = card.dataset.appId;
+            
+            // Intentar abrir la PWA
+            if (appId === 'redcw') {
+                window.open('/', '_blank');
+            } else if (appId === 'kotatsuname') {
+                window.open('/kotatsuname/', '_blank');
+            } else if (appId === 'redcw-social') {
+                window.open('/redcw/social/', '_blank');
+            } else {
+                // Intentar protocolo o URL genérica
+                window.open(window.location.origin + '/' + appId, '_blank');
+            }
+        }
+
+        // Mostrar mensaje de estado
+        function showStatus(cardId, message, type = 'info') {
+            const statusEl = document.getElementById('status-' + cardId.replace('card-', ''));
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = 'status-message show';
+                
+                if (type === 'error') statusEl.style.color = 'var(--error)';
+                else if (type === 'success' || type === 'warning') statusEl.style.color = 'var(--success)';
+                else statusEl.style.color = 'var(--text-dim)';
+                
+                setTimeout(() => {
+                    statusEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Obtener nombre de app
+        function getAppName(cardId) {
+            const names = {
+                'card-main': 'RedCW',
+                'card-kotatsuname': 'Kotatsu',
+                'card-redcw-social': 'Social',
+                'card-template': 'App'
+            };
+            return names[cardId] || 'App';
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInstalledApps();
+            
+            // Verificar periódicamente si se instaló desde fuera
+            setInterval(checkInstalledApps, 2000);
+        });
+
+        // Registrar Service Workers
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('Root SW registrado'))
-                .catch(err => console.log('Error en Root SW', err));
-            });
+            // SW principal
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('Error SW root:', err));
+            
+            // SW de kotatsuname
+            navigator.serviceWorker.register('/kotatsuname/sw.js').catch(err => console.log('Error SW kotatsuname:', err));
         }
     </script>
 </body>
