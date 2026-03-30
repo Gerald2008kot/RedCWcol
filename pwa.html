@@ -469,7 +469,7 @@
 
         // CAPTURAR beforeinstallprompt INMEDIATAMENTE
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('✅ beforeinstallprompt capturado');
+            console.log('beforeinstallprompt capturado');
             e.preventDefault();
             deferredPrompt = e;
             updateButtonState();
@@ -479,7 +479,7 @@
         async function checkIfInstalled() {
             // Método 1: Standalone mode
             if (isStandalone) {
-                console.log('✅ Modo standalone detectado');
+                console.log('Modo standalone detectado');
                 setInstalledState();
                 return true;
             }
@@ -497,7 +497,7 @@
                     );
                     
                     if (isInstalled) {
-                        console.log('✅ Detectada via getInstalledRelatedApps');
+                        console.log('Detectada via getInstalledRelatedApps');
                         setInstalledState();
                         return true;
                     }
@@ -673,7 +673,7 @@
 
         // Evento appinstalled
         window.addEventListener('appinstalled', () => {
-            console.log('✅ App instalada exitosamente');
+            console.log('App instalada exitosamente');
             setInstallationComplete();
             deferredPrompt = null;
         });
