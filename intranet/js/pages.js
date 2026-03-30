@@ -773,7 +773,7 @@ async function subirArchivo(file, titulo, departamento, categoria) {
       const fd = new FormData();
       fd.append('file',        file);
       fd.append('upload_preset', CLOUDINARY.preset);
-      fd.append('folder',      'intranet-redcw/imagenes');
+      fd.append('folder',      'intranet-corp/imagenes');
       const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloud}/image/upload`, { method:'POST', body:fd });
       const data = await res.json();
       if (data.error) return { ok:false, error: data.error.message };
@@ -948,7 +948,7 @@ async function renderPerfil() {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', CLOUDINARY.preset);
-    fd.append('folder', 'intranet-redcw/avatares');
+    fd.append('folder', 'intranet-corp/avatares');
     const res  = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloud}/image/upload`, { method:'POST', body:fd });
     const data = await res.json();
     if (!data.error) {
