@@ -164,7 +164,7 @@
   <!-- Compose for encargados -->
   <div id="news-create-section" class="hidden" style="margin-bottom:1rem">
     <div class="card" style="padding:.75rem">
-      <p style="font-size:.8rem;color:var(--text-2)">Selecciona un grupo para publicar desde el feed</p>
+      <p style="font-size:.8rem;color:var(--text-2)">Selecciona un grupo para publicar desde el feed 👇</p>
     </div>
   </div>
 
@@ -239,8 +239,16 @@
   </div>
   <div id="profile-forums" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem"></div>
 
+  <!-- Solicitudes -->
+  <div class="card" style="margin-top:1rem" id="profile-requests-card">
+    <div style="font-size:.82rem;color:var(--text-3);margin-bottom:.65rem;font-weight:600">Solicitudes</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem" id="profile-request-btns">
+      <!-- Se renderiza dinámicamente en loadPerfilPage -->
+    </div>
+  </div>
+
   <!-- Danger zone -->
-  <div class="card" style="margin-top:1rem">
+  <div class="card" style="margin-top:.75rem">
     <div style="font-size:.82rem;color:var(--text-3);margin-bottom:.5rem">Cuenta</div>
     <button class="btn btn-danger btn-sm w-full" onclick="if(confirm('¿Cerrar sesión?')) signOut()">Cerrar sesión</button>
   </div>
@@ -306,6 +314,9 @@
   <div class="admin-tabs">
     <button class="admin-tab active" data-tab="tab-users">Usuarios</button>
     <button class="admin-tab" data-tab="tab-whitelist">Lista blanca</button>
+    <button class="admin-tab hidden" data-tab="tab-requests" id="owner-requests-tab">
+      Solicitudes <span id="requests-badge" class="badge-count" style="display:none"></span>
+    </button>
     <button class="admin-tab" data-tab="tab-create" id="owner-panel-section">Crear usuario</button>
     <button class="admin-tab hidden" data-tab="tab-plans-mgmt" id="owner-plans-tab">Gestión planes</button>
   </div>
@@ -352,6 +363,12 @@
       </div>
       <button class="btn btn-primary w-full" onclick="createUserFromPanel()">Crear usuario</button>
     </div>
+  </div>
+
+  <!-- Solicitudes (owner) -->
+  <div class="admin-panel-section" id="tab-requests">
+    <p style="font-size:.85rem;color:var(--text-2);margin-bottom:.75rem">Solicitudes pendientes de usuarios</p>
+    <div id="requests-list"></div>
   </div>
 
   <!-- Plan management (owner) -->
