@@ -625,6 +625,61 @@ async function loadPerfilPage() {
 
   loadProfileGallery(user.id);
   loadProfileForums(user.id);
+  renderRequestButtons(user);
+}
+
+
+function makeReqBtn(type, label, extraStyle) {
+  var btn = document.createElement("button");
+  btn.className = "btn btn-secondary btn-sm w-full";
+  if (extraStyle) btn.style.cssText = extraStyle;
+  btn.textContent = label;
+  btn.onclick = function() { sendRequest(type); };
+  return btn;
+}
+function renderRequestButtons(user) {
+  var container = document.getElementById("profile-request-btns");
+  if (!container) return;
+  container.innerHTML = "";
+
+  var planOrder = ["free","n1","n2","n3"];
+  var pidx = planOrder.indexOf(user.plan || "free");
+  var count = 0;
+
+  // Solicitar Encargado — solo para usuarios normales
+  if (user.role === "usuario") {
+    container.appendChild(makeReqBtn("encargado", "Solicitar Rol de Encargado", ""));
+    count++;
+  }
+
+  // Planes — visibles para TODOS los roles según el plan que ya tienen
+  if (pidx < 1) {
+    container.appendChild(makeReqBtn("n1", "Solicitar Plan N1",
+      "color:#6C63FF;border-color:rgba(108,99,255,.3);background:rgba(108,99,255,.07)"));
+    count++;
+  }
+  if (pidx < 2) {
+    container.appendChild(makeReqBtn("n2", "Solicitar Plan N2",
+      "color:#FF6B9D;border-color:rgba(255,107,157,.3);background:rgba(255,107,157,.07)"));
+    count++;
+  }
+  if (pidx < 3) {
+    container.appendChild(makeReqBtn("n3", "Solicitar Plan N3",
+      "color:#FF6B9D;border-color:rgba(255,107,157,.3);background:linear-gradient(135deg,rgba(108,99,255,.08),rgba(255,107,157,.08))"));
+    count++;
+  }
+
+  // Si tiene plan N3 (máximo) y no es usuario normal, mostrar mensaje
+  if (!count) {
+    var p = document.createElement("p");
+    p.style.cssText = "font-size:.8rem;color:var(--text-3)";
+    p.textContent = "Ya tienes el plan máximo (N3).";
+    container.appendChild(p);
+  }
+
+  // La tarjeta siempre se muestra — siempre hay algo útil aquí
+  var card = document.getElementById("profile-requests-card");
+  if (card) card.style.display = "";
 }
 
 async function loadProfileGallery(userId) {
@@ -669,30 +724,30 @@ async function saveProfile() {
     updates.bio = bio;
     updates.banner_color = bannerColor;
 
-    // Avatar desde el modal — rcwUpload directo, igual que el test
     const avatarInput = document.getElementById("upload-avatar-modal");
     if (avatarInput && avatarInput.files && avatarInput.files[0]) {
       showToast("Subiendo foto…");
+      console.log("[saveProfile] subiendo avatar…");
       updates.avatar_url = await rcwUpload(avatarInput.files[0], "avatar");
+      console.log("[saveProfile] avatar_url OK:", updates.avatar_url);
       if (!updates.avatar_url) throw new Error("Cloudinary no devolvió URL de avatar");
     }
 
-    // Banner imagen (solo N1+ o admin) — rcwUpload directo
     const bannerInput = document.getElementById("upload-banner");
     if (bannerInput && bannerInput.files && bannerInput.files[0]) {
       if (!AppState.hasPlan("n1") && !AppState.hasRole("administrador")) {
         showToast("Necesitas Plan N1 para banner", "error");
       } else {
         showToast("Subiendo banner…");
+        console.log("[saveProfile] subiendo banner…");
         updates.banner_url = await rcwUpload(bannerInput.files[0], "banner");
+        console.log("[saveProfile] banner_url OK:", updates.banner_url);
         if (!updates.banner_url) throw new Error("Cloudinary no devolvió URL de banner");
       }
     }
 
-    // Guardar usando fetch directo (igual que el test que funciona)
     await sbUpdateProfile(updates);
 
-    // Cambio de contraseña
     const newPass = document.getElementById("edit-new-password")?.value || "";
     const confirmPass = document.getElementById("edit-confirm-password")?.value || "";
     if (newPass) {
@@ -701,6 +756,7 @@ async function saveProfile() {
       } else if (newPass !== confirmPass) {
         showToast("Las contraseñas no coinciden", "error");
       } else {
+        const sb = await initSupabase();
         const { error: passErr } = await sb.auth.updateUser({ password: newPass });
         if (passErr) showToast("Error al cambiar contraseña: " + passErr.message, "error");
         else {
@@ -713,7 +769,6 @@ async function saveProfile() {
       }
     }
 
-    // Actualizar AppState localmente con los cambios que aplicamos
     AppState.currentUser = Object.assign({}, user, updates);
     renderMenuAccounts();
     showToast("Perfil guardado", "success");
@@ -740,8 +795,10 @@ async function loadAdminPage() {
   document.getElementById("owner-panel-section").classList.toggle("hidden", !isOwner);
   const ownerPlansTab = document.getElementById("owner-plans-tab");
   if (ownerPlansTab) ownerPlansTab.classList.toggle("hidden", !isOwner);
+  const ownerReqTab = document.getElementById("owner-requests-tab");
+  if (ownerReqTab) ownerReqTab.classList.toggle("hidden", !isOwner);
   loadAdminUsers();
-  if (isOwner) loadPlanUsers();
+  if (isOwner) { loadPlanUsers(); loadRequests(); }
 }
 
 async function loadAdminUsers() {
@@ -750,21 +807,44 @@ async function loadAdminUsers() {
   container.innerHTML = skeletonCards(3);
   try {
     const users = await dbSelect("profiles", { order: "created_at" });
+    var isOwner = AppState.hasRole("propietario");
     container.innerHTML = users.map(u => {
+      var me = AppState.currentUser;
+      var isSelf = me && u.id === me.id;
       var avatarInner = u.avatar_url
         ? '<img src="'+escHtml(u.avatar_url)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
         : (u.username||"U")[0].toUpperCase();
-      return '<div class="user-list-item">'
+
+      var roleSelect = "";
+      if (isOwner && !isSelf && u.role !== "propietario") {
+        roleSelect = '<select onchange="changeUserRole(\''+u.id+'\',this.value,this)" '
+          +'style="background:var(--bg-3);color:var(--text);border:1px solid var(--border);'
+          +'border-radius:8px;padding:.25rem .5rem;font-size:.75rem;cursor:pointer;max-width:130px">'
+          +'<option value="usuario"'   +(u.role==="usuario"   ?" selected":"")+'>Usuario</option>'
+          +'<option value="encargado"'+(u.role==="encargado" ?" selected":"")+'>Encargado</option>'
+          +'<option value="administrador"'+(u.role==="administrador"?" selected":"")+'>Admin</option>'
+          +'</select>';
+      }
+
+      return '<div class="user-list-item" style="gap:.4rem;flex-wrap:wrap">'
         +'<div class="avatar" style="width:36px;height:36px;font-size:.8rem;flex-shrink:0">'+avatarInner+'</div>'
-        +'<div class="user-list-info">'
+        +'<div class="user-list-info" style="flex:1;min-width:120px">'
           +'<div class="user-list-name">'+escHtml(u.username||"Sin nombre")+'</div>'
-          +'<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">'
+          +'<div style="display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem;align-items:center">'
             +roleBadge(u.role)
             +(u.plan && u.plan !== "free" ? '<span class="plan-badge plan-'+u.plan+'">'+u.plan.toUpperCase()+'</span>' : '')
             +(u.suspended ? '<span style="font-size:.65rem;color:#ff4c4c;font-weight:700">SUSPENDIDO</span>' : '')
           +'</div>'
         +'</div>'
-        +(canSuspend(u) ? '<button class="btn btn-danger btn-sm" onclick="suspendUser(\''+u.id+'\')">Suspender</button>' : '')
+        +'<div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">'
+          +roleSelect
+          +(canSuspend(u)
+            ? '<button class="btn btn-sm" style="background:rgba(255,76,76,.12);color:#ff4c4c;border:1px solid rgba(255,76,76,.3)" '
+              +'onclick="suspendUser(\''+u.id+'\')">'
+              +(u.suspended ? "Desuspender" : "Suspender")
+              +'</button>'
+            : '')
+        +'</div>'
       +'</div>';
     }).join("");
   } catch (e) { container.innerHTML = "<p>Error</p>"; }
@@ -779,13 +859,36 @@ function canSuspend(targetUser) {
 }
 
 async function suspendUser(userId) {
-  const reason = prompt("Razón de la suspensión:");
-  if (!reason) return;
   try {
-    await dbUpdate("profiles", userId, { suspended: true, suspend_reason: reason });
-    showToast("Usuario suspendido", "success");
+    var sb = await initSupabase();
+    var { data: u } = await sb.from("profiles").select("suspended,username").eq("id", userId).single();
+    if (u && u.suspended) {
+      if (!confirm("¿Desuspender a " + (u.username||"este usuario") + "?")) return;
+      await sbFetch("/rest/v1/profiles?id=eq."+userId, "PATCH", { suspended: false, suspend_reason: null });
+      showToast("Usuario reactivado", "success");
+    } else {
+      var reason = prompt("Razón de la suspensión:");
+      if (!reason) return;
+      await sbFetch("/rest/v1/profiles?id=eq."+userId, "PATCH", { suspended: true, suspend_reason: reason });
+      showToast("Usuario suspendido", "success");
+    }
     loadAdminUsers();
-  } catch (e) { showToast("Error", "error"); }
+  } catch (e) { showToast("Error: "+(e.message||""), "error"); }
+}
+
+async function changeUserRole(userId, newRole, selectEl) {
+  if (!AppState.hasRole("propietario")) return;
+  if (!newRole) return;
+  var prev = selectEl.dataset.prev || selectEl.value;
+  try {
+    await sbFetch("/rest/v1/profiles?id=eq."+userId, "PATCH", { role: newRole });
+    selectEl.dataset.prev = newRole;
+    showToast("Rol cambiado a " + newRole + " ✓", "success");
+    loadAdminUsers();
+  } catch (e) {
+    selectEl.value = prev;
+    showToast("Error: "+(e.message||""), "error");
+  }
 }
 
 async function createUserFromPanel() {
@@ -805,7 +908,7 @@ async function createUserFromPanel() {
 
 async function setUserPlan(userId, plan) {
   if (!AppState.hasRole("propietario")) return;
-  if (!plan) return; // placeholder option selected
+  if (!plan) return;
   try {
     var fields = plan === "free"
       ? { plan: "free", plan_expires: null }
@@ -856,7 +959,6 @@ async function loadPlanUsers() {
 
 /* ── PLANES ──────────────────────────────────────────────────── */
 async function loadPlanesPage() {
-  // Data is static (rendered in HTML), just mark current plan
   const user = AppState.currentUser;
   if (!user) return;
   document.querySelectorAll(".plan-card").forEach(c => {
@@ -865,7 +967,6 @@ async function loadPlanesPage() {
 }
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
-/* ── previewMedia: helper global para previews de archivo ───── */
 function previewMedia(inputId, previewId, type) {
   var input = document.getElementById(inputId);
   var preview = document.getElementById(previewId);
@@ -910,27 +1011,6 @@ function roleBadge(role) {
   return `<span class="role-badge role-${role}">${map[role]}</span>`;
 }
 
-// Admin tab switching
-document.querySelectorAll(".admin-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".admin-panel-section").forEach(s => s.classList.remove("active"));
-    tab.classList.add("active");
-    document.getElementById(tab.dataset.tab)?.classList.add("active");
-  });
-});
-
-// Image preview for inicio
-document.getElementById("inicio-images")?.addEventListener("change", function() {
-  const preview = document.getElementById("inicio-image-preview");
-  preview.innerHTML = Array.from(this.files).slice(0,4).map(f => {
-    const url = URL.createObjectURL(f);
-    return `<img src="${url}" style="height:60px;border-radius:6px;object-fit:cover">`;
-  }).join("");
-});
-
-// ── Helpers del modal de edición de perfil ───────────────────
-
 function loadEditForm() {
   const u = AppState.currentUser;
   if (!u) return;
@@ -940,7 +1020,6 @@ function loadEditForm() {
   document.getElementById("edit-banner-color").value = color;
   previewBannerColor(color);
 
-  // Avatar preview
   const prev = document.getElementById("edit-avatar-preview");
   if (prev) {
     if (u.avatar_url) {
@@ -950,17 +1029,15 @@ function loadEditForm() {
     }
   }
 
-  // Banner imagen solo si tiene plan
   const bannerField = document.getElementById("banner-image-field");
   if (bannerField) bannerField.classList.toggle("hidden", !AppState.hasPlan("n1"));
 
-  // Ocultar sección contraseña
   const passSection = document.getElementById("password-section");
   if (passSection) passSection.classList.add("hidden");
-  const newPassInput = document.getElementById("edit-new-password");
-  if (newPassInput) newPassInput.value = "";
-  const confPassInput = document.getElementById("edit-confirm-password");
-  if (confPassInput) confPassInput.value = "";
+  const np = document.getElementById("edit-new-password");
+  if (np) np.value = "";
+  const cp = document.getElementById("edit-confirm-password");
+  if (cp) cp.value = "";
 }
 
 function previewBannerColor(value) {
@@ -982,14 +1059,69 @@ function togglePasswordSection() {
   if (!section) return;
   const isHidden = section.classList.contains("hidden");
   section.classList.toggle("hidden", !isHidden);
-  btn.textContent = isHidden ? "🔒 Cancelar cambio de contraseña" : "🔒 Cambiar contraseña";
+  btn.textContent = isHidden ? "Cancelar cambio de contraseña" : "Cambiar contraseña";
 }
 
+// Admin tab switching
+document.querySelectorAll(".admin-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".admin-panel-section").forEach(s => s.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab)?.classList.add("active");
+  });
+});
+
+// Image preview for inicio
+document.getElementById("inicio-images")?.addEventListener("change", function() {
+  const preview = document.getElementById("inicio-media-preview");
+  if (!preview) return;
+  preview.innerHTML = Array.from(this.files).slice(0,4).map(f => {
+    const url = URL.createObjectURL(f);
+    return `<img src="${url}" style="height:60px;border-radius:6px;object-fit:cover">`;
+  }).join("");
+});
+
+async function addToWhitelist() {
+  const email = document.getElementById("whitelist-email").value.trim();
+  if (!email) return;
+  try {
+    await dbInsert("whitelist", { email });
+    document.getElementById("whitelist-email").value = "";
+    loadWhitelist();
+    showToast("Correo añadido a la lista blanca", "success");
+  } catch (e) { showToast("Error", "error"); }
+}
+
+async function loadWhitelist() {
+  const container = document.getElementById("whitelist-list");
+  if (!container) return;
+  try {
+    const entries = await dbSelect("whitelist", { order: "created_at" });
+    container.innerHTML = entries.map(e => `
+      <div class="user-list-item">
+        <span style="flex:1;font-size:.85rem">${escHtml(e.email)}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeWhitelist('${e.id}')">✕</button>
+      </div>`).join("") || `<p style="font-size:.82rem;color:var(--text-3)">Sin correos aún</p>`;
+  } catch {}
+}
+
+async function removeWhitelist(id) {
+  await dbDelete("whitelist", id);
+  loadWhitelist();
+}
+
+function filterForums(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll("#comunidades-grid .forum-card").forEach(card => {
+    const name = card.querySelector(".forum-card-name")?.textContent.toLowerCase() || "";
+    card.style.display = name.includes(q) ? "" : "none";
+  });
+}
 
 /* ══════════════════════════════════════════════════════════════
-   FORO — Gestión de miembros (admin del foro)
+   FORO — Gestión de miembros
 ══════════════════════════════════════════════════════════════ */
-
 async function openForumAdminModal(forumId) {
   var modal = document.getElementById("forum-admin-modal");
   if (!modal) return;
@@ -1080,13 +1212,10 @@ async function leaveForumConfirm(forumId) {
 /* ══════════════════════════════════════════════════════════════
    GRUPO DE NOTICIAS — Gestión
 ══════════════════════════════════════════════════════════════ */
-
-function openNewsGroupAdmin(groupId, groupName) {
+function openNewsGroupAdmin(groupId) {
   var modal = document.getElementById("news-group-admin-modal");
   if (!modal) return;
   modal.dataset.groupId = groupId;
-  var title = modal.querySelector(".modal-title");
-  if (title) title.textContent = "Gestionar: " + groupName;
   modal.classList.add("open");
 }
 
@@ -1126,4 +1255,101 @@ async function deleteNewsGroup() {
     showToast("Grupo eliminado", "success");
     loadNoticiasPage();
   } catch(e) { showToast("Error: "+e.message, "error"); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SOLICITUDES
+══════════════════════════════════════════════════════════════ */
+async function sendRequest(type) {
+  var user = AppState.currentUser;
+  if (!user) { showToast("Debes iniciar sesión", "error"); return; }
+
+  if (type === "encargado" && AppState.hasRole("encargado")) {
+    showToast("Ya eres Encargado o tienes un rol superior", "info"); return;
+  }
+  if (type !== "encargado" && AppState.hasPlan(type)) {
+    showToast("Ya tienes ese plan o uno superior", "info"); return;
+  }
+
+  var labels = { encargado:"Rol de Encargado", n1:"Plan N1", n2:"Plan N2", n3:"Plan N3" };
+  var reason = prompt("¿Por qué solicitas " + (labels[type]||type) + "? (opcional)");
+  if (reason === null) return;
+
+  try {
+    await sbFetch("/rest/v1/requests", "POST", {
+      user_id:      user.id,
+      username:     user.username,
+      request_type: type,
+      reason:       reason || "",
+      status:       "pending",
+    });
+    showToast("Solicitud enviada. El propietario la revisará.", "success");
+  } catch(e) {
+    showToast("Error al enviar solicitud: " + (e.message||""), "error");
+  }
+}
+
+async function loadRequests() {
+  var container = document.getElementById("requests-list");
+  if (!container) return;
+  container.innerHTML = skeletonCards(2);
+  try {
+    var sb = await initSupabase();
+    var { data, error } = await sb.from("requests")
+      .select("*, profiles(username, avatar_url)")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    if (!data || !data.length) {
+      container.innerHTML = '<p style="color:var(--text-3);font-size:.85rem;padding:.5rem 0">Sin solicitudes pendientes</p>';
+      return;
+    }
+    var labels = { encargado:"Rol Encargado", n1:"Plan N1", n2:"Plan N2", n3:"Plan N3" };
+    container.innerHTML = data.map(function(r) {
+      var p = r.profiles || {};
+      var av = p.avatar_url
+        ? '<img src="'+escHtml(p.avatar_url)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+        : (p.username||"U")[0].toUpperCase();
+      return '<div class="user-list-item" style="flex-wrap:wrap;gap:.4rem">'
+        +'<div class="avatar" style="width:34px;height:34px;font-size:.8rem;flex-shrink:0">'+av+'</div>'
+        +'<div class="user-list-info" style="flex:1;min-width:120px">'
+          +'<div class="user-list-name">'+escHtml(p.username||"—")+'</div>'
+          +'<div style="font-size:.8rem;color:var(--text-2);margin-top:.15rem">'
+            +'Solicita: <strong>'+(labels[r.request_type]||r.request_type)+'</strong>'
+          +'</div>'
+          +(r.reason ? '<div style="font-size:.75rem;color:var(--text-3);margin-top:.15rem;font-style:italic">&ldquo;'+escHtml(r.reason)+'&rdquo;</div>' : '')
+        +'</div>'
+        +'<div style="display:flex;gap:.3rem">'
+          +'<button class="btn btn-primary btn-sm" onclick="resolveRequest(\''+r.id+'\',\''+r.user_id+'\',\''+r.request_type+'\',true)">Aprobar</button>'
+          +'<button class="btn btn-secondary btn-sm" onclick="resolveRequest(\''+r.id+'\',\''+r.user_id+'\',\''+r.request_type+'\',false)">Rechazar</button>'
+        +'</div>'
+      +'</div>';
+    }).join("");
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--text-3)">Error: '+e.message+'</p>';
+  }
+}
+
+async function resolveRequest(reqId, userId, type, approve) {
+  try {
+    if (approve) {
+      var fields = {};
+      if (type === "encargado") {
+        fields.role = "encargado";
+      } else if (["n1","n2","n3"].includes(type)) {
+        var days = CONFIG["PLAN_"+type.toUpperCase()+"_DAYS"] || 30;
+        fields.plan = type;
+        fields.plan_expires = new Date(Date.now() + days*86400000).toISOString();
+      }
+      if (Object.keys(fields).length) {
+        await sbFetch("/rest/v1/profiles?id=eq."+userId, "PATCH", fields);
+      }
+    }
+    await sbFetch("/rest/v1/requests?id=eq."+reqId, "PATCH", {
+      status: approve ? "approved" : "rejected"
+    });
+    showToast(approve ? "Solicitud aprobada ✓" : "Solicitud rechazada", approve ? "success" : "info");
+    loadRequests();
+    if (approve) loadAdminUsers();
+  } catch(e) { showToast("Error: "+(e.message||""), "error"); }
 }
