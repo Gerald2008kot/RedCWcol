@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instalar RedCW</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
     
     <style>
         :root {
@@ -28,7 +29,7 @@
             font-family: var(--font-main);
             min-height: 100vh;
             display: flex;
-            flex-direction: column; /* Para manejar múltiples cards si fuera necesario */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -36,6 +37,7 @@
             position: relative;
         }
 
+        /* Resplandor de fondo */
         body::before {
             content: '';
             position: absolute;
@@ -65,7 +67,7 @@
             animation: slideUpFade 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             opacity: 0;
             transform: translateY(30px);
-            margin: 20px 0;
+            margin-bottom: 30px;
         }
 
         /* Ocultar extras por defecto */
@@ -183,51 +185,48 @@
 
         .ios-instructions.show { display: block; }
 
-        /* Ajustes específicos para móviles muy pequeños */
-        @media (max-width: 360px) {
-            .install-container { padding: 25px 15px; }
-            .feature-item { gap: 8px; padding: 8px 5px; }
-            .subtitle { margin-bottom: 20px; }
-        }
-
         /* Animaciones */
         @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        @media (max-width: 480px) {
+            .install-container { padding: 30px 20px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="install-container" id="card-redcw">
+    <div class="install-container" id="card-main">
         <div class="app-icon">
             <img src="redcw/icons/icon-192.png" alt="RedCW">
         </div>
         <h1>RedCW</h1>
-        <p class="subtitle">La red social escolar definitiva. Conecta, comparte y estudia en un solo lugar.</p>
+        <p class="subtitle">Accede a la red escolar desde tu pantalla de inicio con la mejor experiencia.</p>
         
         <div class="features-list">
             <div class="feature-item">
                 <div class="feature-icon accent"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                <span>Acceso directo desde el escritorio</span>
+                <span>Sin barras de navegación</span>
             </div>
             <div class="feature-item">
                 <div class="feature-icon accent-2"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                <span>Carga ultrarrápida y modo offline</span>
+                <span>Uso eficiente de datos</span>
             </div>
             <div class="feature-item">
                 <div class="feature-icon accent-3"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-                <span>Notificaciones en tiempo real</span>
+                <span>Notificaciones instantáneas</span>
             </div>
         </div>
 
-        <button class="install-btn btn-install" data-manifest="redcw/manifest.json" data-sw="redcw/sw.js">
+        <button class="install-btn" id="btnMainInstall">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             <span>Instalar RedCW</span>
         </button>
 
-        <div class="ios-instructions">
-            <p><strong>Para iOS:</strong> Toca "Compartir" y luego "Añadir a la pantalla de inicio".</p>
+        <div id="iosMain" class="ios-instructions">
+            <p><strong>iOS:</strong> Toca el icono de compartir <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> y selecciona <strong>"Añadir a la pantalla de inicio"</strong>.</p>
         </div>
     </div>
 
@@ -235,10 +234,10 @@
         <div class="app-icon">
             <img src="redcw/icons/icon-192.png" alt="RedCW Extra">
         </div>
-        <h1>RedCW App</h1>
-        <p class="subtitle">Instancia secundaria de RedCW para gestión administrativa.</p>
-        <button class="install-btn btn-install" data-manifest="redcw/manifest.json" data-sw="redcw/sw.js">
-            <span>Instalar RedCW</span>
+        <h1>RedCW Social</h1>
+        <p class="subtitle">Acceso directo a la plataforma social de RedCW.</p>
+        <button class="install-btn" onclick="installApp('redcw/manifest.json', 'redcw/sw.js')">
+            <span>Instalar Social</span>
         </button>
     </div>
 
@@ -247,8 +246,8 @@
             <img src="kotatsuname/icons/icon-192.png" alt="Kotatsuname">
         </div>
         <h1>Kotatsuname</h1>
-        <p class="subtitle">Tu biblioteca digital personal siempre disponible en tu bolsillo.</p>
-        <button class="install-btn btn-install" data-manifest="kotatsuname/manifest.json" data-sw="kotatsuname/sw.js">
+        <p class="subtitle">Tu biblioteca digital siempre disponible.</p>
+        <button class="install-btn" onclick="installApp('kotatsuname/manifest.json', 'kotatsuname/sw.js')">
             <span>Instalar Kotatsu</span>
         </button>
     </div>
@@ -258,45 +257,55 @@
             <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-dim);">?</div>
         </div>
         <h1>Nueva App</h1>
-        <p class="subtitle">Descripción de la nueva aplicación lista para ser instalada.</p>
-        <button class="install-btn btn-install" data-manifest="ruta/manifest.json" data-sw="ruta/sw.js">
-            <span>Instalar App</span>
+        <p class="subtitle">Descripción lista para completar.</p>
+        <button class="install-btn">
+            <span>Instalar</span>
         </button>
     </div>
 
     <script>
-        // Lógica Genérica para múltiples botones de instalación
-        let deferredPrompts = {};
+        let deferredPrompt;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const mainBtn = document.getElementById('btnMainInstall');
+        const iosMain = document.getElementById('iosMain');
 
+        // Escuchar el evento de instalación para la raíz
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            // Guardamos el evento para usarlo luego
-            window.deferredPrompt = e;
+            deferredPrompt = e;
         });
 
-        document.querySelectorAll('.btn-install').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (window.deferredPrompt) {
-                    window.deferredPrompt.prompt();
-                    const { outcome } = await window.deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        btn.querySelector('span').innerText = 'Instalando...';
-                    }
-                    window.deferredPrompt = null;
-                } else {
-                    // Si no hay prompt, mostramos las instrucciones de iOS o el menú del navegador
-                    const instructions = btn.parentElement.querySelector('.ios-instructions');
-                    if (instructions) instructions.classList.toggle('show');
+        // Lógica del botón principal (Raíz)
+        mainBtn.addEventListener('click', async () => {
+            if (isIOS) {
+                iosMain.classList.toggle('show');
+                return;
+            }
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    mainBtn.querySelector('span').innerText = 'Instalando...';
                 }
-            });
+                deferredPrompt = null;
+            } else {
+                mainBtn.querySelector('span').innerText = 'Ya puedes instalarla desde el menú';
+            }
         });
 
-        // Detectar si ya está instalada
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            document.querySelectorAll('.btn-install').forEach(btn => {
-                btn.disabled = true;
-                btn.style.opacity = "0.5";
-                btn.querySelector('span').innerText = 'Ya instalada';
+        // Función para los extras (Manejo de rutas específicas)
+        async function installApp(manifestPath, swPath) {
+            console.log(`Instalando desde: ${manifestPath}`);
+            // Aquí puedes añadir lógica personalizada para registrar SW específicos si lo deseas
+        }
+
+        // Registro del Service Worker de la raíz
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Root SW registrado'))
+                .catch(err => console.log('Error en Root SW', err));
             });
         }
     </script>
