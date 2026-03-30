@@ -9,7 +9,6 @@
     <link rel="manifest" href="/manifest.json">
 
     <style>
-        /* --- VARIABLES Y RESET --- */
         :root {
             --accent: #6C63FF;
             --accent-2: #FF6B9D;
@@ -23,27 +22,21 @@
             --font-main: 'Inter', sans-serif;
             --glass-border: rgba(255, 255, 255, 0.08);
             --success: #00D9A5;
+            --warning: #f1c40f;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            scroll-behavior: smooth;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background-color: var(--bg);
             color: var(--text-main);
             font-family: var(--font-main);
-            overflow-x: hidden;
-            line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* --- BACKGROUND DINÁMICO --- */
         .bg-mesh {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -64,31 +57,6 @@
             mask-image: radial-gradient(circle at center, black, transparent 80%);
         }
 
-        /* --- BARRA DE ESTADO DE RED --- */
-        .network-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 50px;
-            border: 1px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success);
-        }
-
-        /* --- CABECERA --- */
         header {
             height: 100vh;
             display: flex;
@@ -119,7 +87,6 @@
             animation: fadeInUp 1s forwards 0.5s;
         }
 
-        /* --- SECCIÓN DE INSTALACIÓN --- */
         .installation-hub {
             padding: 100px 20px;
             max-width: 600px;
@@ -134,7 +101,6 @@
             margin-bottom: 60px;
         }
 
-        /* --- CARD PWA (DISEÑO PREMIUM) --- */
         .pwa-card {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
@@ -155,12 +121,6 @@
             opacity: 0; transition: opacity 0.3s;
         }
 
-        .pwa-card:hover {
-            transform: translateY(-10px);
-            border-color: rgba(108, 99, 255, 0.4);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
         .pwa-card:hover::before { opacity: 1; }
 
         .pwa-card.installed {
@@ -173,7 +133,6 @@
             background: linear-gradient(90deg, var(--success), var(--accent-3));
         }
 
-        /* Badge de instalado */
         .installed-badge {
             position: absolute;
             top: 20px;
@@ -245,15 +204,12 @@
             margin-bottom: 15px;
         }
 
-        .feature-item:last-child { margin-bottom: 0; }
-
         .feature-item svg {
             width: 20px; height: 20px;
             stroke: var(--accent-3);
             flex-shrink: 0;
         }
 
-        /* --- BOTÓN DE ESTADOS --- */
         .btn-install-pwa {
             width: 100%;
             padding: 20px;
@@ -272,16 +228,29 @@
             overflow: hidden;
         }
 
-        /* Estado: Instalar */
+        /* Estado: Listo para instalar */
         .btn-install-pwa.ready {
             background: linear-gradient(135deg, var(--accent), var(--accent-2));
             color: white;
             box-shadow: 0 10px 30px rgba(108, 99, 255, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(108, 99, 255, 0.3); }
+            50% { box-shadow: 0 10px 40px rgba(108, 99, 255, 0.5); }
         }
 
         .btn-install-pwa.ready:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 40px rgba(108, 99, 255, 0.4);
+            box-shadow: 0 15px 40px rgba(108, 99, 255, 0.5);
+        }
+
+        /* Estado: Esperando/No disponible */
+        .btn-install-pwa.waiting {
+            background: #2d3748;
+            color: var(--text-dim);
+            cursor: not-allowed;
         }
 
         /* Estado: Instalando */
@@ -292,7 +261,15 @@
             border: 1px solid var(--glass-border);
         }
 
-        .btn-install-pwa.installing .progress-ring {
+        .spinner {
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .progress-ring {
             position: absolute;
             bottom: 0;
             left: 0;
@@ -302,21 +279,13 @@
             transition: width 0.1s linear;
         }
 
-        .spinner {
-            width: 20px; height: 20px;
-            border: 3px solid rgba(255,255,255,0.2);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* Estado: App Instalada (transitorio) */
+        /* Estado: Instalada */
         .btn-install-pwa.installed-state {
             background: var(--success);
             color: white;
         }
 
-        /* Estado: Abrir App */
+        /* Estado: Abrir */
         .btn-install-pwa.open-state {
             background: transparent;
             color: var(--success);
@@ -327,7 +296,6 @@
             background: rgba(0, 217, 165, 0.1);
         }
 
-        /* iOS Instructions */
         .ios-instructions {
             display: none;
             background: rgba(0,0,0,0.4);
@@ -342,7 +310,19 @@
 
         .ios-instructions.show { display: block; }
 
-        /* --- KEYFRAMES --- */
+        .browser-hint {
+            display: none;
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: var(--warning);
+        }
+
+        .browser-hint.show { display: block; }
+
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
@@ -362,7 +342,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- FOOTER --- */
         footer {
             padding: 40px 20px;
             text-align: center;
@@ -375,10 +354,8 @@
             font-size: 1.2rem;
             font-weight: 800;
             color: var(--text-dim);
-            margin-bottom: 10px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .installation-hub { padding: 60px 20px; }
             .pwa-card { padding: 40px 25px; }
@@ -391,12 +368,6 @@
 
     <div class="bg-mesh"></div>
     <div class="bg-grid"></div>
-
-    <div class="network-status" id="netStatus">
-        <div class="status-dot"></div>
-        <span id="netText">Detectando red...</span>
-        <span id="netType" style="color: var(--accent-2); border-left: 1px solid #333; padding-left: 10px;">---</span>
-    </div>
 
     <header>
         <h1 class="hero-logo">RedCW</h1>
@@ -412,7 +383,6 @@
     <main class="installation-hub" id="install">
         <h2 class="section-title">Centro de Instalación</h2>
 
-        <!-- SOLO UN CARD: RedCW Principal -->
         <div class="pwa-card" id="pwa-card">
             <div class="installed-badge">✓ INSTALADA</div>
             
@@ -462,48 +432,32 @@
                 <p>2. Selecciona <strong>"Añadir a la pantalla de inicio"</strong></p>
                 <p>3. Confirma con <strong>"Añadir"</strong></p>
             </div>
+
+            <div class="browser-hint" id="browser-hint">
+                <strong>Chrome/Edge:</strong> Toca el icono ⋮ (menú) → "Instalar RedCW" o busca el icono en la barra de direcciones.
+            </div>
         </div>
     </main>
 
     <footer>
         <div class="footer-logo">RedCW Platform 2026</div>
-        <p style="color: var(--text-dim); font-size: 0.8rem;">
-            Desarrollado para entornos escolares de alta privacidad.<br>
-            Conectividad mediante protocolos PWA de última generación.
+        <p style="color: var(--text-dim); font-size: 0.8rem; margin-top: 10px;">
+            Desarrollado para entornos escolares de alta privacidad.
         </p>
     </footer>
 
     <script>
-        // --- DETECCIÓN DE RED ---
-        function updateNetworkStatus() {
-            const netText = document.getElementById('netText');
-            const netType = document.getElementById('netType');
-            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-
-            if (navigator.onLine) {
-                netText.innerText = "Conectado";
-                if (connection) {
-                    const type = connection.type === 'wifi' ? 'WiFi' : 'Datos';
-                    const speed = connection.effectiveType ? connection.effectiveType.toUpperCase() : 'N/A';
-                    netType.innerText = `${type} | ${speed}`;
-                }
-            } else {
-                netText.innerText = "Desconectado";
-                netType.innerText = "---";
-            }
-        }
-
-        window.addEventListener('online', updateNetworkStatus);
-        window.addEventListener('offline', updateNetworkStatus);
-        updateNetworkStatus();
-
-        // --- LÓGICA PWA CON DETECCIÓN REAL ---
+        // Variables globales
         let deferredPrompt = null;
         let isInstalling = false;
+        let promptCheckAttempts = 0;
         
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                             window.navigator.standalone === true;
+        const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+        const isEdge = /Edg/.test(navigator.userAgent);
 
         const btn = document.getElementById('install-btn');
         const card = document.getElementById('pwa-card');
@@ -511,41 +465,48 @@
         const spinner = btn.querySelector('.spinner');
         const progressRing = btn.querySelector('.progress-ring');
         const iosInstructions = document.getElementById('ios-instructions');
+        const browserHint = document.getElementById('browser-hint');
 
-        // Capturar evento beforeinstallprompt
+        // CAPTURAR beforeinstallprompt INMEDIATAMENTE
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt capturado');
             e.preventDefault();
             deferredPrompt = e;
-            console.log('Prompt capturado');
+            updateButtonState();
         });
 
-        // Verificar instalación real con getInstalledRelatedApps
+        // Verificar si ya está instalada
         async function checkIfInstalled() {
-            // Método 1: API getInstalledRelatedApps
-            if ('getInstalledRelatedApps' in navigator) {
-                try {
-                    const installedApps = await navigator.getInstalledRelatedApps();
-                    const isInstalled = installedApps.some(app => 
-                        app.id === 'redcw' || 
-                        app.url === window.location.origin + '/manifest.json'
-                    );
-                    
-                    if (isInstalled) {
-                        setInstalledState();
-                        return true;
-                    }
-                } catch (e) {
-                    console.log('Error checking installed apps:', e);
-                }
-            }
-
-            // Método 2: Display mode standalone
+            // Método 1: Standalone mode
             if (isStandalone) {
+                console.log('Modo standalone detectado');
                 setInstalledState();
                 return true;
             }
 
-            // Método 3: LocalStorage fallback
+            // Método 2: getInstalledRelatedApps
+            if ('getInstalledRelatedApps' in navigator) {
+                try {
+                    const installedApps = await navigator.getInstalledRelatedApps();
+                    console.log('Apps instaladas:', installedApps);
+                    
+                    const isInstalled = installedApps.some(app => 
+                        app.id === 'redcw' || 
+                        app.url === window.location.origin + '/manifest.json' ||
+                        app.url.includes('redcw')
+                    );
+                    
+                    if (isInstalled) {
+                        console.log('Detectada via getInstalledRelatedApps');
+                        setInstalledState();
+                        return true;
+                    }
+                } catch (e) {
+                    console.log('Error getInstalledRelatedApps:', e);
+                }
+            }
+
+            // Método 3: LocalStorage
             if (localStorage.getItem('redcw_installed') === 'true') {
                 setInstalledState();
                 return true;
@@ -554,16 +515,43 @@
             return false;
         }
 
-        // Establecer estado instalado
+        // Actualizar estado del botón según disponibilidad
+        function updateButtonState() {
+            if (deferredPrompt) {
+                // Prompt disponible - mostrar listo
+                btn.className = 'btn-install-pwa ready';
+                btn.disabled = false;
+                btnText.textContent = 'Instalar App';
+                browserHint.classList.remove('show');
+            } else {
+                // No hay prompt todavía
+                if (!isIOS && !isSafari && (isChrome || isEdge)) {
+                    // Chrome/Edge pero aún no lista - mostrar esperando
+                    btn.className = 'btn-install-pwa waiting';
+                    btnText.textContent = 'Preparando instalación...';
+                    
+                    // Mostrar hint después de 3 segundos si sigue sin prompt
+                    setTimeout(() => {
+                        if (!deferredPrompt && !isInstalling) {
+                            browserHint.classList.add('show');
+                            btnText.textContent = 'Instalar desde menú';
+                        }
+                    }, 3000);
+                }
+            }
+        }
+
+        // Estados visuales
         function setInstalledState() {
             card.classList.add('installed');
             btn.className = 'btn-install-pwa open-state';
             btnText.textContent = 'Abrir App';
             spinner.style.display = 'none';
             progressRing.style.width = '0%';
+            iosInstructions.classList.remove('show');
+            browserHint.classList.remove('show');
         }
 
-        // Establecer estado instalando
         function setInstallingState() {
             isInstalling = true;
             btn.className = 'btn-install-pwa installing';
@@ -571,20 +559,17 @@
             spinner.style.display = 'block';
             btnText.textContent = 'Instalando App...';
             iosInstructions.classList.remove('show');
+            browserHint.classList.remove('show');
         }
 
-        // Establecer estado instalación completada
         function setInstallationComplete() {
             isInstalling = false;
             btn.className = 'btn-install-pwa installed-state';
             btnText.textContent = 'App Instalada';
             spinner.style.display = 'none';
             card.classList.add('installed');
-            
-            // Guardar en localStorage
             localStorage.setItem('redcw_installed', 'true');
             
-            // Después de 2 segundos, cambiar a "Abrir App"
             setTimeout(() => {
                 btn.className = 'btn-install-pwa open-state';
                 btnText.textContent = 'Abrir App';
@@ -592,11 +577,11 @@
             }, 2000);
         }
 
-        // Simular progreso de instalación (6.5 segundos)
+        // Progreso simulado (6.5 segundos)
         function simulateInstallationProgress() {
             return new Promise((resolve) => {
                 let progress = 0;
-                const duration = 6500; // 6.5 segundos
+                const duration = 6500;
                 const interval = 50;
                 const increment = 100 / (duration / interval);
 
@@ -612,29 +597,34 @@
             });
         }
 
-        // Manejar click en botón
+        // Click en botón
         btn.addEventListener('click', async () => {
             // Si ya está instalada, abrir
-            if (btn.classList.contains('open-state') || card.classList.contains('installed')) {
+            if (card.classList.contains('installed') || btn.classList.contains('open-state')) {
                 window.location.href = '/';
                 return;
             }
 
             // iOS
-            if (isIOS) {
+            if (isIOS || isSafari) {
                 iosInstructions.classList.toggle('show');
                 return;
             }
 
-            // Si ya está instalando, ignorar
-            if (isInstalling) return;
-
-            // Si no hay prompt disponible
+            // Si no hay prompt pero es Chrome/Edge, intentar forzar o mostrar instrucciones
             if (!deferredPrompt) {
-                btnText.textContent = 'Usa el menú del navegador';
-                setTimeout(() => {
-                    btnText.textContent = 'Instalar App';
-                }, 2000);
+                if (isChrome || isEdge) {
+                    browserHint.classList.add('show');
+                    btnText.textContent = 'Mira el menú del navegador ↑';
+                    
+                    // Reintentar detectar prompt
+                    setTimeout(() => {
+                        if (deferredPrompt) {
+                            browserHint.classList.remove('show');
+                            btnText.textContent = 'Instalar App';
+                        }
+                    }, 1000);
+                }
                 return;
             }
 
@@ -644,47 +634,63 @@
             // Mostrar prompt nativo
             deferredPrompt.prompt();
 
-            // Esperar la elección del usuario
+            // Esperar respuesta
             const { outcome } = await deferredPrompt.userChoice;
+            console.log('Resultado:', outcome);
 
             if (outcome === 'accepted') {
-                // Usuario aceptó - mostrar progreso simulado
                 await simulateInstallationProgress();
                 setInstallationComplete();
             } else {
-                // Usuario canceló - resetear
+                // Cancelado
                 isInstalling = false;
-                btn.className = 'btn-install-pwa ready';
-                btn.disabled = false;
-                spinner.style.display = 'none';
-                btnText.textContent = 'Instalar App';
+                updateButtonState();
                 progressRing.style.width = '0%';
             }
 
             deferredPrompt = null;
         });
 
-        // Verificar instalación al cargar
-        document.addEventListener('DOMContentLoaded', () => {
-            checkIfInstalled();
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar si ya está instalada
+            const alreadyInstalled = await checkIfInstalled();
             
-            // Re-verificar periódicamente
-            setInterval(checkIfInstalled, 3000);
+            if (!alreadyInstalled) {
+                // Estado inicial
+                updateButtonState();
+                
+                // Reintentar detectar prompt cada 2 segundos (hasta 10 intentos)
+                const checkInterval = setInterval(() => {
+                    promptCheckAttempts++;
+                    if (deferredPrompt || promptCheckAttempts > 10) {
+                        clearInterval(checkInterval);
+                        if (deferredPrompt) updateButtonState();
+                    }
+                }, 2000);
+            }
         });
 
-        // Registrar Service Worker
+        // Evento appinstalled
+        window.addEventListener('appinstalled', () => {
+            console.log('App instalada exitosamente');
+            setInstallationComplete();
+            deferredPrompt = null;
+        });
+
+        // Registrar SW
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then(() => console.log('SW registrado'))
                 .catch(err => console.log('Error SW:', err));
         }
 
-        // Escuchar cambios en appinstalled
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA instalada');
-            setInstallationComplete();
-            deferredPrompt = null;
-        });
+        // Debug
+        console.log('UserAgent:', navigator.userAgent);
+        console.log('isIOS:', isIOS);
+        console.log('isChrome:', isChrome);
+        console.log('isEdge:', isEdge);
+        console.log('isSafari:', isSafari);
     </script>
 </body>
 </html>
