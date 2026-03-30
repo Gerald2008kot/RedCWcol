@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════════════════
 function renderLogin() {
   const app = document.getElementById('app');
-  document.querySelector('.app-shell')?.classList.add('no-shell');
+  // shell se maneja en app.js
   app.innerHTML = `
   <div class="login-wrap">
     <div class="login-card">
@@ -64,7 +64,7 @@ function renderLogin() {
 //  DASHBOARD
 // ══════════════════════════════════════════════════════════════
 async function renderDashboard() {
-  document.querySelector('.app-shell')?.classList.remove('no-shell');
+  // shell se maneja en app.js
   const app = document.getElementById('app');
 
   const [archRes, usrRes, msgRes, descRes, anuncRes, recRes] = await Promise.all([
@@ -458,8 +458,7 @@ async function renderBiblioteca() {
     return `<i class="fa-solid ${ico} file-icon ${cls||'other'}"></i>`;
   }
 
-  app.innerHTML = `
-  <div class="container-fluid px-3 px-md-4 fade-in">
+  app.innerHTML = `<div class="container-fluid px-3 px-md-4 fade-in">
     <div class="page-header mb-4">
       <h4 class="fw-700 mb-0"><i class="fa-solid fa-folder-open me-2 text-accent"></i>Biblioteca</h4>
     </div>
@@ -851,7 +850,7 @@ async function renderPerfil() {
                      accept="image/jpeg,image/png,image/gif,image/webp">
             </div>
             <h5 class="fw-700 mb-1">${xss(perfil.nombre)} ${xss(perfil.apellido)}</h5>
-            <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.5rem">${xss(perfil.email||_authUser.email)}</div>
+            <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.5rem">${xss(_authUser?.email || '')}</div>
             <span class="rol-badge rol-${xss(perfil.rol)}">${perfil.rol}</span>
             ${perfil.departamento ? `<div class="mt-2"><span class="badge-dept">${xss(perfil.departamento)}</span></div>` : ''}
           </div>
@@ -1101,12 +1100,9 @@ async function renderAdmin() {
     const apellido = prompt('Apellido:') || 'Nuevo';
     const rol      = prompt('Rol (admin/editor/moderador/lector):', 'lector') || 'lector';
 
-    const { error } = await sb.auth.admin.createUser({
-      email, password: pass, email_confirm: true,
-      user_metadata: { nombre, apellido, rol },
-    });
-    if (error) toast(error.message, 'err');
-    else { toast('Usuario creado correctamente', 'ok'); renderAdmin(); }
+    // sb.auth.admin requiere service_role key (solo funciona server-side)
+    // Usar el SQL Editor de Supabase para crear usuarios directamente
+    toast('Para crear usuarios usa el SQL Editor de Supabase o el Dashboard > Authentication', 'info');
   };
 }
 
@@ -1119,7 +1115,7 @@ async function renderEncuestas() {
   const filtro = params.get('f') === 'cerradas' ? false : true;
 
   const [encRes, votosRes] = await Promise.all([
-    sb.from('encuestas').select('*,perfiles(nombre,apellido),encuestas_opciones(*)')
+    sb.from('encuestas').select('*,perfiles(nombre,apellido),encuestas_opciones(*,encuestas_votos(count))')
       .eq('activa', filtro).order('created_at', { ascending: false }),
     sb.from('encuestas_votos').select('encuesta_id,opcion_id').eq('usuario_id', _usuario.id),
   ]);
@@ -1225,7 +1221,7 @@ async function renderEncuestas() {
 function renderEncuestaCard(enc, misVotos) {
   const yaVote  = !!misVotos[enc.id];
   const opciones = enc.encuestas_opciones || [];
-  const totalV   = opciones.reduce((s,o) => s + (o.votos||0), 0);
+  const totalV   = opciones.reduce((s,o) => s + (o.encuestas_votos?.[0]?.count || 0), 0);
 
   return `
   <div class="col-lg-6">
@@ -1243,7 +1239,7 @@ function renderEncuestaCard(enc, misVotos) {
       <div class="card-body">
         ${yaVote || !enc.activa
           ? opciones.map(o => {
-              const pct = totalV > 0 ? Math.round((o.votos||0)/totalV*100) : 0;
+              const pct = totalV > 0 ? Math.round((o.encuestas_votos?.[0]?.count || 0)/totalV*100) : 0;
               const mine = (misVotos[enc.id]||[]).includes(o.id);
               return `<div class="mb-2">
                 <div class="d-flex justify-content-between" style="font-size:.83rem;margin-bottom:3px">
