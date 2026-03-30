@@ -167,7 +167,7 @@
         }
 
         .app-icon-large img {
-            width: 60px; height: 60px;
+            width: 100px; height: 100px;
             object-fit: contain;
         }
 
@@ -360,7 +360,7 @@
             .installation-hub { padding: 60px 20px; }
             .pwa-card { padding: 40px 25px; }
             .app-icon-large { width: 80px; height: 80px; }
-            .app-icon-large img { width: 50px; height: 50px; }
+            .app-icon-large img { width: 80px; height: 80px;border-radius: 25px; }
         }
     </style>
 </head>
@@ -387,7 +387,7 @@
             <div class="installed-badge">✓ INSTALADA</div>
             
             <div class="app-icon-large">
-                <img src="redcw/icons/icon-192.png" alt="RedCW">
+               <img src="redcw/icons/icon-192.png" alt="Logo RedCW">
             </div>
             
             <h3 class="app-title">RedCW</h3>
@@ -469,7 +469,7 @@
 
         // CAPTURAR beforeinstallprompt INMEDIATAMENTE
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt capturado');
+            console.log('✅ beforeinstallprompt capturado');
             e.preventDefault();
             deferredPrompt = e;
             updateButtonState();
@@ -479,7 +479,7 @@
         async function checkIfInstalled() {
             // Método 1: Standalone mode
             if (isStandalone) {
-                console.log('Modo standalone detectado');
+                console.log('✅ Modo standalone detectado');
                 setInstalledState();
                 return true;
             }
@@ -497,7 +497,7 @@
                     );
                     
                     if (isInstalled) {
-                        console.log('Detectada via getInstalledRelatedApps');
+                        console.log('✅ Detectada via getInstalledRelatedApps');
                         setInstalledState();
                         return true;
                     }
@@ -673,7 +673,7 @@
 
         // Evento appinstalled
         window.addEventListener('appinstalled', () => {
-            console.log('App instalada exitosamente');
+            console.log('✅ App instalada exitosamente');
             setInstallationComplete();
             deferredPrompt = null;
         });
