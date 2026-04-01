@@ -14,8 +14,10 @@ const ASSETS_TO_CACHE = [
   "/redcw/js/app.js",
   "/redcw/js/pages.js",
   "/redcw/js/auth.js",
-  "/redcw/icons/icon-192.png",
-  "/redcw/icons/icon-512.png",
+  "/icons/redcw-192.png",
+  "/icons/redcw-512.png",
+  "/icons/kotatsuname-192.png",
+  "/icons/kotatsuname-512.png",
   "/tools/index.html",
   "/tools/tools/calculadora.html",
   "/tools/tools/contrasenas.html",
@@ -79,8 +81,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "RedCW", {
       body: data.body || "Nueva notificación",
-      icon: "/redcw/icons/icon-192.png",
-      badge: "/redcw/icons/icon-192.png",
+      icon: "/icons/redcw-192.png",
+      badge: "/icons/redcw-192.png",
     })
   );
 });
