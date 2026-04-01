@@ -12,9 +12,9 @@
   <title>RedCW</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon-192.png">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../icons/icon-192.png">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/app.css">
@@ -899,7 +899,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
 // Register service worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("../sw.js").catch(() => {});
   });
 }
 </script>
