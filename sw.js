@@ -18,6 +18,8 @@ const ASSETS_TO_CACHE = [
   "/icons/redcw-512.png",
   "/icons/kotatsuname-192.png",
   "/icons/kotatsuname-512.png",
+  "/icons/intranet-192.png",
+  "/icons/intranet-512.png",
   "/tools/index.html",
   "/tools/tools/calculadora.html",
   "/tools/tools/contrasenas.html",
