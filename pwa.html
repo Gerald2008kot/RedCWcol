@@ -6,7 +6,7 @@
     <title>RedCW | Centro de Instalación PWA</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
 
     <style>
         :root {
@@ -387,7 +387,7 @@
             <div class="installed-badge">✓ INSTALADA</div>
             
             <div class="app-icon-large">
-               <img src="redcw/icons/icon-192.png" alt="Logo RedCW">
+               <img src="icons/redcw-192.png" alt="Logo RedCW">
             </div>
             
             <h3 class="app-title">RedCW</h3>
@@ -469,7 +469,7 @@
 
         // CAPTURAR beforeinstallprompt INMEDIATAMENTE
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt capturado');
+            console.log('✅ beforeinstallprompt capturado');
             e.preventDefault();
             deferredPrompt = e;
             updateButtonState();
@@ -479,7 +479,7 @@
         async function checkIfInstalled() {
             // Método 1: Standalone mode
             if (isStandalone) {
-                console.log('Modo standalone detectado');
+                console.log('✅ Modo standalone detectado');
                 setInstalledState();
                 return true;
             }
@@ -497,7 +497,7 @@
                     );
                     
                     if (isInstalled) {
-                        console.log('Detectada via getInstalledRelatedApps');
+                        console.log('✅ Detectada via getInstalledRelatedApps');
                         setInstalledState();
                         return true;
                     }
@@ -673,14 +673,14 @@
 
         // Evento appinstalled
         window.addEventListener('appinstalled', () => {
-            console.log('App instalada exitosamente');
+            console.log('✅ App instalada exitosamente');
             setInstallationComplete();
             deferredPrompt = null;
         });
 
         // Registrar SW
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('sw.js')
                 .then(() => console.log('SW registrado'))
                 .catch(err => console.log('Error SW:', err));
         }
