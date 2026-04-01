@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RedCW - Control de Páginas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --accent:       #6C63FF;
+            --accent-2:     #FF6B9D;
+            --accent-3:     #00D9A5;
+            --accent-glow:  rgba(108,99,255,.25);
+            --bg: #05070a;
+            --card-bg: #10141d;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
+            --font-display: 'Outfit', sans-serif;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* --- LÍNEA DE CONEXIÓN --- */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 150px; 
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent), var(--accent-3), transparent);
+            z-index: -1;
+            opacity: 0.2;
+        }
+
+        header {
+            padding: 50px 20px 10px;
+            text-align: center;
+        }
+
+        .title-box {
+            border: 2px solid var(--accent);
+            padding: 12px 25px;
+            border-radius: 15px;
+            background: rgba(108, 99, 255, 0.05);
+            box-shadow: 0 0 20px rgba(108, 99, 255, 0.1);
+            display: inline-block;
+        }
+
+        .header-logo {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-3));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 95%;
+            max-width: 500px;
+            padding: 30px 10px;
+        }
+
+        .nav-card {
+            background: var(--card-bg);
+            text-decoration: none;
+            color: var(--text-main);
+            padding: 25px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 130px;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 15px var(--accent-glow);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Logout SVG Style */
+        .icon-box svg {
+            width: 40px;
+            height: 40px;
+            stroke: var(--accent-2);
+        }
+
+        .nav-card span {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .card-social:hover { border-color: var(--accent-2); }
+        .card-tools:hover { border-color: var(--accent-3); }
+
+        @media (max-width: 400px) {
+            .control-grid { gap: 10px; }
+            .nav-card span { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-box">
+            <h1 class="header-logo">RedCW Control</h1>
+        </div>
+    </header>
+
+    <main class="control-grid">
+        <a href="/redcw/index.html" class="nav-card card-social">
+            <div class="icon-box">
+                <img src="/icons/redcw-192.png" alt="Social">
+            </div>
+            <span>Social</span>
+        </a>
+
+        <a href="https://redcw-intranet.vercel.app/index.html" class="nav-card">
+            <div class="icon-box">
+                <img src="/icons/intranet-icon-192.png" alt="IntraNet">
+            </div>
+            <span>IntraNet</span>
+        </a>
+
+        <a href="https://kotatsuname.vercel.app" class="nav-card">
+            <div class="icon-box">
+                <img src="/icons/kotatsuname-192.png" alt="Kotatsuname">
+            </div>
+            <span>Kotatsuname</span>
+        </a>
+
+        <a href="digitals/index.html" class="nav-card">
+            <span>Digitals</span>
+        </a>
+
+        <a href="tools/index.html" class="nav-card card-tools">
+            <span>Tools</span>
+        </a>
+
+        <a href="/dashboard.html" class="nav-card card-social">
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </div>
+            <span>Dashboard</span>
+        </a>
+    </main>
+
+</body>
+</html>
