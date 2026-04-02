@@ -15,15 +15,17 @@
   --accent:#6C63FF;
   --accent-2:#FF6B9D;
   --accent-3:#00D9A5;
-  --accent-glow:rgba(108,99,255,.25);
+  --accent-4:#FFD700;
+  --accent-glow:rgba(108,99,255,.35);
   --bg:#05070a;
-  --card-bg:#10141d;
+  --card-bg:#0d1117;
+  --card-bg-hover:#161b22;
   --text-main:#fff;
-  --text-dim:#94a3b8;
-  --border:rgba(255,255,255,.06);
+  --text-dim:#8b949e;
+  --border:rgba(108,99,255,0.15);
   --font-display:'Outfit',sans-serif;
   --font-main:'Inter',sans-serif;
-  --header-h:70px
+  --header-h:90px
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;scroll-behavior:smooth}
 html{font-size:16px}
@@ -38,26 +40,32 @@ body{
   position:relative;
 }
 
-/* --- LÍNEA DE CONEXIÓN GLOBAL --- */
+/* --- LÍNEA DE CONEXIÓN GLOBAL ANIMADA --- */
 body::before {
   content:'';
   position:absolute;
   top:var(--header-h);
   left:50%;
-  width:2px;
+  width:3px;
   height:calc(100% - var(--header-h));
-  background:linear-gradient(to bottom, var(--accent), var(--accent-2), var(--accent-3), transparent);
+  background:linear-gradient(to bottom, var(--accent), var(--accent-2), transparent);
   z-index:-1;
-  opacity:0.5;
+  opacity:0.6;
   transform:translateX(-50%);
+  animation: pulseLine 3s ease-in-out infinite;
 }
 
-/* Header minimalista agrandado */
+@keyframes pulseLine {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Header minimalista agrandado con animación */
 header{
   height:var(--header-h);
   width:100%;
-  background:rgba(16,20,29,.85);
-  backdrop-filter:blur(12px);
+  background:linear-gradient(180deg, rgba(16,20,29,.95) 0%, rgba(16,20,29,.85) 100%);
+  backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
@@ -65,17 +73,45 @@ header{
   padding:0 16px;
   position:fixed;
   top:0;
-  z-index:1000
+  z-index:1000;
+  box-shadow:0 4px 30px rgba(108,99,255,0.1);
 }
 .header-logo{
   font-family:var(--font-display);
   font-weight:800;
-  font-size:2.2rem;
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  font-size:3.2rem;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 50%,var(--accent) 100%);
+  background-size:200% 200%;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
   text-decoration:none;
-  letter-spacing:-2px;
+  letter-spacing:-3px;
+  animation: gradientShift 4s ease infinite;
+  position:relative;
+  transition:transform 0.3s ease;
+}
+.header-logo:hover{
+  transform:scale(1.05);
+}
+.header-logo::after{
+  content:'';
+  position:absolute;
+  bottom:-5px;
+  left:0;
+  width:100%;
+  height:3px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;
+  transition:opacity 0.3s;
+}
+.header-logo:hover::after{
+  opacity:1;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Línea conectora desde header */
@@ -83,12 +119,18 @@ header{
   position:fixed;
   top:var(--header-h);
   left:50%;
-  width:2px;
-  height:80px;
+  width:3px;
+  height:100px;
   background:linear-gradient(to bottom, var(--accent), transparent);
   transform:translateX(-50%);
   z-index:100;
-  opacity:0.8;
+  opacity:0.9;
+  animation: pulseConnector 2s ease-in-out infinite;
+}
+
+@keyframes pulseConnector {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleY(1); }
+  50% { opacity: 1; transform: translateX(-50%) scaleY(1.1); }
 }
 
 /* Main content */
@@ -105,8 +147,8 @@ header{
 /* Selector Section */
 .selector-section {
   width:100%;
-  max-width:1100px;
-  padding:60px 20px;
+  max-width:1200px;
+  padding:40px 20px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -123,15 +165,28 @@ header{
 
 .selector-section h2 {
   font-family:var(--font-display);
-  font-size:2.2rem;
-  margin-bottom:50px;
+  font-size:2.4rem;
+  margin-bottom:30px;
   text-align:center;
-  background:linear-gradient(135deg,#fff,var(--text-dim));
+  background:linear-gradient(135deg,#fff 0%,var(--accent-2) 100%);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
   opacity:0;
   transform:translateY(20px);
   transition:all 0.6s cubic-bezier(0.4,0,0.2,1) 0.2s;
+  position:relative;
+}
+
+.selector-section h2::after {
+  content:'';
+  position:absolute;
+  bottom:-10px;
+  left:50%;
+  transform:translateX(-50%);
+  width:60px;
+  height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  border-radius:2px;
 }
 
 .selector-section.reveal h2 {
@@ -139,23 +194,31 @@ header{
   transform:translateY(0);
 }
 
+/* GRID DE 2 COLUMNAS SIEMPRE */
 .selector-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:30px;
+  gap:24px;
   width:100%;
 }
 
-@media(max-width:768px){
-  .selector-grid{grid-template-columns:1fr;max-width:500px}
+@media(max-width:400px){
+  .selector-grid{
+    grid-template-columns:1fr;
+    max-width:500px;
+    gap:20px;
+  }
+  .header-logo{
+    font-size:2.5rem;
+  }
 }
 
-/* Cards con animaciones de scroll */
+/* Cards con animaciones mejoradas */
 .app-card{
   background:var(--card-bg);
   border-radius:24px;
-  padding:40px;
-  border:1px solid rgba(255,255,255,0.03);
+  padding:28px;
+  border:1px solid var(--border);
   position:relative;
   overflow:hidden;
   transition:all .4s cubic-bezier(.4,0,.2,1);
@@ -165,135 +228,206 @@ header{
   flex-direction:column;
   align-items:center;
   text-align:center;
-  gap:20px;
+  gap:16px;
   opacity:0;
-  transform:translateY(30px);
+  transform:translateY(40px) scale(0.95);
   will-change:transform, opacity;
 }
 
 .app-card.visible {
   opacity:1;
-  transform:translateY(0);
-  transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
+  transform:translateY(0) scale(1);
+  transition:all 0.6s cubic-bezier(0.34,1.56,0.64,1);
 }
 
+/* Efecto de brillo en hover */
 .app-card::before{
   content:'';
   position:absolute;
   top:0;
   left:0;
   right:0;
-  height:3px;
+  height:4px;
   background:linear-gradient(90deg,var(--accent),var(--accent-2));
   opacity:0;
-  transition:opacity .3s
+  transition:opacity .3s;
+  box-shadow:0 0 20px var(--accent);
 }
+
+.app-card::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(108,99,255,0.15), transparent 70%);
+  opacity:0;
+  transition:opacity 0.4s;
+  pointer-events:none;
+}
+
 .app-card:hover{
-  transform:translateY(-10px) scale(1.02);
-  border-color:rgba(108,99,255,.3);
-  box-shadow:0 30px 60px rgba(0,0,0,.4)
+  transform:translateY(-8px) scale(1.02);
+  background:var(--card-bg-hover);
+  border-color:rgba(108,99,255,0.3);
+  box-shadow:0 25px 50px rgba(0,0,0,.5), 0 0 40px rgba(108,99,255,0.1);
 }
 .app-card:hover::before{opacity:1}
-.app-card.social::before{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-.app-card.digital::before{background:linear-gradient(90deg,var(--accent),var(--accent-3))}
-.app-card.tools::before{background:linear-gradient(90deg,var(--accent-3),var(--accent))}
+.app-card:hover::after{opacity:1}
+
+/* Colores específicos - SIN VERDE EN PRINCIPALES */
+.app-card.social::before{background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 20px var(--accent);}
+.app-card.digital::before{background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 20px var(--accent);}
+.app-card.tools::before{background:linear-gradient(90deg,var(--accent-2),var(--accent-4));box-shadow:0 0 20px var(--accent-2);}
 
 .app-card.social { border-bottom:3px solid var(--accent); }
 .app-card.digital { border-bottom:3px solid var(--accent); }
-.app-card.tools { border-bottom:3px solid var(--accent-3); }
+.app-card.tools { border-bottom:3px solid var(--accent-2); }
 
+/* Icono con animación */
 .app-icon{
-  width:80px;
-  height:80px;
-  border-radius:20px;
+  width:70px;
+  height:70px;
+  border-radius:18px;
   display:flex;
   align-items:center;
   justify-content:center;
   position:relative;
   animation:float 4s ease-in-out infinite;
+  transition:transform 0.3s ease;
 }
+.app-card:hover .app-icon{
+  transform:scale(1.1) rotate(5deg);
+}
+
 .app-icon::before{
   content:'';
   position:absolute;
   inset:0;
-  border-radius:20px;
-  opacity:.2;
-  filter:blur(20px)
+  border-radius:18px;
+  opacity:.3;
+  filter:blur(15px);
+  transition:opacity 0.3s;
 }
+.app-card:hover .app-icon::before{
+  opacity:.5;
+}
+
+/* Iconos SIN VERDE */
 .app-card.social .app-icon{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
-.app-card.digital .app-icon{ background:linear-gradient(135deg,var(--accent),var(--accent-3)); }
-.app-card.tools .app-icon{ background:linear-gradient(135deg,var(--accent-3),var(--accent)); }
+.app-card.digital .app-icon{ background:linear-gradient(135deg,var(--accent),var(--accent-2)); }
+.app-card.tools .app-icon{ background:linear-gradient(135deg,var(--accent-2),var(--accent-4)); }
 
-.app-icon svg{width:40px;height:40px;color:#fff;position:relative;z-index:1}
+.app-icon svg{width:35px;height:35px;color:#fff;position:relative;z-index:1}
 
-.app-info{flex:1}
+.app-info{flex:1;width:100%;}
 .app-info h2{
   font-family:var(--font-display);
   font-weight:700;
-  font-size:1.6rem;
-  margin-bottom:12px;
-  color:#fff
+  font-size:1.4rem;
+  margin-bottom:10px;
+  color:#fff;
+  transition:color 0.3s;
+}
+.app-card:hover .app-info h2{
+  color:var(--accent);
 }
 .app-info p{
-  font-size:1rem;
+  font-size:0.95rem;
   color:var(--text-dim);
-  line-height:1.6;
-  margin-bottom:20px
+  line-height:1.5;
+  margin-bottom:16px;
+  transition:color 0.3s;
 }
+.app-card:hover .app-info p{
+  color:#c9d1d9;
+}
+
+/* Badge mejorado - SIN VERDE */
 .app-badge{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:8px 14px;
+  padding:8px 16px;
   border-radius:20px;
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--border);
-  font-size:.8rem;
-  color:var(--text-dim)
+  background:rgba(108,99,255,0.1);
+  border:1px solid rgba(108,99,255,0.2);
+  font-size:0.8rem;
+  color:var(--accent);
+  font-weight:500;
+  transition:all 0.3s;
+}
+.app-card:hover .app-badge{
+  background:rgba(108,99,255,0.2);
+  transform:scale(1.05);
 }
 .app-badge.active{
-  background:rgba(0,217,165,.1);
-  border-color:var(--accent-3);
-  color:var(--accent-3)
+  background:rgba(108,99,255,0.15);
+  border-color:rgba(108,99,255,0.3);
+  color:var(--accent);
+}
+.app-card:hover .app-badge.active{
+  background:rgba(108,99,255,0.25);
 }
 .app-badge svg{width:14px;height:14px}
 
+/* Flecha con animación */
 .app-arrow{
-  width:48px;
-  height:48px;
+  width:44px;
+  height:44px;
   border-radius:50%;
   background:rgba(255,255,255,.05);
   border:1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:all .3s
+  transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
+  margin-top:auto;
 }
 .app-card:hover .app-arrow{
   background:var(--accent);
   border-color:var(--accent);
-  transform:scale(1.1)
+  transform:scale(1.15) translateX(5px);
+  box-shadow:0 0 20px var(--accent-glow);
 }
-.app-arrow svg{width:20px;height:20px;color:#fff}
+.app-arrow svg{width:20px;height:20px;color:#fff;transition:transform 0.3s;}
+.app-card:hover .app-arrow svg{
+  transform:translateX(3px);
+}
 
-/* Card Especial Volver al Inicio */
+/* Card Especial Volver al Inicio - CON VERDE EN BORDE */
 .app-card.back-nav {
   grid-column: 1 / -1;
-  padding: 20px;
+  padding: 18px;
   background: transparent;
-  border: 1px dashed var(--border);
+  border: 1px dashed var(--accent-3);
+  flex-direction:row;
+  justify-content:center;
+  gap:12px;
 }
 .app-card.back-nav:hover {
-  background: rgba(255,255,255,0.02);
+  background: rgba(0,217,165,0.05);
   border-style: solid;
+  border-color:var(--accent-3);
+  box-shadow:0 0 30px rgba(0,217,165,0.1);
+}
+.app-card.back-nav .app-info{
+  margin:0;
+  flex:0;
+}
+.app-card.back-nav h2{
+  font-size:1.1rem;
+  margin:0;
+  color:var(--accent-3);
+}
+.app-card.back-nav:hover h2{
+  color:var(--accent-3);
 }
 
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
 /* Footer Section */
 .footer-section {
   width:100%;
-  padding:60px 20px 120px;
+  padding:40px 20px 100px;
   display:flex;
   justify-content:center;
   position:relative;
@@ -303,9 +437,23 @@ header{
 }
 .footer-section.reveal { opacity:1; transform:translateY(0); }
 .footer-info{ text-align:center; color:var(--text-dim); font-size:.85rem; }
-.footer-info span{ display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:30px; background:rgba(255,255,255,.03); border:1px solid var(--border) }
+.footer-info span{ 
+  display:inline-flex; 
+  align-items:center; 
+  gap:8px; 
+  padding:12px 24px; 
+  border-radius:30px; 
+  background:rgba(108,99,255,0.05); 
+  border:1px solid var(--border);
+  transition:all 0.3s;
+}
+.footer-info span:hover{
+  background:rgba(108,99,255,0.1);
+  border-color:rgba(108,99,255,0.3);
+  transform:translateY(-2px);
+}
 
-/* Install Banner PWA */
+/* Install Banner PWA Mejorado */
 #installBanner {
   display:none;
   position:fixed;
@@ -314,74 +462,104 @@ header{
   transform:translateX(-50%);
   width:90%;
   max-width:400px;
-  background:var(--card-bg);
+  background:linear-gradient(135deg, var(--card-bg) 0%, rgba(108,99,255,0.1) 100%);
   border:1px solid var(--accent);
   border-radius:20px;
   padding:16px;
   z-index:9999;
-  box-shadow:0 10px 40px rgba(0,0,0,0.6);
+  box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(108,99,255,0.2);
   align-items:center;
   justify-content:space-between;
   animation:slideUp 0.5s ease-out;
   opacity:0;
+  backdrop-filter:blur(10px);
 }
 #installBanner.visible { display:flex; opacity:1; }
-/* --- Estilos para los botones del Banner PWA --- */
+
 #installBanner button {
   font-family: var(--font-main);
   border: none;
   outline: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: all 0.3s ease;
 }
 
 #btnInstall {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: var(--text-main);
-  padding: 8px 16px;
-  font-size: 0.85rem;
+  padding: 10px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
   box-shadow: 0 4px 15px var(--accent-glow);
 }
 
 #btnInstall:hover {
-  background: var(--accent-2);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
 }
 
 #btnInstall:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 #btnCancel {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-dim);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   line-height: 1;
   border: 1px solid var(--border);
+  transition:all 0.3s;
 }
 
 #btnCancel:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-main);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 107, 157, 0.2);
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+  transform:rotate(90deg);
 }
 
-@keyframes slideUp { from { transform:translate(-50%, 100px); opacity:0; } to { transform:translate(-50%, 0); opacity:1; } }
+@keyframes slideUp { 
+  from { transform:translate(-50%, 100px); opacity:0; } 
+  to { transform:translate(-50%, 0); opacity:1; } 
+}
+
+/* Animación de entrada para el banner */
+@keyframes bannerPulse {
+  0%, 100% { box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(108,99,255,0.2); }
+  50% { box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 40px rgba(108,99,255,0.4); }
+}
+#installBanner.visible {
+  animation: slideUp 0.5s ease-out, bannerPulse 2s ease-in-out infinite 0.5s;
+}
 
 @media(max-width:480px){
-  .header-logo{font-size:1.8rem}
-  .app-card{padding:30px}
-  .selector-section h2{font-size:1.8rem}
+  .header-logo{font-size:2.2rem;letter-spacing:-2px;}
+  .app-card{padding:22px;}
+  .selector-section h2{font-size:1.8rem;}
+  .app-icon{width:60px;height:60px;}
+  .app-info h2{font-size:1.2rem;}
 }
 
+/* Efecto de partículas sutiles en el fondo - SIN VERDE */
+body::after {
+  content:'';
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(108,99,255,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,107,157,0.03) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:-2;
+}
 
 </style>
 </head>
@@ -400,36 +578,30 @@ header{
     
     <div class="selector-grid">
       <a href="redcw/index.html" class="app-card social">
-        <img src="icons/redcw-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo RedCW">
+        <img src="icons/redcw-192.png" width="70" height="70" style="border-radius: 18px; background:#1a1a1a;" alt="Logo RedCW">
         <div class="app-info">
           <h2>RedCW Social</h2>
-          <p>Conecta con otros estudiantes, comparte contenido y mantente al día.</p>
+      
           <span class="app-badge active">
-            <img src="icons/redcw-192.png" width="20" height="20" style="border-radius: 4px; margin-right:5px;" alt="Logo RedCW">
+            <img src="icons/redcw-192.png" width="18" height="18" style="border-radius: 4px; margin-right:5px;" alt="Logo RedCW">
             Social
           </span>
         </div>
-        <div class="app-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
+
       </a>
 
+      <a href="https://kotatsuname.vercel.app" class="app-card tools">
+        <img src="icons/kotatsuname-192.png" width="70" height="70" style="border-radius: 18px; background:#1a1a1a;" alt="Logo Kotatsu">
+        <div class="app-info">
+          <h2>Kotatsuname Biblioteca</h2>
 
+          <span class="app-badge"><img src="icons/kotatsuname-192.png" width="18" height="18" style="border-radius: 4px; margin-right:5px;" alt="Logo RedCW">
+          Lectura</span>
+        </div>
 
-   <a href="https://kotatsuname.vercel.app" class="app-card tools">
-  <img src="icons/kotatsuname-192.png" width="80" height="80" style="border-radius: 20px; background:#1a1a1a;" alt="Logo Kotatsu">
-  <div class="app-info">
-    <h2>Kotatsuname</h2>
-    <p>Biblioteca de libros e historias digitales para la comunidad.</p>
-    <span class="app-badge"><img src="icons/kotatsuname-192.png" width="20" height="20" style="border-radius: 4px; margin-right:5px;" alt="Logo RedCW">
-  Lectura</span>
-  </div>
-  <div class="app-arrow">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-  </div>
-</a>
+      </a>
 
-            <a href="digitals/index.html" class="app-card digital">
+      <a href="digitals/index.html" class="app-card digital">
         <div class="app-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
@@ -440,12 +612,10 @@ header{
         </div>
         <div class="app-info">
           <h2>RedCW Digital</h2>
-          <p>Gestión de IP, diagnóstico de red y utilidades técnicas de conexión.</p>
+
           <span class="app-badge">Red & IP</span>
         </div>
-        <div class="app-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
+
       </a>
 
       <a href="tools/index.html" class="app-card tools">
@@ -454,18 +624,16 @@ header{
         </div>
         <div class="app-info">
           <h2>RedCW Tools</h2>
-          <p>Calculadora, conversores y generadores para tus estudios.</p>
+
           <span class="app-badge">Herramientas</span>
         </div>
-        <div class="app-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
+
       </a>
 
       <a href="index.html" class="app-card back-nav" id="backToWeb">
-        <div class="app-info" style="display:flex; align-items:center; gap:15px; margin-bottom:0;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          <h2 style="font-size:1.2rem; margin:0;">Volver al Inicio Web</h2>
+        <div class="app-info" style="display:flex; align-items:center; gap:12px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <h2 style="font-size:1.1rem; margin:0;">Volver al Inicio Web</h2>
         </div>
       </a>
 
@@ -485,13 +653,13 @@ header{
 
 <div id="installBanner">
     <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="icons/redcw-192.png" width="40" height="40" style="border-radius: 8px; background:#1a1a1a;">
+        <img src="icons/redcw-192.png" width="44" height="44" style="border-radius: 12px; background:#1a1a1a;">
         <div>
-            <strong style="display: block; font-size: 0.9rem; color:white;">Instalar RedCW</strong>
-            <span style="font-size: 0.75rem; color: var(--text-dim);">Mejor experiencia de usuario</span>
+            <strong style="display: block; font-size: 0.95rem; color:white;">Instalar RedCW</strong>
+            <span style="font-size: 0.8rem; color: var(--text-dim);">Mejor experiencia de usuario</span>
         </div>
     </div>
-    <div style="display: flex; gap: 8px;">
+    <div style="display: flex; gap: 10px;">
         <button id="btnInstall">Instalar</button>
         <button id="btnCancel">&times;</button>
     </div>
@@ -502,15 +670,17 @@ header{
 const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 if (isPWA) { document.getElementById('backToWeb').style.display = 'none'; }
 
-// Intersection Observer (Manteniendo tu lógica original intacta)
-const scrollObserverOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
+// Intersection Observer mejorado
+const scrollObserverOptions = { threshold: 0.1, rootMargin: "0px 0px -30px 0px" };
 const scrollObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       entry.target.classList.add('reveal');
       if (entry.target.id === 'selectorSection') {
         const cards = entry.target.querySelectorAll('.app-card');
-        cards.forEach((card, index) => { setTimeout(() => { card.classList.add('visible'); }, index * 150); });
+        cards.forEach((card, index) => { 
+          setTimeout(() => { card.classList.add('visible'); }, index * 100); 
+        });
       }
       scrollObserver.unobserve(entry.target);
     }
@@ -519,7 +689,7 @@ const scrollObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('#selectorSection, #footerSection').forEach(section => scrollObserver.observe(section));
 
-// PWA Banner (Manteniendo tu lógica original intacta)
+// PWA Banner
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -527,7 +697,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   setTimeout(() => { 
     const banner = document.getElementById('installBanner');
     if (banner && !localStorage.getItem('pwaBannerDismissed')) { banner.classList.add('visible'); }
-  }, 2000);
+  }, 1500);
 });
 
 document.getElementById('btnInstall').addEventListener('click', async () => {
@@ -549,11 +719,32 @@ if('serviceWorker' in navigator){
   });
 }
 
+// Efectos táctiles mejorados
 document.querySelectorAll('.app-card').forEach(card=>{
-  card.addEventListener('touchstart',()=>card.style.transform='scale(0.98)');
-  card.addEventListener('touchend',()=>card.style.transform='');
+  card.addEventListener('touchstart',()=>{
+    card.style.transform='scale(0.97)';
+    card.style.transition='transform 0.1s';
+  });
+  card.addEventListener('touchend',()=>{
+    card.style.transform='';
+    card.style.transition='all .4s cubic-bezier(.4,0,.2,1)';
+  });
+});
+
+// Efecto de parallax suave en el header
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+  const currentScroll = window.pageYOffset;
+  const header = document.querySelector('header');
+  if (currentScroll > lastScroll && currentScroll > 100) {
+    header.style.transform = 'translateY(-100%)';
+  } else {
+    header.style.transform = 'translateY(0)';
+  }
+  lastScroll = currentScroll;
 });
 </script>
 
 </body>
 </html>
+
