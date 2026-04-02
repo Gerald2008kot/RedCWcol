@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
   "/index.html",
   "/dashboard.html",
   "/manifest.json",
+  "/enter.html",
   "/redcw/index.html",
   "/redcw/css/app.css",
   "/redcw/js/config.js",
