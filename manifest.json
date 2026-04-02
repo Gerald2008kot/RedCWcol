@@ -2,7 +2,7 @@
   "name": "RedCW",
   "short_name": "RedCW",
   "description": "Red social independiente para la comunidad colegial",
-  "start_url": "/dashboard.html",
+  "start_url": "/enter.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#05070a",
