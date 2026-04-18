@@ -222,15 +222,12 @@ async function fetchAllData() {
     btn.classList.add('loading');
     btnText.textContent = 'Analizando...';
     
-    // Efecto de carga visual
     document.getElementById('ipBig').innerHTML = '<span class="loading-shimmer"></span>';
     document.getElementById('valGeo').innerHTML = '<span class="loading-shimmer"></span>';
-    document.getElementById('valISP').innerHTML = '<span class="loading-shimmer"></span>';
-    
+
     getClientContext();
 
     try {
-        // Ejecutamos ambas APIs. Ipapi para ubicación precisa, Ipquery para ISP/Red.
         const [resIpapi, resIpquery] = await Promise.all([
             fetch('https://ipapi.co/json/'),
             fetch('https://api.ipquery.io/?format=json')
@@ -240,16 +237,14 @@ async function fetchAllData() {
         const dataNet = await resIpquery.json();
         
         setTimeout(() => {
-            // Usamos dataLoc (Ipapi) para la IP y la Ubicación por su precisión en departamentos
             document.getElementById('ipBig').textContent = dataLoc.ip;
             
-            // Mostramos Ciudad y Región/Departamento de Ipapi
-            document.getElementById('valGeo').textContent = `${dataLoc.city}, ${dataLoc.region}`;
+            // CORRECCIÓN AQUÍ: País (country_name) + Región (region)
+            // Esto mostrará: "Peru, Lima" (o el departamento que corresponda)
+            document.getElementById('valGeo').textContent = `${dataLoc.country_name}, ${dataLoc.region}`;
             
-            // Usamos dataNet (Ipquery) para el ISP porque suele dar nombres más limpios
             document.getElementById('valISP').textContent = dataNet.isp.name || dataLoc.org;
             
-            // Bonus: Si quieres saber si es VPN usando Ipquery
             if(dataNet.risk.is_vpn) {
                 document.getElementById('netTypeBadge').textContent = 'VPN DETECTADA';
                 document.getElementById('netTypeBadge').style.background = 'var(--accent-2)';
@@ -263,7 +258,6 @@ async function fetchAllData() {
         }, 800);
 
     } catch (e) {
-        console.error("Error obteniendo datos:", e);
         document.getElementById('ipBig').textContent = "Error de red";
         btn.classList.remove('loading');
         btnText.textContent = 'Reintentar';
