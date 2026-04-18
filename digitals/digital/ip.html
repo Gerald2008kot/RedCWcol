@@ -222,26 +222,49 @@ async function fetchAllData() {
     btn.classList.add('loading');
     btnText.textContent = 'Analizando...';
     
-    // Shimmer effect visual
+    // Efecto de carga visual
     document.getElementById('ipBig').innerHTML = '<span class="loading-shimmer"></span>';
+    document.getElementById('valGeo').innerHTML = '<span class="loading-shimmer"></span>';
+    document.getElementById('valISP').innerHTML = '<span class="loading-shimmer"></span>';
     
     getClientContext();
 
     try {
-        const res = await fetch('https://api.ipquery.io/?format=json');
-        const data = await res.json();
+        // Ejecutamos ambas APIs. Ipapi para ubicación precisa, Ipquery para ISP/Red.
+        const [resIpapi, resIpquery] = await Promise.all([
+            fetch('https://ipapi.co/json/'),
+            fetch('https://api.ipquery.io/?format=json')
+        ]);
+
+        const dataLoc = await resIpapi.json();
+        const dataNet = await resIpquery.json();
         
-        setTimeout(() => { // Delay para que se vea la animación
-            document.getElementById('ipBig').textContent = data.ip;
-            document.getElementById('valGeo').textContent = `${data.location.country}, ${data.location.city}`;
-            document.getElementById('valISP').textContent = data.isp.isp;
+        setTimeout(() => {
+            // Usamos dataLoc (Ipapi) para la IP y la Ubicación por su precisión en departamentos
+            document.getElementById('ipBig').textContent = dataLoc.ip;
             
+            // Mostramos Ciudad y Región/Departamento de Ipapi
+            document.getElementById('valGeo').textContent = `${dataLoc.city}, ${dataLoc.region}`;
+            
+            // Usamos dataNet (Ipquery) para el ISP porque suele dar nombres más limpios
+            document.getElementById('valISP').textContent = dataNet.isp.name || dataLoc.org;
+            
+            // Bonus: Si quieres saber si es VPN usando Ipquery
+            if(dataNet.risk.is_vpn) {
+                document.getElementById('netTypeBadge').textContent = 'VPN DETECTADA';
+                document.getElementById('netTypeBadge').style.background = 'var(--accent-2)';
+            } else {
+                document.getElementById('netTypeBadge').textContent = 'CONEXIÓN REAL';
+                document.getElementById('netTypeBadge').style.background = 'var(--accent-3)';
+            }
+
             btn.classList.remove('loading');
             btnText.textContent = 'Analizar';
         }, 800);
 
     } catch (e) {
-        document.getElementById('ipBig').textContent = "Error de conexión";
+        console.error("Error obteniendo datos:", e);
+        document.getElementById('ipBig').textContent = "Error de red";
         btn.classList.remove('loading');
         btnText.textContent = 'Reintentar';
     }
