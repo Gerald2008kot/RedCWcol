@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Generador QR Profesional | Descarga y Copia Funcional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #eef2f5 100%);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .qr-card {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255,255,255,0.98);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 1.8rem 2rem 1rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1A2A3F, #1e3a5f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            background: linear-gradient(135deg, #2c6e9e, #1e4a76);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #5b6e8c;
+            font-weight: 500;
+            margin-top: 0.6rem;
+            font-size: 0.95rem;
+        }
+
+        .content {
+            padding: 2rem 2rem 2rem 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #1e2f3e;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .input-label i {
+            color: #2c6e9e;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            font-family: 'Inter', monospace;
+            border: 2px solid #dfe6ed;
+            border-radius: 1.8rem;
+            background: white;
+            transition: all 0.2s;
+            outline: none;
+            font-weight: 500;
+            color: #0a1c2c;
+        }
+
+        .url-input:focus {
+            border-color: #2c7cb6;
+            box-shadow: 0 0 0 3px rgba(44,124,182,0.2);
+        }
+
+        .options {
+            background: #f8fafd;
+            border-radius: 1.5rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .size-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .size-control label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.85rem;
+        }
+
+        .size-select {
+            background: white;
+            border: 1px solid #cbdde9;
+            border-radius: 2rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            color: #1e2f3e;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .info-badge {
+            font-size: 0.75rem;
+            background: #eef3fc;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            color: #2c6e9e;
+        }
+
+        .gen-btn {
+            width: 100%;
+            background: #1f4e79;
+            border: none;
+            padding: 1rem;
+            border-radius: 3rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 12px rgba(28, 78, 118, 0.3);
+        }
+
+        .gen-btn:hover {
+            background: #0e3b5c;
+            transform: translateY(-2px);
+        }
+
+        .gen-btn:active {
+            transform: translateY(1px);
+        }
+
+        .qr-container {
+            background: white;
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f8;
+        }
+
+        .qr-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qrcodeCanvas {
+            display: block;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: 1px solid #eef2f8;
+        }
+
+        .qr-message {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #5f7f9e;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .secondary-btn {
+            background: #f0f4f9;
+            border: none;
+            padding: 0.7rem 1.3rem;
+            border-radius: 2.2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1f4970;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #dce5ef;
+        }
+
+        .secondary-btn:hover {
+            background: #e6edf5;
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            background: #fee9e6;
+            color: #bc3900;
+            border-radius: 2rem;
+            padding: 0.7rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            text-align: center;
+            border-left: 4px solid #e25822;
+        }
+
+        .success-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f4e79;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: fadeInOut 2s ease forwards;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        }
+
+        footer {
+            background: #fafcff;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #8ba0b5;
+            border-top: 1px solid #e9edf2;
+        }
+
+        @media (max-width: 550px) {
+            .content {
+                padding: 1.5rem;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="qr-card">
+    <div class="header">
+        <h1>
+            <i class="fas fa-qrcode"></i> 
+            QR Craft
+        </h1>
+        <div class="sub">Genera, descarga o copia códigos QR desde URLs o texto</div>
+    </div>
+
+    <div class="content">
+        <div class="input-group">
+            <div class="input-label">
+                <i class="fas fa-link"></i>
+                <span>URL o texto para el código QR</span>
+            </div>
+            <input type="text" id="urlInput" class="url-input" placeholder="https://ejemplo.com  o  cualquier texto" value="https://www.ejemplo.com/qr-demo">
+        </div>
+
+        <div class="options">
+            <div class="size-control">
+                <label><i class="fas fa-arrows-alt"></i> Tamaño QR:</label>
+                <select id="sizeSelect" class="size-select">
+                    <option value="180">Pequeño (180px)</option>
+                    <option value="250" selected>Mediano (250px)</option>
+                    <option value="320">Grande (320px)</option>
+                    <option value="400">Extra grande (400px)</option>
+                </select>
+            </div>
+            <div class="info-badge">
+                <i class="fas fa-magic"></i> Nivel corrección M · Alta calidad
+            </div>
+        </div>
+
+        <button id="generateBtn" class="gen-btn">
+            <i class="fas fa-sync-alt"></i> Generar QR
+        </button>
+
+        <div class="qr-container">
+            <div class="qr-placeholder">
+                <canvas id="qrcodeCanvas" width="250" height="250" style="width:250px; height:250px;"></canvas>
+                <div class="qr-message" id="qrMessage">
+                    <i class="fas fa-info-circle"></i> Ingresa una URL y haz clic en Generar
+                </div>
+            </div>
+            <div class="action-buttons" id="actionButtons" style="display: none;">
+                <button id="downloadBtn" class="secondary-btn"><i class="fas fa-download"></i> Descargar PNG</button>
+                <button id="copyBtn" class="secondary-btn"><i class="fas fa-copy"></i> Copiar imagen</button>
+            </div>
+            <div id="errorBox"></div>
+        </div>
+    </div>
+    <footer>
+        <i class="fas fa-shield-alt"></i> Los QR se generan localmente · Descarga y copia completamente funcionales
+    </footer>
+</div>
+
+<script>
+    // Elementos DOM
+    const urlInput = document.getElementById('urlInput');
+    const sizeSelect = document.getElementById('sizeSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const qrCanvas = document.getElementById('qrcodeCanvas');
+    const qrMessageDiv = document.getElementById('qrMessage');
+    const actionButtonsDiv = document.getElementById('actionButtons');
+    const errorBox = document.getElementById('errorBox');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    // Estado actual
+    let currentQRText = "";
+    let currentSize = 250;
+    let currentCanvasImage = null; // No necesario, pero mantenemos referencia
+
+    // Mostrar notificación temporal
+    function showNotification(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'success-toast';
+        toast.style.background = isError ? '#c0392b' : '#1f4e79';
+        toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+    // Mostrar error en el área de error
+    function showError(msg) {
+        errorBox.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${msg}</div>`;
+        qrMessageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al generar QR. Verifica el texto.';
+        actionButtonsDiv.style.display = 'none';
+        currentQRText = "";
+        // Dibujar placeholder
+        drawPlaceholder();
+    }
+
+    function clearError() {
+        errorBox.innerHTML = '';
+    }
+
+    function drawPlaceholder() {
+        const size = parseInt(sizeSelect.value, 10);
+        qrCanvas.width = size;
+        qrCanvas.height = size;
+        qrCanvas.style.width = `${size}px`;
+        qrCanvas.style.height = `${size}px`;
+        const ctx = qrCanvas.getContext('2d');
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#9aabbc';
+        ctx.font = `500 ${Math.floor(size/12)}px 'Inter', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText("🔘 QR", size/2, size/2);
+        ctx.fillText("Listo", size/2, size/2 + 25);
+    }
+
+    // Función principal para generar el QR en el canvas (usando librería qrcode-generator)
+    function drawQRCode(text, canvasSize) {
+        if (!text || text.trim() === "") {
+            throw new Error("El texto está vacío");
+        }
+        
+        // Generar matriz QR con nivel de corrección 'M'
+        let qr;
+        try {
+            // Versión 0 = auto-detectar la mejor versión
+            qr = qrcode(0, 'M');
+            qr.addData(text);
+            qr.make();
+        } catch (err) {
+            console.error(err);
+            throw new Error("Texto demasiado largo o caracteres no soportados. Máximo ~2953 caracteres alfanuméricos.");
+        }
+        
+        const moduleCount = qr.getModuleCount();
+        // Configurar tamaño exacto del canvas
+        qrCanvas.width = canvasSize;
+        qrCanvas.height = canvasSize;
+        qrCanvas.style.width = `${canvasSize}px`;
+        qrCanvas.style.height = `${canvasSize}px`;
+        
+        const ctx = qrCanvas.getContext('2d');
+        // Fondo blanco
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        
+        // Calcular tamaño de cada módulo
+        const cellSize = canvasSize / moduleCount;
+        ctx.fillStyle = '#000000';
+        
+        // Dibujar cada módulo oscuro (mejor rendimiento)
+        for (let row = 0; row < moduleCount; row++) {
+            for (let col = 0; col < moduleCount; col++) {
+                if (qr.isDark(row, col)) {
+                    const x = col * cellSize;
+                    const y = row * cellSize;
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                }
+            }
+        }
+        
+        // Retornar true si se dibujó correctamente
+        return true;
+    }
+    
+    // Función que orquesta la generación y actualiza UI
+    async function generateQR() {
+        clearError();
+        let rawText = urlInput.value.trim();
+        
+        if (rawText === "") {
+            showError("Por favor, ingresa una URL o texto para generar el código QR.");
+            qrMessageDiv.innerHTML = '<i class="fas fa-link"></i> Esperando un enlace o texto válido';
+            actionButtonsDiv.style.display = 'none';
+            drawPlaceholder();
+            currentQRText = "";
+            return;
+        }
+        
+        const selectedSize = parseInt(sizeSelect.value, 10);
+        currentSize = selectedSize;
+        
+        // Mostrar estado de carga
+        qrMessageDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Generando código QR...';
+        actionButtonsDiv.style.display = 'none';
+        
+        // Pequeño timeout para UI, pero realmente es síncrono
+        try {
+            const success = drawQRCode(rawText, selectedSize);
+            if (success) {
+                currentQRText = rawText;
+                const previewText = rawText.length > 50 ? rawText.substring(0, 47) + '...' : rawText;
+                qrMessageDiv.innerHTML = `<i class="fas fa-check-circle" style="color:#2b7e3a"></i> QR generado para: ${previewText}`;
+                actionButtonsDiv.style.display = 'flex';
+                clearError();
+                showNotification("✅ QR generado exitosamente", false);
+            } else {
+                throw new Error("No se pudo dibujar el QR");
+            }
+        } catch (err) {
+            console.error(err);
+            showError(err.message || "Error inesperado al generar el código QR.");
+            actionButtonsDiv.style.display = 'none';
+            currentQRText = "";
+            drawPlaceholder();
+        }
+    }
+    
+    // Descargar como PNG (función mejorada y robusta)
+    function downloadQR() {
+        if (!currentQRText) {
+            showNotification("⚠️ No hay ningún QR generado. Genera uno primero.", true);
+            return;
+        }
+        
+        try {
+            // Creamos un enlace temporal para descargar el canvas como PNG
+            const canvas = qrCanvas;
+            // Verificar que el canvas tenga contenido válido
+            const dataURL = canvas.toDataURL('image/png');
+            if (dataURL === 'data:,' || !dataURL) {
+                throw new Error("No se pudo generar la imagen");
+            }
+            
+            const link = document.createElement('a');
+            let filename = "codigo_qr.png";
+            if (currentQRText) {
+                // Limpiar el texto para el nombre del archivo
+                let cleanName = currentQRText.replace(/[^a-z0-9]/gi, '_').substring(0, 30);
+                if (cleanName.length > 0) {
+                    filename = `qr_${cleanName}.png`;
+                } else {
+                    filename = "codigo_qr.png";
+                }
+            }
+            link.download = filename;
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification("📥 Imagen descargada correctamente", false);
+        } catch (err) {
+            console.error("Error descargando:", err);
+            showNotification("❌ Error al descargar. Intenta nuevamente.", true);
+        }
+    }
+    
+    // Función para copiar la imagen del QR al portapapeles (solución para más navegadores)
+    async function copyQRImage() {
+        if (!currentQRText) {
+            showNotification("⚠️ No hay QR para copiar. Genera uno primero.", true);
+            return;
+        }
+        
+        try {
+            // Convertir canvas a blob
+            const blob = await new Promise((resolve) => {
+                qrCanvas.toBlob(resolve, 'image/png');
+            });
+            
+            if (!blob) {
+                throw new Error("No se pudo crear el blob de la imagen");
+            }
+            
+            // Intentar con el método moderno de Clipboard API
+            if (navigator.clipboard && navigator.clipboard.write) {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [blob.type]: blob
+                    })
+                ]);
+                showNotification("📋 Imagen QR copiada al portapapeles", false);
+            } 
+            // Fallback para navegadores más antiguos o que no soportan ClipboardItem
+            else if (navigator.clipboard && navigator.clipboard.writeText) {
+                // En caso de que no soporte imágenes, mostramos mensaje alternativo
+                showNotification("ℹ️ Tu navegador no soporta copiar imágenes, pero puedes descargarla", true);
+            }
+            else {
+                throw new Error("Clipboard API no soportada");
+            }
+        } catch (err) {
+            console.warn("Error al copiar imagen:", err);
+            // Segundo fallback: Intentar copiar la imagen usando un método alternativo (espejo de canvas)
+            // Mostrar mensaje explicativo y sugerir descarga
+            showNotification("❌ No se pudo copiar la imagen. Prueba descargándola con el botón Descargar.", true);
+        }
+    }
+    
+    // Alternativa adicional: copiar usando execCommand (legacy) pero en desuso, mejor mantener el aviso.
+    // También permitimos copiar en navegadores que soporten write() con imágenes.
+    
+    // Cambio de tamaño: si ya existe un QR generado, regenerar con el nuevo tamaño automáticamente
+    function onSizeChange() {
+        if (currentQRText && currentQRText !== "") {
+            const newSize = parseInt(sizeSelect.value, 10);
+            currentSize = newSize;
+            try {
+                drawQRCode(currentQRText, newSize);
+                const previewText = currentQRText.length > 50 ? currentQRText.substring(0, 47) + '...' : currentQRText;
+                qrMessageDiv.innerHTML = `<i class="fas fa-check-circle" style="color:#2b7e3a"></i> QR redimensionado para: ${previewText}`;
+                actionButtonsDiv.style.display = 'flex';
+                clearError();
+                showNotification("🔍 Tamaño actualizado", false);
+            } catch (err) {
+                showError("Error al redimensionar: " + err.message);
+                actionButtonsDiv.style.display = 'none';
+                currentQRText = "";
+            }
+        } else {
+            // Si no hay QR generado, solo redibujamos placeholder con el nuevo tamaño
+            drawPlaceholder();
+        }
+    }
+    
+    // Inicializar evento de generación
+    generateBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        generateQR();
+    });
+    
+    // Evento para cambio de tamaño
+    sizeSelect.addEventListener('change', onSizeChange);
+    
+    // Eventos de botones de acción con mejor manejo
+    downloadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadQR();
+    });
+    
+    copyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        copyQRImage();
+    });
+    
+    // Enter en el input genera QR
+    urlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            generateQR();
+        }
+    });
+    
+    // Cargar demo inicial al cargar la página (mostrar QR de ejemplo)
+    window.addEventListener('load', () => {
+        const defaultText = urlInput.value.trim(); // "https://www.ejemplo.com/qr-demo"
+        if (defaultText) {
+            try {
+                const initialSize = parseInt(sizeSelect.value, 10);
+                currentSize = initialSize;
+                drawQRCode(defaultText, initialSize);
+                currentQRText = defaultText;
+                const shortText = defaultText.length > 50 ? defaultText.substring(0, 47) + '...' : defaultText;
+                qrMessageDiv.innerHTML = `<i class="fas fa-check-circle" style="color:#2b7e3a"></i> QR Demo - ${shortText}`;
+                actionButtonsDiv.style.display = 'flex';
+                clearError();
+            } catch(e) {
+                console.warn("Demo inicial no generada:", e);
+                drawPlaceholder();
+                qrMessageDiv.innerHTML = '<i class="fas fa-info-circle"></i> Introduce una URL y haz clic en Generar';
+                actionButtonsDiv.style.display = 'none';
+            }
+        } else {
+            drawPlaceholder();
+            qrMessageDiv.innerHTML = '<i class="fas fa-qrcode"></i> Listo para generar tu QR';
+        }
+    });
+</script>
+</body>
+</html>
